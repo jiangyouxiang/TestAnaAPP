@@ -43,7 +43,7 @@ library(officer)
 library(tidyverse)
 fmt_tra_other <- function(ft, reset_width = TRUE){#Convert matrix to table.
   c <- ncol(ft)
-  ft <- as.data.frame(ft)%>%flextable()
+  ft <- as.data.frame(ft)%>%flextable::flextable()
   ft <- flextable::bold(ft, part = "header")
   ft <- flextable::fontsize(ft, size = 10, part = "all")
   ft <- flextable::font(ft, fontname = "Times New Roman")

@@ -4,8 +4,10 @@ This application enables exploratory factor analysis, confirmatory factor analys
 
 If you want to use this application to analysis data, you should install TestAnaAPP package in R.
 
-devtools::install_github("jiangyouxaing/TestAnaAPP") # install packages
-
+```
+# install packages
+install.packages("devtools")
+devtools::install_github("jiangyouxaing/TestAnaAPP") 
 library(TestAnaAPP)
-
 TestAnaAPP::run_app() #run this application in R
+```

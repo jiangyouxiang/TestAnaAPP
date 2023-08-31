@@ -156,7 +156,7 @@ app_server <- function(input, output, session) {
 
   #Introduction of this platform-----------------------------------
   output$info <- renderText({
-    paste(shiny::p(strong('Package: '), "CTT_IRTshiny."),
+    paste(shiny::p(strong('Package: '), "TestAnaAPP"),
           shiny::p(strong('Dependence: '), "mirt, shiny, shinydashboard, tidyverse, ggplot2 et al."),
           shiny::p(strong('Description: '), "This application enables exploratory factor analysis,
     confirmatory factor analysis, classical measurement theory analysis,
@@ -1145,19 +1145,25 @@ app_server <- function(input, output, session) {
     }
   })
   MIRT_wright_rea <- reactive({
-    if(is.null(input$wright_dim_select))
-      return(NULL)
     Response <- mydata()%>%as.data.frame()
     cat_all <- apply(Response, MARGIN = 2, FUN = cat_number)
     dim_data <- dimension()
+    mode <- dimension_recode(dim_data )
+
+    if(is.null(input$wright_dim_select)){
+      wright_dim <- as.vector(mode$F_names)[1]
+    }else{
+      wright_dim <-  input$wright_dim_select
+    }
+
     #Item parameters
     item_par <- MIRT_itempar_rea()
-    dim_items <- which(dim_data[,2]==input$wright_dim_select)
+    dim_items <- which(dim_data[,2] == wright_dim)
     item_par_dim <- item_par[dim_items,]
     #Person parameters
     MIRT_person <- MIRT_person_rea()
 
-    wrightMap_new(person = MIRT_person[,input$wright_dim_select],
+    wrightMap_new(person = MIRT_person[,wright_dim],
                   thresholds = item_par_dim[,c(str_which(colnames(item_par) %>% str_to_lower(),
                                                          pattern = "difficult"))],
                   points_size = input$MIRT_wright_map_p_size,
@@ -1223,10 +1229,11 @@ app_server <- function(input, output, session) {
       if(length(items[[1]])>1){
         dim_inf[,i] <- rowSums(TRUE_information[,items[[1]]])
       }else{
-        dim_inf[,i] <-TRUE_information[,items[[1]]]
+        dim_inf[,i] <- TRUE_information[,items[[1]]]
       }
     }
-    result <- list(Item_information = TRUE_information, dim_information =cbind(theta, dim_inf))
+    result <- list(Item_information = TRUE_information,
+                   dim_information =cbind(theta, dim_inf))
     return(result)
   }
 
@@ -1278,7 +1285,6 @@ app_server <- function(input, output, session) {
       selectInput(inputId = "MIRT_dim_select",label = "Dimension selection",
                   choices = apply(matrix(mode$F_names,ncol=1),
                                   MARGIN = 1,FUN = as.vector,simplify = FALSE),
-                  selected = as.vector(mode$F_names)[1],
                   selectize = TRUE)
     }
   })
@@ -1377,11 +1383,12 @@ app_server <- function(input, output, session) {
       paste0("MIRT_results.xlsx")
     },
     content = function(file){
-      sim_theta <- MIRT_person_rea()
+
       MIRT_fit  <- MIRT_fit_rea()
-      dim_data <- dimension()
+      dim_data <- dimension() %>% as.data.frame()
       Response <- mydata() %>% as.data.frame()
       mode <- dimension_recode(dim_data)
+      sim_theta <- MIRT_person_rea()[,as.vector(mode$F_name)]
       item_info1 <- Item_infor(object = MIRT_fit,
                                theta = sim_theta,
                                mode = mode,
@@ -1392,7 +1399,7 @@ app_server <- function(input, output, session) {
       colnames(dim_infor) <- c(mode$F_names, paste0(mode$F_names, "_Information"))
 
       datalist <- list("Score data" = Response,
-                       "Dimension" = dimension(),
+                       "Dimension" = dim_data ,
                        "Model fit" = MIRT_modelfit_rea(),
                        "Dependence test" = MIRT_Q3_rea(),
                        "Item fit" = MIRT_itemfit_rea(),
@@ -1400,6 +1407,8 @@ app_server <- function(input, output, session) {
                        "Person parameters" = MIRT_person_rea(),
                        "Item information" = item_info,
                        "Test information" = dim_infor)
+      bruceR::export(x = datalist,file = file)
+      print(datalist)
       write.xlsx(x = datalist, file = file, rowNames = T)
     }
   )
@@ -1442,8 +1451,15 @@ app_server <- function(input, output, session) {
                                                                 nrow = length(sim_theta)),
                                mode = mode,colnames = colnames(Response))$dim_information
       colnames(item_info1) <- c(mode$F_names, paste0(mode$F_names,"infor"))
-      sim_theta1_infor1 <- item_info1[,c(input$MIRT_dim_select,paste0(input$MIRT_dim_select,"infor"))]
-      F_name <- input$MIRT_dim_select
+
+      if(is.null(input$MIRT_dim_select)){
+        TIC_dim <- as.vector(mode$F_names)[1]
+      }else{
+        TIC_dim <- input$MIRT_dim_select
+      }
+
+      sim_theta1_infor1 <- item_info1[,c(TIC_dim,paste0(TIC_dim,"infor"))]
+      F_name <- TIC_dim
 
       wright_map_height <- input$MIRT_wright_map_height
       wrap_height_value <- input$wrap_height
