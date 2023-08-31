@@ -2,7 +2,7 @@
 #'
 #' @param input,output,session Internal parameters for {shiny}.
 #'     DO NOT REMOVE.
-#' @import shiny dplyr stringr mirt ggplot2 openxlsx plotly tidySEM flextable cowplot bruceR plotrix config golem shiny
+#' @import shiny dplyr stringr mirt ggplot2 openxlsx plotly tidySEM cowplot bruceR plotrix config golem shiny
 #' @noRd
 app_server <- function(input, output, session) {
   options(shiny.maxRequestSize = 60*1024^2)
@@ -1095,7 +1095,7 @@ app_server <- function(input, output, session) {
       data.frame("Dimension" = colnames(cov),
                  cov)
     }else{
-      return("The covariance matrix is not selected.")
+      return(data.frame("The covariance matrix is not selected."))
     }
   })
   output$cov_est <- renderDataTable({
@@ -1274,7 +1274,7 @@ app_server <- function(input, output, session) {
       selectInput(inputId = "MIRT_dim_select",label = "Dimension selection",
                   choices = apply(matrix(mode$F_names,ncol=1),
                                   MARGIN = 1,FUN = as.vector,simplify = FALSE),
-                  selected = mode$F_names[1],
+                  selected = as.vector(mode$F_names)[1],
                   selectize = TRUE)
     }
   })
