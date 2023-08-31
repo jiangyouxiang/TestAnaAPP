@@ -1,5 +1,5 @@
 Package: TestAnaAPP
-Title: The Shiny APP for Test Analysis and Visualization
+Title: The Shiny app for Test Analysis and Visualization
 Version: 0.1.2
 Authors@R: 
     c(person(given = "Youxiang", family = "Jiang", 
@@ -10,13 +10,13 @@ Authors@R:
     email ="whb@bnu.edu.cn", 
     role = c("ctb"),
     comment = "0000-0001-8620-9734"))
-Description: This application can realize exploratory factor analysis,
+Description: This application enables exploratory factor analysis,
     confirmatory factor analysis, classical measurement theory analysis,
-    single and multi-dimensional item response theory analysis through the
-    shiny interactive interface, and realize the visualization of the
-    results. The analysis results are easily downloaded in the interactive
-    interface. At the same time, users can also download a brief project
-    reaction theory analysis report on the interactive interface.
+    single and multi-dimensional item response theory analysis, through 
+    the shiny interactive interface. It also facilitates the visualization 
+    of the results. Users can easily download the analysis results from the 
+    interactive interface. Additionally, users can download a concise report 
+    about item and test quailty throught the interactive interface.
 Depends: bruceR (>= 2023.8.23), 
          config (>= 0.3.1), 
          cowplot (>= 1.1.1),
@@ -25,7 +25,6 @@ Depends: bruceR (>= 2023.8.23),
          golem (>= 0.4.1), 
          mirt (>= 1.40), 
          openxlsx (>= 4.2.5.2), 
-         plotly (>= 4.10.2), 
          plotrix (>= 3.8-2), 
          shiny (>= 1.7.5), 
          shinydashboard (>= 0.7.2), 

@@ -74,7 +74,6 @@ plot_width <- 6.299
 
 ```
 
-
 `r bold_print("Table of Contents")`
 <!---BLOCK_TOC--->
 
@@ -88,53 +87,39 @@ plot_width <- 6.299
 
 \newpage
 
-Multidimensional IRT model assumes that more than one single latent trait underlies the total collection of item response. Generally, these model are classified to between-item and within-item models. 
+The multidimensional IRT model assumes that a collection of items is influenced by more than one latent trait. These models can be classified into two categories: between-item models and within-item models.
 
-For the between-item multidimensional model, all items were assumed to assess only one single latent trait of several traits, or dimensions, being measured by the test. For the within-item multidimensional model, in contrast, at least one item measured more than one traits or dimensions.
+In between-item multidimensional models, each item is assumed to measure a single latent trait out of several traits or dimensions assessed by the test. On the other hand, within-item multidimensional models allow for at least one item to measure multiple traits or dimensions.
 
-Considered the between-item test is universal and can save time in estimation, we used the between-item multidimensional models to analysis data in TestAnaAPP. Thus, the users of TestAnaAPP should upload the between-item test data and the information of dimension for analysis.
+Considering its universality and time-saving potential in estimation, we employed the between-item multidimensional models to analyze data in TestAnaAPP. Therefore, users of TestAnaAPP are required to upload between-item test data along with information regarding the dimensions for analysis.
 
 # Introduction to MIRT Models
 
-TestAnaAPP provides commonly used dichotomous and polytomous scoring MIRT models for selection. For dichotomous scoring data, these models include the Rasch model, one-parameter logistic model (1PL), two-parameter logistic model (2PL), three-parameter logistic model (3PL), and four-parameter logistic model (4PL). For polytomous scoring data, the models include the graded response model (GRM), partial credit model (PCM), and generalized partial credit model (GPCM). 
+TestAnaAPP offers a range of commonly used scoring models in the field of selection, catering to both dichotomous and polytomous data. The dichotomous scoring models consist of the Rasch model, the one-parameter logistic model (1PL), the two-parameter logistic model (2PL), the three-parameter logistic model (3PL), and the four-parameter logistic model (4PL). On the other hand, the polytomous scoring models encompass the graded response model (GRM), the partial credit model (PCM), and the generalized partial credit model (GPCM). These models are widely recognized and utilized in the field.
+
+Due to MIRT models being an extension of unidimensional IRT models, the interpretation of item parameters in MIRT models is similar to that in unidimensional IRT models.
 
 ## MIRT Models for Dichotomous Scoring Data
 
+Let $X_{ij}$ denote the response of test taker $j$ ($j = 1,2,3,...,J$) to item $i$ ($i = 1,2,3,...,I$) in dichotomous scoring data, where the value of $X_{ij}$ is 0 (incorrect) or 1 (correct). Additionally, $\beta_i$ represents the item difficulty parameter, while $\theta_{jq}$ represents the latent trait of test taker $j$ on dimension $q$ ($q = 1,2,3,...,Q$). In the context of IRT analysis, the difficulty parameters and latent trait parameters of test takers are comparable, allowing us to determine the difficulty level of an item based on the relative values of these two parameters.
 
-
-Let $X_{ij}$ represent the response of test taker $j$ ($j = 1,2,3,...,J$) to item $i$ ($i = 1,2,3,...,I$) in dichotomous scoring data, where $X_{ij}$ value is 0 (incorrect) or 1 (correct). Additionally, let $\beta_i$ represent the item difficulty parameter and $\theta_{jq}$ represent the latent trait of test taker $j$ on dimension $q$ ($q = 1,2,3,...,Q$). In IRT analysis, the difficulty parameters and test taker's latent trait parameters have comparability, meaning the difficulty of the item can be determined as easy or difficult for test takers at specific levels, based on the relative sizes of these two parameters.
-
-
-
-
-The specific MIRT models supported by TestAnaAPP for dichotomous scoring data are as follows:
-
-
+The TestAnaAPP supports specific MIRT models for analyzing dichotomous scoring data.
 
 ### Multidimensional Rasch Model (M1PL)
 
-
-
-The Multidimensional Rasch model is used for dichotomously scored items. The item response function (IRF) of the Multidimensional Rasch model can written as,
-
+The Multidimensional Rasch model is commonly used for items scored dichotomously. The item response function (IRF) for the Multidimensional Rasch model can be expressed as follows:
 
 
 $$P(X_{ij} = 1 | \theta_{jq}) = \frac{1}{1+e^{(-(\theta_{jq} - \beta_i))}}\tag{1}$$
-Clearly, the Rasch model (1PL) assumes that the probability $P_{ij}$ of subject $j$ answering item $i$ correctly, represented by $X_{ij}=1$, is determined by the relative difficulty of item $i$ to subject $j$, denoted as $\theta_{jq}-\beta_i$.
-
+The Multidimensional Rasch model (M1PL) makes a clear assumption that the probability $P_{ij}$ of subject $j$ correctly answering item $i$, indicated as $X_{ij}=1$, is influenced by the relative difficulty of item $i$ for subject $j$, denoted as $\theta_{jq}-\beta_i$.
 
 
 ### Multidimensional Two parameters logistic model (M2PL)
 
-
-
-Different from M1PL model, the M2PL model using the parameter, $d_i$, that relate with item parameter $\beta_i$, and item discrimination $\alpha_{iq}$ to describe the psychometric properties of items. The item discrimination $\alpha_{iq}$ represents the $i$th item discrimination for the $q$th dimension. For the between-item test in TestAnaAPP, because each item is considered to be an indicator for a single dimension, the item slopes for all other dimension except for the $q$th dimension are 0. The IRF of the M2PL model is shown as follow,
-
-
+In contrast to the M1PL model, the M2PL model incorporates the parameter $d_i$, which is associated with the item difficult parameter $\beta_i$ and item discrimination $\alpha_{iq}$, to describe the psychometric properties of items. The item discrimination $\alpha_{iq}$ represents the discrimination of the $i$th item for the $q$th dimension. In TestAnaAPP, for the between-item test, each item is considered to be an indicator for a single dimension, resulting in item slopes ($\alpha_{iq}$) of 0 for all other dimensions except the $q$th dimension. The item response function (IRF) of the M2PL model is displayed as follows:
 
 $$P(X_{ij} = 1 | \theta_{jq}) = \frac{1}{1 + e^{(-(\alpha_{iq}\theta_{jq} + d_i))}}\tag{2}$$
-
-It is important note that the $d_i$ parameter is cannot represent item difficult. To obtain the similar interpretation of item parameters as the unidimensional IRT model, researchers (Reckase, 2009; Zhang & Stone, 2008) proposed the multidimensional discrimination index $MDISC_i$ (Multidimensional Discrimination) to assess the discrimination in MIRT, and the item difficult parameter $\beta_i$ can calculated by the $MDISC_i$ and  $d_i$.
+It is important to note that the parameter $d_i$ cannot represent item difficulty; it functions solely as a threshold parameter. In order to achieve a similar interpretation of item parameters as the unidimensional IRT model, researchers (Reckase, 2009; Zhang & Stone, 2008) have proposed the multidimensional discrimination index $MDISC_i$ (Multidimensional Discrimination) to evaluate discrimination in MIRT. The item difficulty parameter $\beta_i$ can be calculated using $MDISC_i$ and $d_i$.
 
 $$MDISC_i = \sqrt{\sum_{q=1}^Q(\alpha_{iq})^2}$$
 
@@ -144,48 +129,31 @@ $$\beta_i = \frac{MDISC_{i}}{-d_i}$$
 
 ### Multidimensional Three parameters logistic model (M3PL)
 
-
-
-For the M3PL model, the item guessing parameter $c_i$ represents the probability of a subject guessing item $i$ correctly. The probability $P_{ij}$ of subject $j$ answering item $i$ correctly, denoted as $X_{ij}=1$, is determined by the $(\alpha_{iq}\theta_{jq} + d_i)$. The IRF of the M3PL model is shown as follows:
-
+In the M3PL model, the item guessing parameter $c_i$ represents the subject's probability of guessing item $i$ correctly. The probability $P_{ij}$ of subject $j$ answering item $i$ correctly, denoted as $X_{ij}=1$, is determined by the combination of $(\alpha_{iq}\theta_{jq} + d_i)$. The Item Response Function (IRF) of the M3PL model is shown below:
 
 
 $$P(X_{ij}=1 | \theta_{jq}) = c_i+(1-c_i)\frac{1}{1 + e^{(-(\alpha_{iq}\theta_{jq}
  + d_i))}}\tag{3}$$
 
-Similarly, the item discrimination ($MDISC_i$) and difficult ($\beta_i$) parameters can also calculated by the above mentioned formula.
+Similarly, the item discrimination ($MDISC_i$) and difficulty ($\beta_i$) parameters can also be calculated using the aforementioned formula.
 
 
 ### Multidimensional Four parameters logistic model (M4PL)
 
-
-
-The M3PL model considers the guessing behavior of subjects with extremely low ability on items, while the M4PL model adds consideration for potential errors that may occur among highly capable subjects in addition to the M3PL model. It introduces an additional item error parameter $1-u_i$ to represent the possibility of high-ability subjects making mistakes on item $i$. The formula for the IRF of the M4PL model is shown as follows:
-
+The M4PL model introduces an additional item error parameter, $1-u_i$, to account for the possibility of high-ability subjects making errors on item $i$. The formula for the Item Response Function (IRF) of the M4PL model is represented as follows:
 
 
 $$P(X_{ij}=1 | \theta_{jq}) = c_i+(u_i-c_i)\frac{1}{1+e^{(-(\alpha_{iq}\theta_{jq}+d_i))}}\tag{4}$$
 
-
-
-
 ## MIRT Models for Polytomous Data
 
-
-
-Similarly, let $X_{ij}$ represent the response of subject $j (j = 1,2,3,...,J)$ to item $i (i = 1,2,3,...,I)$ in a polytomous data context, where there are $m_i$ response categories. Let $X_{ij}=k$, then $k{\in}{(0,1,2,...,m_i)}$. Additionally, in the polytomous IRT model, the item threshold (difficulty) parameters are denoted as $\beta_{ih}$, where $h{\in}{(1,2,...,m_i)}$, and the latent trait parameter for the subject is denoted as $\theta_{jq}$.
-
-
+Let $X_{ij}$ denote the response of subject $j$ $(j = 1,2,3,...,J)$ to item $i$ $(i = 1,2,3,...,I)$ in the context of polytomous data. If $X_{ij}$ is equal to $k$, then $k{\in}{(0,1,2,...,m_i)}$. In the polytomous IRT model, the item difficulty parameters are represented by $\beta_{ih}$, where $h{\in}{(1,2,...,m_i)}$. The latent trait parameter for the subject is denoted by $\theta_{jq}$.
 
 ### Multidimensional Partial credit model (MPCM)
 
+The item parameters of the MPCM model consist solely of difficulty parameters, denoted as $\beta_{ih}$. Here, $\beta_{ih}$ represents the difficulty for category $k$ on item $i$.
 
-
-The item parameters of the MPCM model only include difficulty parameters $\beta_{ih}$, where $\beta_{ih}$ represents the threshold parameter (difficulty) for category $k$ on item $i$.
-
-The item response function (IRF) for the MPCM model is as follows:
-
-
+The item response function (IRF) of the MPCM model is as follows:
 
 $$P(X_{ikj}=k | \theta_{jq}) = \frac{e^{\sum_{h=0}^{k}(\theta_{jq}-\beta_{ih})}}{\sum_{c=0}^{m_i}e^{\sum_{h=0}^{c}(\theta_{jq}-\beta_{ih})}}\tag{5}$$
 
@@ -194,52 +162,31 @@ $$P(X_{ikj}=k | \theta_{jq}) = \frac{e^{\sum_{h=0}^{k}(\theta_{jq}-\beta_{ih})}}
 where $P(X_{ikj}=k | \theta_{jq})$ represents the probability that subject $j$ responds to item $i$ with category $k$.
 
 
-
 ### Multidimensional Generalized Partial Credit Model (MGPCM)
 
-
-
-The GPCM model allows for the estimation of item discrimination parameters $\alpha_{iq}$. The IRF for the MGPCM model is as follows,
-
-
+The Generalized Partial Credit Model (GPCM) enables the measurement of discrimination parameters $\alpha_{iq}$ for each item. In the case of the Multi-Dimensional Generalized Partial Credit Model (MGPCM), the Item Response Function (IRF) can be described as follows:
 
 $$P(X_{ikj}=k | \theta_{jq}) = \frac{e^{\sum_{h=0}^{k}[(\alpha_{iq}\theta_{jq}+d_{ih})]}}{\sum_{c=0}^{m_i}e^{\sum_{h=0}^{c}[(\alpha_{iq}\theta_{jq}+d_{ih})]}}\tag{6}$$
 
-where $d_{i}$ is denoting the parameter related item difficult, and can transform to item difficult parameter by using $MDISC_i$ (see above mentioned formula).
-
-
+In the given formula, $d_i$ denotes the item threshold parameter and can be transformed into the item difficulty parameter by utilizing $MDISC_i$ (as explained in the formula mentioned above).
 
 ### Multidimensional Graded Response Model (MGRM)
 
+The MPCM and MGPCM models are both built on the premise of modeling the probability of response categories $k$ for a given item $i$. In contrast, the MGRM model focuses on modeling the cumulative probability of response categories $k$ or higher. The MGRM model employs the following function to represent the cumulative response probability:
 
+$$P(X_{ij}{\geq} k | \theta_{jq}) = \frac{e^{[(\alpha_{iq}\theta_{jq}+d_{ik})]}}{1+e^{[(\alpha_{iq}\theta_{jq}+d_{ik})]}}\tag{7}$$
 
-
-Both the MPCM and MGPCM models are based on modeling the probability of response categories $k$ on item $i$. The MGRM model, on the other hand, models the cumulative probability of response categories $k$ or higher. The cumulative response probability function for the MGRM model is as follows:
-
-
-
-$$P(X_{ij}{\geq} k | \theta_{jq}) = \frac{e^{[(\alpha_{iq}\theta_{jq}-\beta_{ik})]}}{1+e^{[(\alpha_{iq}\theta_{jq}-\beta_{ik})]}}\tag{7}$$
-
-
-
-where $P(X_{ij}{\geq} k | \theta_{jq})$ represents the probability that subject $j$ responds to item $i$ with category $k$ or a higher category. The $\beta_{ik}$ represents the threshold (difficulty) parameter for response category $k$ on item $i$. The probability of a specific response category is obtained by subtracting the adjacent cumulative probabilities:
+where $P(X_{ij}{\geq} k | \theta_{jq})$ represents the probability that subject $j$ responds to item $i$ with category $k$ or a higher category. The parameter $d_{ik}$ represents the threshold for response category $k$ on item $i$. The probability of a specific response category can be computed by subtracting the adjacent cumulative probabilities.
 
 
 
 $$P(X_{ij}= k | \theta_{jq})=P(X_{ij}{\geq} k | \theta_{jq})-P(X_{ij}{\geq} k+1 | \theta_{jq})\tag{8}$$
 
-
-
-
-Please note that unlike the GPCM and PCM models, the GRM model assumes that $\beta_{ik}{\geq}{\beta_{i(k-1)}}$, meaning that the difficulty of higher categories is always greater than that of lower categories.
-
-
+It is important to note that, in contrast to the GPCM and PCM models, the GRM model assumes a relationship where $\beta_{ik}{\geq}{\beta_{i(k-1)}}$, implying that the difficulty of higher categories is consistently greater than that of lower categories. Similarly, the $\beta_{ik}$ parameter of the MGRM model can also be calculated using the aforementioned formula.
 
 # Selected Model and Settings
 
-
-
-**Based on the settings you selected in the TestAnaAPP interactive program, as well as some default options in TestAnaAPP, the results in this document were estimated according to the following settings:**
+**The results presented in this document were estimated based on the settings you selected in the interactive TestAnaAPP program, along with default options within the program. The following settings were employed:**
 
 
 
@@ -253,7 +200,7 @@ Please note that unlike the GPCM and PCM models, the GRM model assumes that $\be
 
 # Test Structure
 
-**The test structure (dimension) uploaded from you is shown as follow,**
+**The uploaded test structure (dimension) is displayed below,**
 
 ```{r dimension, echo=FALSE, tab.cap="The test structure in this analysis",tab.id = "realet_fit", tab.cap.style = "Table Caption"}
 fmt_tra_other(dimension)
@@ -262,41 +209,25 @@ fmt_tra_other(dimension)
 
 # Model Fit
 
-
-
-The fitting results of the model included relative fit indices and absolute fit indices. Relative fit indices can be used to compare the fitting degree between models. If two IRT models are used to fit the same set of data and two sets of relative fit index values are obtained, generally, the model that has a lower relative fit index value can be determined as the one that fits the data relatively better. Absolute fit indices represent the absolute fitting degree of the model to the data. If the absolute fit indices are within an acceptable range, it indicates that the model fits the data well.
-
-
+The model's fitting results included both relative fit indices and absolute fit indices. Relative fit indices serve as a means to compare the level of fit between models. When two IRT models are used to fit the same dataset and produce different sets of relative fit index values, the model with the lower relative fit index value is generally considered to fit the data comparatively better. Absolute fit indices reflect the degree of absolute fit between the model and the data. If the absolute fit indices fall within an acceptable range, it suggests that the model fits the data well.
 
 ## Relative Fit Indices
 
-
-
-The TestAnaAPP program uses the "mirt" package for parameter estimation and obtains relative fit indices AIC, SABIC, HQ, BIC, and Log-likelihood. Among them, the smaller the values of AIC, SABIC, HQ, and BIC, the higher the fitting degree of the model. The larger the value of Log-likelihood, the higher the fitting degree of the model. If you want to use relative fit indices for IRT model selection, you can choose different models for parameter estimation in TestAnaAPP and record the magnitude of the relative fit index values.
-
-
+The TestAnaAPP program utilizes the "mirt" package for parameter estimation and calculates relative fit indices, including AIC, SABIC, HQ, BIC, and Log-likelihood. Smaller values of AIC, SABIC, HQ, and BIC indicate a higher degree of model fit. A greater value of Log-likelihood signifies a higher degree of model fit. To employ relative fit indices for IRT model selection, you can opt for various models during parameter estimation in TestAnaAPP and record the corresponding relative fit index magnitudes.
 
 ```{r fitindex, echo=FALSE,tab.cap=sprintf("The relative fit indices of the %s", model),tab.id = "realet_fit", tab.cap.style = "Table Caption"}
 fmt_tra_other(ft = MIRT_modelfit_relat)
 
 ```
 
-
-
 ## Absolute Fit Indices
 
+TestAnaAPP generates absolute fit indices, including M2, RMSEA, SRMSR, TLI, and CFI.
 
-
-The absolute fit indices output by TestAnaAPP include M2, RMSEA, SRMSR, TLI, and CFI. The commonly used criteria in statistics are as follows:
-
-
-
-* M2: If the corresponding P value is less than 0.05 ($\alpha<0.05$), the null hypothesis is rejected, indicating that the model does not fit the data.
-* RMSEA: Browne and Cudeck (1993) provided a comprehensive guide to RMSEA. A value less than 0.05 indicates a very good fit (close fit), 0.05 to 0.08 indicates a relatively good fit (fair fit), 0.08 to 0.10 indicates a mediocre fit, and a value greater than 0.10 indicates a poor fit. 
-* SRMSR: $SRMSR\leq0.05$ indicates that the model adequately fits the data.
-* TLI and CFI greater than 0.9 indicate that the model fits the data.
-
-
+* M2: If the corresponding p-value is less than 0.05 (α<0.05), the null hypothesis is rejected, suggesting inadequate fit of the model to the data.
+* RMSEA: Browne and Cudeck (1993) provided a well-regarded guide to interpreting RMSEA. A value below 0.05 indicates a very good fit (close fit), 0.05 to 0.08 suggests a relatively good fit (fair fit), 0.08 to 0.10 implies a mediocre fit, and a value above 0.10 indicates a poor fit.
+* SRMSR: A value of SRMSR≤0.05 indicates acceptable fit between the model and the data.
+TLI and CFI values greater than 0.9 suggest satisfactory fit of the model to the data.
 
 
 ```{r, echo=FALSE,tab.cap=sprintf("The absolute fit indices of the %s", model),tab.id = "ab_fit", tab.cap.style = "Table Caption"}
@@ -305,20 +236,13 @@ fmt_tra_other(ft = MIRT_modelfit)
 ```
 
 
-
 # Hypothesis Testing
 
 ## Independence Test
 
+TestAnaAPP provides the Q3 and LD-X2 statistics for independent testing in IRT. Larger absolute values indicate stronger dependencies between the two items. Due to the lack of uniform standards across different studies, cutoff values for Q3 and LD-X2 are not provided. Readers are advised to refer to professional books or papers for data interpretation.
 
-
-TestAnaAPP provides the Q3 and LD-X2 statistics for independent testing in IRT, with larger absolute values indicating stronger dependencies between the two items. Here, due to the lack of uniform standards across different studies, we do not provide the cutoff values for Q3 and LD-X2. We suggest readers refer to professional books or papers for data interpretation.
-
-
-
-In this analysis, you selected **`r MIRT_select_independent`** as the statistic for the independence test. 
-
-
+For the independence test in this analysis, `r MIRT_select_independent` was chosen as the selected statistic.
 
 ```{r , echo=FALSE,tab.cap=sprintf("Independence test（%s）",MIRT_select_independent),tab.id = "dependent_test", tab.cap.style = "Table Caption"}
 fmt_tra_other(MIRT_Q3,  reset_width = FALSE)
@@ -326,27 +250,17 @@ fmt_tra_other(MIRT_Q3,  reset_width = FALSE)
 
 <!---BLOCK_LANDSCAPE_STOP--->
 
-
 # Item Fit
 
-
-
-The item fit test is used to determine whether there is a significant difference between the predicted responses of the model and the actual responses. TestAnaAPP provides the $X^2$ statistic for conducting the item fit test. If the $P$ value of the statistical test is less than 0.05, it indicates a significant difference between the predicted values of the model and the actual data. Additionally, if the RMSEA value is greater than 0.1, it suggests a large difference between the predicted values and the actual data. You can make a comprehensive judgment based on the test situation and statistical indicators. It is possible that choosing a different model for the fit may yield different results.
-
-
+The item fit test is employed to assess whether there exists a significant disparity between the predicted responses of the model and the actual responses. TestAnaAPP offers the $X^2$ statistic for conducting the item fit test. A $P$ value below 0.05 suggests a significant difference between the predicted model values and the actual data. Moreover, an RMSEA value exceeding 0.1 indicates a substantial disparity between the predicted values and the actual data. A comprehensive assessment can be made based on the test situation and statistical indicators. Different results may be obtained by selecting an alternative model for fitting purposes.
 
 ```{r, echo=FALSE,tab.cap= sprintf("The results of item fit (%s-%s)",model, MIRT_itemfit_method),tab.id = "item_fit", tab.cap.style = "Table Caption"}
-
 fmt_tra_other(MIRT_itemfit)
 ```
 
-
-
 # Item Parameters
 
-
-
-Item parameters are important indicators used for evaluating the quality of items. Below are the criteria for judging item discrimination values provided by the author in "*THE BASICS OF Item Response Theory in R*". Readers can use these criteria to assess the level of item discrimination in the analyzed test.
+Item parameters serve as crucial indicators for assessing item quality. Provided below are the criteria, derived from "**THE BASICS OF Item Response Theory in R**", that can be utilized to evaluate item discrimination values. Readers can employ these criteria for evaluating the extent of item discrimination in the test under analysis.
 
 
 `r bold_print("Table: Labels for Item Discrimination Values")``
@@ -361,14 +275,9 @@ Item parameters are important indicators used for evaluating the quality of item
 | Very high    | >1.70 | 2.00 |
 | Perfect      | $+\infty$ | $+\infty$ |
 
-
-
-In this analysis, the `r model` model was selected. The `r MIRT_est_method` was used for parameter estimation. Generally, the $MDISC_i$ and $beta_i$ were used to evaluate the discrimination and difficult in MIRT analysis. Thus, the TestAnaAPP converted the $alpha_{iq}$ and $d_i$ parameter as $MDISC_i$ and $beta_i$ respectively. When the test is between-item test, $MDISC_i$ is absolute value of $alpha_{iq}$, because every item has only one $alpha_{i.}$. If the users want to obtain $d_i$ parameter in above formula, whose can use $\beta_i$ calculate $d_i$ according to $d_i = \frac{MDISC_{i}}{-\beta_i}$.
+In this analysis, the `r model` model was selected. The `r MIRT_est_method` was used for parameter estimation. Generally, the discrimination and difficulty are assessed using $MDISC_i$ and $beta_i$. Therefore, the TestAnaAPP transformed the $alpha_{iq}$ and $d_i$ parameters into $MDISC_i$ and $beta_i$ respectively. In a between-item test, $MDISC_i$ equals the absolute value of $alpha_{iq}$ since each item only has one $alpha_{i.}$. To obtain the $d_i$ parameter in the above formula, users can calculate $d_i$ using $beta_i$ as follows: $d_i = \frac{MDISC_{i}}{-\beta_i}$.
 
 The item parameters are as follows:
-
-
-
 
 ```{r, echo=FALSE,tab.cap=sprintf("The item parameters of the %s",model),tab.id = "item_par", tab.cap.style = "Table Caption"}
 disc_color <- function(x){
@@ -389,38 +298,30 @@ fmt_tra_other(MIRT_itempar)%>%flextable::highlight(j = colnames(MIRT_itempar)%>%
                          str_which(pattern = "Difficult"),color = diff_color)
 ```
 
-
-
 # Wright Map
 
+IRT assess item difficulty and participant latent traits on the same scale, enabling comparability. This provides a significant advantage compared to CTT. The Wright map serves as a visual tool for comparing the distribution of item difficulty and latent traits. Through comparing the scatterplot distribution of item difficulty with latent trait values, the relative difficulty or ease of the test for the subjects, as well as the difficulty level of test, can be determined. Additionally, it enables the identification of harder and easier items. 
 
+It is important to note that the test can effectively differentiate the subjects' latent trait levels only when it possesses appropriate difficulty. Otherwise, ceiling or floor effects may arise, whereby the measurement tool inaccurately assesses the subjects' true abilities, resulting in all subjects receiving either high or low scores.
 
-In IRT, the difficulty of the items and the latent traits of the participants are measured on the same scale, which allows for comparability. This is a major advantage compared to CTT. The Wright map is a visual tool used to compare the distribution of item difficulty and the distribution of latent traits. By comparing the scatterplot distribution of item difficulty with the distribution of latent trait values, we can determine whether the test is relatively more difficult or easier for the subjects, or whether the difficulty level is moderate. We can also identify which items are more difficult and which are easier. 
-
-It is important noting that only when the test has appropriate difficulty can it effectively differentiate the subjects' differences in latent trait levels. Otherwise, there may be ceiling or floor effects, where the measurement tool cannot accurately assess the subjects' true abilities, leading to all subjects receiving high or low scores.
-
-For multidimensional IRT models, the TestAnaAPP display every dimension's Wright map on the interactive interface. There is a single one, you selected on interactive interface, of `r mode$F_n` Wright maps, you can download the Wright maps on the interactive interface of TestAnaAPP.
-
-
+For multidimensional IRT models, the TestAnaAPP displays the Wright map for each dimension on the interactive interface. You can download the selected Wright map, out of `r mode$F_n` Wright maps, from the interactive interface of TestAnaAPP.
 
 ```{r ,echo=FALSE,fig.cap=sprintf("The Wright map for the %s model",model), fig.id = "wright",fig.cap.style = "Image Caption",,fig.height=wright_map_height/142,fig.width=plot_width}
 print(MIRT_wright) 
 
 ```
 
-
-
 # Item Characteristic Curve (ICC)
 
+The Item Characteristic Curve (ICC) visualizes the probability of subjects obtaining a specific score based on the predictions of the statistical model. 
 
+The ICC allows us to observe the probability of subjects with different levels of latent traits obtaining a specific score on each item. 
 
-The ICC visualizes the probability of subjects obtaining a certain score based on the model's predictions. By looking at the ICC curve, we can see the probability of subjects at different levels of latent traits obtaining a specific score on each item.
+The ICC provides insights into the characteristics of items for subjects with varying levels of latent traits.
 
-The ICC curve reflects the significance and characteristics of items for subjects at different levels of latent traits. Readers can study how to interpret the ICC curve through specialized books.
+Specialized books offer guidance on interpreting the ICC curve, enabling readers to better understand its implications. 
 
-For the between-item test that is the TestAnaAPP acceptable test, TestAnaAPP use the single one, corresponding to the item, of several latent traits to draw the ICC figures.
-
-
+The TestAnaAPP utilizes a specific latent trait for each item to construct the ICC figures for the between-item test, which is considered acceptable.
 
 ```{r, echo=FALSE,fig.cap=sprintf("The item characteristic curve of this test"), fig.id = "ICC",fig.cap.style = "Image Caption",fig.height=wrap_height_value/142,fig.width=plot_width}
 #1cm=28px
@@ -429,19 +330,13 @@ For the between-item test that is the TestAnaAPP acceptable test, TestAnaAPP use
 print(MIRT_ICC)
 ```
 
-
-
 # Item Information Curve (IIC)
 
+Item information represents the level of measurement error associated with each item. Higher values indicate a greater contribution of the item to the accurate measurement of the latent trait of the subjects. The value of item information is often related to the discriminatory power and difficulty level of the item. The Item Information Curve (IIC) visually represents the item information and allows readers to assess the contribution of the items to the accurate measurement of a specific level of latent trait. 
 
+Professional books can provide guidance on interpreting the IIC curve for those seeking to gain a comprehensive understanding.
 
-The item information is an indicator of measurement error at the item level. The higher the value, the greater the contribution of the item to the more accurate measurement of the latent trait of the subjects. The value is often related to discrimination and difficulty. The IIC is a visual representation of the item information, and readers can examine the contribution of the items to the accurate measurement of a specific level of latent trait through the IIC.
-
-Similarly, to learn how to interpret the IIC curve, you may need to seek help from professional books. 
-
-In addition, for the between-item test that is the TestAnaAPP acceptable test, TestAnaAPP use the single one, corresponding to the item, of several latent traits to draw the IIC figures.
-
-
+In the between-item test, which is considered acceptable according to TestAnaAPP, the IIC figures are based on a single latent trait that corresponds to each item.
 
 ```{r, echo=FALSE,fig.cap=sprintf("The item information curve of this test"), fig.id = "IIC",fig.cap.style = "Image Caption",fig.height=wrap_height_value/142,fig.width=plot_width}
 print(MIRT_IIC)
@@ -450,15 +345,11 @@ print(MIRT_IIC)
 
 # Test Information Curve (TIC)
 
-
-
-Test information is a measure of test accuracy in IRT, and its value is obtained by summing up the information from each item. A higher value indicates more precise measurement of the latent trait for the subjects. TestAnaAPP provides test information curves and measurement error curves to illustrate test quality. There is a fixed conversion relationship between test information $I(\theta)$ and measurement error $SE$, as shown in the formula:
+Test information is a quantitative measure of test accuracy in IRT, calculated by summing the information obtained from each item. A higher test information value indicates a more precise measurement of the latent trait for the subjects being assessed. TestAnaAPP offers test information curves (TIC) and measurement error curves as graphical representations to demonstrate the quality of the test. A consistent conversion relationship exists between test information ($I(\theta)$) and measurement error ($SE$), which can be expressed by the following formula:
 
 $$SE = \frac{1}{\sqrt{I(\theta)}}$$
 
-
-
-Due to the test is between-item test (each item measures a one of several latent traits) and drawing a picture of $\theta$ in multiple dimensions is not possible, TestAnaAPP draw a single dimension's TIC at a time. Blow is the TIC you selected to draw in the user interface.
+Since the test is a between-item test, where each item measures only one of several latent traits, it is not feasible to visually represent $\theta$ in multiple dimensions. Therefore, TestAnaAPP is designed to display one dimension of the TIC at a time. Below is the TIC that you have chosen to display in the user interface.
 
 ```{r, echo=FALSE,fig.cap=sprintf("The test information curve and measurement error"), fig.id = "TIC",fig.cap.style = "Image Caption",fig.height=4,fig.width=plot_width}
 twoord.plot(lx = sim_theta1_infor1[,1],ly = sim_theta1_infor1[,2],
@@ -478,13 +369,13 @@ twoord.plot(lx = sim_theta1_infor1[,1],ly = sim_theta1_infor1[,2],
 ```
 
 
-It is important note that the item information and test information also can download in the user interface, users can draw some custom figures by such downloaded files.
+It is important to note that users can download the item information and test information from the user interface. This allows them to create custom figures using the downloaded files. 
+
+**Statement:** TestAnaAPP is mainly designed to provide convenient item and test analysis programs for practitioners in the field of psychological and educational measurement. The purpose of providing this report is to present the analysis results in a complete and clear manner, and to provide universal and optimal result interpretation is not the primary objective of TestAnaAPP. **Therefore, while we hope users can benefit from the user-friendly nature of this program, we also encourage maintaining a cautious attitude towards the interpretation of results in order to avoid potential biases. Additionally, if users discover any errors in this program, we would greatly appreciate your contact with us (<jiangyouxiang34@163.com>).**
 
 \newpage
 
 # Reference
-
-
 
 | Reckase. (2009). Multidimensional Item Response Theory (1st ed. 2009.). Springer New York. https://doi.org/10.1007/978-0-387-89976-3
 | Zhang, B & Stone, C. A. (2008). Evaluating Item Fit for Multidimensional Item Response Models. Educational and Psychological Measurement, 68(2), 181–196. https://doi.org/10.1177/0013164407301547

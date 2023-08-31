@@ -2,10 +2,10 @@
 #'
 #' @param input,output,session Internal parameters for {shiny}.
 #'     DO NOT REMOVE.
-#' @import shiny dplyr stringr mirt ggplot2 openxlsx plotly tidySEM cowplot bruceR plotrix config golem shiny
+#' @import shiny dplyr stringr mirt ggplot2 openxlsx bruceR tidySEM cowplot plotrix config golem
 #' @noRd
 app_server <- function(input, output, session) {
-  options(shiny.maxRequestSize = 60*1024^2)
+  options(shiny.maxRequestSize = 1024^4)
   #Input selections--------------------------------------------
   EFA_method <- function(value){
     if(value == "Principal Component Analysis"){
@@ -158,12 +158,16 @@ app_server <- function(input, output, session) {
   output$info <- renderText({
     paste(shiny::p(strong('Package: '), "CTT_IRTshiny."),
           shiny::p(strong('Dependence: '), "mirt, shiny, shinydashboard, tidyverse, ggplot2 et al."),
-          shiny::p(strong('Description: '), "This platform is designed for test
-          analysis in the field of education and psychological measurement (or other field.
-          It allows for test and item analysis based on
-                   Classical Test Theory (CTT) and Item Response Theory (IRT)."),
+          shiny::p(strong('Description: '), "This application enables exploratory factor analysis,
+    confirmatory factor analysis, classical measurement theory analysis,
+    single and multi-dimensional item response theory analysis, through
+    the shiny interactive interface. It also facilitates the visualization
+    of the results. Users can easily download the analysis results from the
+    interactive interface. Additionally, users can download a concise report
+    about item and test quailty throught the interactive interface."),
           shiny::p(strong('Anthor: '), "Youxiang Jiang"),
           shiny::p(strong('Email: '), tags$a(href="mailto:jiangyouxiang34@163.com", "jiangyouxiang34@163.com"))
+         # shiny::p(strong())
 
     )
   })

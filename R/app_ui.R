@@ -67,9 +67,10 @@ app_ui <- function() {
                             ),
                             column(4,
                                    box(title = "Upload File", status = "warning", solidHeader = TRUE,
-                                       fileInput("res_data", "Please upload the test data file that needs to be analyzed.
-                                               You can upload TXT, CSV, Excel, SPSS, Stata, or other file formats.
-                                               Please make sure that the file only contains the score data, and the column names should not be named with pure numbers.",
+                                       fileInput("res_data", "Kindly submit the test data file that requires analysis.
+                                                 Acceptable file formats for uploading include TXT, CSV, Excel, SPSS, Stata, and others.
+                                                 Ensure that the file solely consists of score data, and refrain from
+                                                 using purely numerical column names.",
                                                  placeholder="File",buttonLabel = "Browse",
                                                  accept = c("xlsx","xls","csv","sav","txt","dta")
                                        ),width = 16))
@@ -141,8 +142,10 @@ app_ui <- function() {
                                      column(4,
                                             box(title = "Upload Dimension",solidHeader = TRUE,status = "warning",width = 12,
                                                 fileInput(inputId = "dimensionfile_cfa",
-                                                          "Please upload an Excel file with example data on the left side to illustrate the correspondence between each question and dimension.
-                                                        Please note that currently we do not support data where one item measures multiple dimensions simultaneously.",
+                                                          "Kindly upload an Excel file containing example data on the left side to
+                                                          demonstrate the relationship between each question and dimension.
+                                                          Please note that TestAnaAPP currently does not support
+                                                          the analysis of data where a single item measures multiple dimensions simultaneously.",
                                                           placeholder="File",buttonLabel = "Browse",
                                                           accept = c("xlsx","xls","csv"))),
                                             box(title = "Download results",status = "success",solidHeader = TRUE, width = 12,
@@ -261,8 +264,9 @@ app_ui <- function() {
                                                                   "Monte Carlo EM estimation",
                                                                   "Stochastic EM algorithm"),
                                                    selected = "standard EM algorithm"),
-                                       "Note: For unidimensional models, it is recommended to use the standard EM algorithm. For multidimensional models,
-                                              it is recommended to use quasi-Monte Carlo EM estimation.",
+                                       "Note: In the case of unidimensional models, it is advisable to employ the
+                                       standard EM algorithm. For multidimensional models, it is recommended to utilize
+                                       quasi-Monte Carlo EM estimation.",
                                        br(),br(),
 
                                        submitButton( "Updata results")),
@@ -413,10 +417,10 @@ app_ui <- function() {
                                       column(4,
                                              box(title = "Upload dimension information",solidHeader = TRUE,status = "warning",width = 12,
                                                  fileInput(inputId = "dimensionfile",
-                                                           "Please upload an Excel file with example data on the left side to
-                                                         illustrate the correspondence between each question and dimension.
-                                                         Please note that currently we do not support data
-                                                         where one item measures multiple dimensions simultaneously.",
+                                                           "Kindly upload an Excel file with example data on the left side to demonstrate
+                                                           the correlation between each question and dimension. Please note that currently,
+                                                           TestAnaAPP does not support the analysis of data where a single item measures multiple
+                                                           dimensions simultaneously.",
                                                            placeholder="File",buttonLabel = "Browse",
                                                            accept = c("xlsx","xls","csv")))))
                           ),
@@ -455,17 +459,17 @@ app_ui <- function() {
                                                                             "Stochastic EM algorithm"),
                                                              selected = "quasi-Monte Carlo EM estimation"),
                                                  "Note: For unidimensional models, it is recommended to use the standard EM algorithm.
-                                               For multidimensional models,
-                                               it is recommended to use quasi-Monte Carlo EM estimation.",
+                                                 For multidimensional models,
+                                                 it is recommended to use quasi-Monte Carlo EM estimation.",
                                                  br(),br(),
                                                  selectInput(inputId = "include_cov",label = "Is it necessary to estimate the covariance matrix?",
                                                              selectize = TRUE,
                                                              choices = list("Yes",
                                                                             "No"),
                                                              selected = "No"),
-                                                 "Note: Estimating the covariance matrix can be time-consuming and,
-                                               depending on the parameter estimation method, may encounter errors in some cases. However,
-                                               it is necessary to estimate the covariance in multidimensional models.",
+                                                 "Note: Estimating the covariance matrix can be time-consuming and may encounter
+                                                 errors in some cases depending on the parameter estimation method. However,
+                                                 it is necessary to estimate the covariance in multidimensional models",
                                                  br(),br(),
 
                                                  submitButton( "Updata results")),
@@ -614,30 +618,6 @@ app_ui <- function() {
 
 }
 
-#' Add external Resources to the Application
-#'
-#' This function is internally used to add external
-#' resources inside the Shiny application.
-#'
-#' @import shiny
-#' @importFrom golem add_resource_path activate_js favicon bundle_resources
-#' @noRd
-golem_add_external_resources <- function() {
-  add_resource_path(
-    "www",
-    app_sys("app/www")
-  )
-
-  tags$head(
-    favicon(),
-    bundle_resources(
-      path = app_sys("app/www"),
-      app_title = "TestAnaAPP"
-    )
-    # Add here other external resources
-    # for example, you can add shinyalert::useShinyalert()
-  )
-}
 
 box_show_theme <- function(value){
   return(shinycssloaders::withSpinner(ui_element = value,color="#0dc5c1",type=6,size = 1.5 ))
