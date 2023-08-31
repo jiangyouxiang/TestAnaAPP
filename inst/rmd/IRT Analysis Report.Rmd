@@ -1,0 +1,491 @@
+---
+title: "Item Response Theory Analysis Report"
+author: "TestAnaAPP"
+date: "`r format(Sys.time(), '%d/%m/%Y')`"
+output: 
+  officedown::rdocx_document:
+    plots:
+      style: Normal
+      align: center
+      fig.lp: 'fig:'
+      topcaption: false
+      caption:
+        style: Image Caption
+        pre: 'Figure '
+        sep: ' '
+        fp_text: !expr officer::fp_text_lite(bold = TRUE, italic = FALSE)
+    tables:
+      style: Table
+      layout: autofit
+      width: 1.0
+      topcaption: true
+      tab.lp: 'tab:'
+      caption:
+        style: Table Caption
+        pre: 'Table '
+        sep: ' '
+        fp_text: !expr officer::fp_text_lite(bold = TRUE, italic = FALSE)
+      conditional:
+        first_row: true
+        first_column: false
+        last_row: false
+        last_column: false
+        no_hband: false
+        no_vband: true
+    mapstyles:
+      Normal: ['First Paragraph']
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo=FALSE, warning = FALSE)
+library(officedown)
+library(officer)
+library(tidyverse)
+fmt_tra_other <- function(ft, reset_width = TRUE){#Convert matrix to table.
+  c <- ncol(ft)
+  ft <- as.data.frame(ft)%>%flextable()
+  ft <- flextable::bold(ft, part = "header")
+  ft <- flextable::fontsize(ft, size = 10, part = "all")
+  ft <- flextable::font(ft, fontname = "Times New Roman")
+  ft <- flextable::align_nottext_col(ft, align = "center")
+  #合并单元，调整格式
+  ft <- flextable::merge_h(ft, part = "header")%>%
+    flextable::merge_v(part = "header")%>%
+    flextable::theme_booktabs()%>%
+    flextable::bold( part = "header")%>% # Bold
+    flextable::bold(j=1, part = "body")%>%
+    #居中
+    flextable::align_text_col(align = "center")%>%
+    flextable::valign(valign = "center")%>%
+    flextable::padding(padding = 2)
+  
+  if(reset_width == TRUE){
+    ft <- flextable::autofit(ft)%>%
+    flextable::width(j = 1:c,width = (16/2.54)/c)
+  }
+  return(ft)
+}
+bold_print <- function(text){
+  text_format <- fp_text(bold = TRUE, font.family = "Time News Roman",font.size = 12)
+  fp <- fp_par(text.align = "center")
+  return(fpar(ftext(text, prop = text_format), fp_p = fp))
+}
+
+plot_width <- 6.299
+
+```
+
+
+`r bold_print("Table of Contents")`
+<!---BLOCK_TOC--->
+
+`r bold_print("List of Figures")`
+
+<!---BLOCK_TOC{seq_id: 'fig'}--->
+
+`r bold_print("List of Tables")`
+
+<!---BLOCK_TOC{seq_id: 'tab'}--->
+
+\newpage
+
+In psychological and educational measurement, two measurement theories are commonly used to analyze the quality of items and test: classical test theory (CTT) and item response theory (IRT). CTT usually uses the total score as a reflection of the latent trait level of the test taker, exhibiting characteristics that are easy to understand and practical. However, due to its simplicity, CTT has some inherent limitations that cannot be overcome, such as the test scores being too dependent on the test items and the item parameters being too dependent on the test sample. In contrast, IRT overcomes some of the limitations of CTT itself by providing estimates of item and test taker latent traits through extensive mathematical calculations, large samples, and strong assumptions. IRT has the following specific advantages:
+
+
+
+| (1) The invariance of test taker ability and item parameters.
+| (2) Test taker ability and item difficulty parameters on the same scale, allowing for comparability.
+| (3) IRT providing different measurement errors for test takers at different ability levels, which is more reasonable.
+| (4) The others.
+
+
+
+The TestAnaAPP is an interactive program for test analysis written in the R language. It can solve the problem of high computational cost and complexity of models in the application of IRT, and provide practitioners of test quality analysis with rich evaluation indicators for items, as well as professional visualization for the results.
+
+
+
+# Introduction to IRT Models
+
+
+
+In TestAnaAPP, users can analyze various types of test data, such as unidimensional and multidimensional test data, as well as dichotomous and polytomous scoring test data. At the same time, TestAnaAPP provides commonly used dichotomous and polytomous scoring IRT models for selection. For dichotomous scoring data, these models include the Rasch model, one-parameter logistic model (1PL), two-parameter logistic model (2PL), three-parameter logistic model (3PL), and four-parameter logistic model (4PL). For polytomous scoring data, the models include the graded response model (GRM), partial credit model (PCM), and generalized partial credit model (GPCM). It should be noted that in IRT, the Rasch model is equivalent to the 1PL model, and the terms "one-parameter" and "two-parameter" refer to the number of item parameters in the IRT models. The specific models are introduced as follows:
+
+
+
+## IRT Models for Dichotomous Scoring Data
+
+
+
+Let $X_{ij}$ represent the response of test taker $j$ ($j=1,2,3,...,J$) to item $i$ ($i=1,2,3,...,I$) in dichotomous scoring data, where $X_{ij}$ value is 0 (incorrect) or 1 (correct). Additionally, let $\beta_i$ represent the item difficulty parameter and $\theta_j$ represent the test taker latent trait parameter. In IRT analysis, the difficulty parameters and test taker latent trait parameters generally follow a standard normal distribution and have comparability, meaning the difficulty of the item can be determined as easy or difficult for test takers at specific levels, based on the relative sizes of these two parameters.
+
+
+
+
+The specific IRT models supported by TestAnaAPP for dichotomous scoring data are as follows:
+
+
+
+### Rasch Model (1PL)
+
+
+
+The Rasch model, sometimes called the simple Rasch model, is used for dichotomously scored items. The item response function (IRF) of the simple Rasch model was defined by Georg Rasch (1960), the formula as follow,
+
+
+
+$$P(X_{ij}=1 | \theta_{j}) = \frac{1}{1+e^{(-(\theta_j-\beta_i))}}\tag{1}$$
+Clearly, the Rasch model (1PL) assumes that the probability $P_{ij}$ of subject $j$ answering item $i$ correctly, represented by $X_{ij}=1$, is determined by the relative difficulty of item $i$ to subject $j$, denoted as $\theta_j-\beta_i$.
+
+
+
+### Two parameters logistic model (2PL)
+
+
+
+The 2PL model, proposed by Birnbaum (1957), describes the psychometric properties of items using the parameters of item difficulty $\beta_i$ and item discrimination $\alpha_i$. Item discrimination represents the ability of the item to differentiate between subjects at different levels of latent traits and is a key indicator of item quality. The IRF of the 2PL model is shown as follow,
+
+
+
+$$P(X_{ij}=1 | \theta_{j}) = \frac{1}{1+e^{(-\alpha_i(\theta_j-\beta_i))}}\tag{2}$$
+
+
+
+### Three parameters logistic model (3PL)
+
+
+
+Based on the 2PL model, Birnbaum (1968) introduced the item guessing parameter $c_i$ and proposed the 3PL model. The item guessing parameter $c_i$ represents the probability of a subject guessing item $i$ correctly. In the 3PL model, the probability $P_{ij}$ of subject $j$ answering item $i$ correctly, denoted as $X_{ij}=1$, is determined by the relative difficulty of item $i$ to subject $j$ ($\theta_j-\beta_i$), the item discrimination level ($alpha_i$), and the guessing parameter ($c_i$). The IRF of the 3PL model is shown as follows:
+
+
+
+$$P(X_{ij}=1 | \theta_{j}) = c_i+(1-c_i)\frac{1}{1+e^{(-\alpha_i(\theta_j-\beta_i))}}\tag{3}$$
+
+
+
+### Four parameters logistic model (4PL)
+
+
+
+The 3PL model considers the guessing behavior of subjects with extremely low ability on items, while the 4PL model adds consideration for potential errors that may occur among highly capable subjects in addition to the 3PL model. It introduces an additional item error parameter $1-u_i$ to represent the possibility of high-ability subjects making mistakes on item $i$. The formula for the IRF of the 4PL model is shown as follows:
+
+
+
+$$P(X_{ij}=1 | \theta_{j}) = c_i+(u_i-c_i)\frac{1}{1+e^{(-\alpha_i(\theta_j-\beta_i))}}\tag{4}$$
+
+
+
+For more details on the 4PL model, refer to Barton and Lord (1981).
+
+
+
+## IRT Models for Polytomous Data
+
+
+
+Similarly, let $X_{ij}$ represent the response of subject $j (j=1,2,3,...,J)$ to item $i (i=1,2,3,...,I)$ in a polytomous data context, where there are $m_i$ response categories. Let $X_{ij}=k$, then $k{\in}{(0,1,2,...,m_i)}$. Additionally, in the polytomous IRT model, the item threshold (difficulty) parameters are denoted as $\beta_{ih}$, where $h{\in}{(1,2,...,m_i)}$, and the latent trait parameter for the subject is denoted as $\theta_j$.
+
+
+
+### Partial credit model (PCM)
+
+
+
+The PCM model is a polytomous form of the Rasch model (Masters, 1982) that can analysis response data with more than two categories. The item parameters of the PCM model only include difficulty parameters $\beta_{ih}$, where $\beta_{ih}$ represents the threshold parameter (difficulty) for category $k$ on item $i$.
+
+The item response function (IRF) for the PCM model is as follows:
+
+
+
+$$P(X_{ikj}=k | \theta_{j}) = \frac{e^{\sum_{h=0}^{k}(\theta_j-\beta_{ih})}}{\sum_{c=0}^{m_i}e^{\sum_{h=0}^{c}(\theta_j-\beta_{ih})}}\tag{5}$$
+
+
+
+where $P(X_{ikj}=k | \theta_{j})$ represents the probability that subject $j$ responds to item $i$ with category $k$.
+
+
+
+### Generalized Partial Credit Model (GPCM)
+
+
+
+The GPCM model is an extension of the PCM model (Muraki, 1992). It allows for the estimation of item discrimination parameters $\alpha_i$. The IRF for the GPCM model is as follows:
+
+
+
+$$P(X_{ikj}=k | \theta_{j}) = \frac{e^{\sum_{h=0}^{k}[\alpha_i(\theta_j-\beta_{ih})]}}{\sum_{c=0}^{m_i}e^{\sum_{h=0}^{c}[\alpha_i(\theta_j-\beta_{ih})]}}\tag{6}$$
+
+
+
+### Graded Response Model (GRM)
+
+
+
+
+Both the PCM and GPCM models are based on modeling the probability of response categories $k$ on item $i$. The GRM model, on the other hand, models the cumulative probability of response categories $k$ or higher. The cumulative response probability function for the GRM model is as follows:
+
+
+
+$$P(X_{ij}{\geq} k | \theta_{j}) = \frac{e^{[\alpha_i(\theta_j-\beta_{ik})]}}{1+e^{[\alpha_i(\theta_j-\beta_{ik})]}}\tag{7}$$
+
+
+
+where $P(X_{ij}{\geq} k | \theta_{j})$ represents the probability that subject $j$ responds to item $i$ with category $k$ or a higher category. The $\beta_{ik}$ represents the threshold (difficulty) parameter for response category $k$ on item $i$. The probability of a specific response category is obtained by subtracting the adjacent cumulative probabilities:
+
+
+
+$$P(X_{ij}= k | \theta_{j})=P(X_{ij}{\geq} k | \theta_{j})-P(X_{ij}{\geq} k+1 | \theta_{j})\tag{8}$$
+
+
+
+
+Please note that unlike the GPCM and PCM models, the GRM model assumes that $\beta_{ik}{\geq}{\beta_{i(k-1)}}$, meaning that the difficulty of higher categories is always greater than that of lower categories.
+
+
+
+# Selected Model and Settings
+
+
+
+**Based on the settings you selected in the TestAnaAPP interactive program, as well as some default options in TestAnaAPP, the results in this document were estimated according to the following settings:**
+
+
+
+* **IRT model: **`r model`；
+* **Model parameter estimation method: **`r IRT_est_method`；
+* **Person parameter estimation method: **`r IRT_person_est_method`；
+* **EFA estimation method: **`r EFA_method`；
+* **EFA factor rotation method: **`r rotation_method`；
+* **Selected indicator for independence tests: **`r IRT_select_independent`；
+* **Selected indicator for item fit tests: **`r IRT_itemfit_method`；
+
+
+
+# Model Fit
+
+
+
+The fitting results of the model included relative fit indices and absolute fit indices. Relative fit indices can be used to compare the fitting degree between models. If two IRT models are used to fit the same set of data and two sets of relative fit index values are obtained, generally, the model that has a lower relative fit index value can be determined as the one that fits the data relatively better. Absolute fit indices represent the absolute fitting degree of the model to the data. If the absolute fit indices are within an acceptable range, it indicates that the model fits the data well.
+
+
+
+## Relative Fit Indices
+
+
+
+The TestAnaAPP program uses the "mirt" package for parameter estimation and obtains relative fit indices AIC, SABIC, HQ, BIC, and Log-likelihood. Among them, the smaller the values of AIC, SABIC, HQ, and BIC, the higher the fitting degree of the model. The larger the value of Log-likelihood, the higher the fitting degree of the model. If you want to use relative fit indices for IRT model selection, you can choose different models for parameter estimation in TestAnaAPP and record the magnitude of the relative fit index values.
+
+
+
+```{r fitindex, echo=FALSE,tab.cap=sprintf("The relative fit indices of the %s", model),tab.id = "realet_fit", tab.cap.style = "Table Caption"}
+fmt_tra_other(ft = IRT_modelfit_relat)
+
+```
+
+
+
+## Absolute Fit Indices
+
+
+
+The absolute fit indices output by TestAnaAPP include M2, RMSEA, SRMSR, TLI, and CFI. The commonly used criteria in statistics are as follows:
+
+
+
+* M2: If the corresponding P value is less than 0.05 ($\alpha<0.05$), the null hypothesis is rejected, indicating that the model does not fit the data.
+* RMSEA: Browne and Cudeck (1993) provided a comprehensive guide to RMSEA. A value less than 0.05 indicates a very good fit (close fit), 0.05 to 0.08 indicates a relatively good fit (fair fit), 0.08 to 0.10 indicates a mediocre fit, and a value greater than 0.10 indicates a poor fit. 
+* SRMSR: $SRMSR\leq0.05$ indicates that the model adequately fits the data.
+* TLI and CFI greater than 0.9 indicate that the model fits the data.
+
+
+
+
+```{r, echo=FALSE,tab.cap=sprintf("The absolute fit indices of the %s", model),tab.id = "ab_fit", tab.cap.style = "Table Caption"}
+fmt_tra_other(ft = IRT_modelfit)
+
+```
+
+
+
+# Hypothesis Testing
+
+
+
+
+## Unidimensionality Test
+
+
+
+Common methods for unidimensionality testing include exploratory and confirmatory factor analysis, etc. TestAnaAPP provides the results of exploratory factor analysis. The criterion for determining whether it conforms to the unidimensionality hypothesis is that the eigenvalue of the first factor is greater than or equal to 3-5 times the eigenvalue of the second factor. When using `r EFA_method` for exploratory factor analysis, the eigenvalue of the first factor is `r round(CTT_EFA_eigenvalues[1,2]/CTT_EFA_eigenvalues[2,2], 2)` times the eigenvalue of the second factor. **`r ifelse(CTT_EFA_eigenvalues[1,2]/CTT_EFA_eigenvalues[2,2]>=3,"It conforms to the unidimensionality hypothesis.", "It does not conform to the unidimensionality hypothesis. Please use multidimensional IRT for analysis.")`**
+
+
+
+```{r, echo=FALSE,tab.cap="Results of unidimensionality test (EFA eigenvalue)",tab.id = "dim_test", tab.cap.style = "Table Caption"}
+fmt_tra_other(ft = CTT_EFA_eigenvalues)
+```
+
+
+
+<!---BLOCK_LANDSCAPE_START--->
+
+## Independence Test
+
+
+
+TestAnaAPP provides the Q3 and LD-X2 statistics for independent testing in IRT, with larger absolute values indicating stronger dependencies between the two items. Here, due to the lack of uniform standards across different studies, we do not provide the cutoff values for Q3 and LD-X2. We suggest readers refer to professional books or papers for data interpretation.
+
+
+
+In this analysis, you selected **`r IRT_select_independent`** as the statistic for the independence test. 
+
+
+
+```{r , echo=FALSE,tab.cap=sprintf("Independence test（%s）",IRT_select_independent),tab.id = "dependent_test", tab.cap.style = "Table Caption"}
+fmt_tra_other(IRT_Q3,  reset_width = FALSE)
+```
+
+<!---BLOCK_LANDSCAPE_STOP--->
+
+
+# Item Fit
+
+
+
+The item fit test is used to determine whether there is a significant difference between the predicted responses of the model and the actual responses. TestAnaAPP provides the $X^2$ and $G2$ statistics for conducting the item fit test. If the $P$ value of the statistical test is less than 0.05, it indicates a significant difference between the predicted values of the model and the actual data. Additionally, if the RMSEA value is greater than 0.1, it suggests a large difference between the predicted values and the actual data. You can make a comprehensive judgment based on the test situation and statistical indicators. It is possible that choosing a different model for the fit may yield different results.
+
+
+
+```{r, echo=FALSE,tab.cap= sprintf("The results of item fit (%s-%s)",model, IRT_itemfit_method),tab.id = "item_fit", tab.cap.style = "Table Caption"}
+
+fmt_tra_other(IRT_itemfit)
+```
+
+
+
+# Item Parameters
+
+
+
+Item parameters are important indicators used for evaluating the quality of items. Below are the criteria for judging item discrimination values provided by the author in "*THE BASICS OF Item Response Theory in R*". Readers can use these criteria to assess the level of item discrimination in the analyzed test.
+
+
+`r bold_print("Table: Labels for Item Discrimination Values")``
+
+| Verbal label | Range of values | Typical Value|
+|:------------:|:---------------:|:------------:|
+| None         | 0              | 0.00 |
+| Very low     | 0.01-0.34 | 0.18 |
+| Low          | 0.35-0.64 | 0.50 |
+| Moderate     | 0.65-1.34 | 1.00 |
+| High         | 1.35-1.69 | 1.50 |
+| Very high    | >1.70 | 2.00 |
+| Perfect      | $+\infty$ | $+\infty$ |
+
+
+
+In this analysis, the `r model` model was selected. The `r IRT_est_method` was used for parameter estimation. The item parameters are as follows:
+
+
+
+
+```{r, echo=FALSE,tab.cap=sprintf("The item parameters of the %s",model),tab.id = "item_par", tab.cap.style = "Table Caption"}
+disc_color <- function(x){
+  out <- rep("white", length(x))
+  out[x <= 0] <- "red"
+  out[x <= 0.3] <- "yellow"
+  out
+}
+diff_color <- function(x){
+  out <- rep("white", length(x))
+  out[abs(x) > 4 ] <- "yellow"
+  out
+}
+fmt_tra_other(IRT_itempar)%>%flextable::highlight(j = colnames(IRT_itempar)%>%
+                                                    str_which(pattern = "Discrimination"),
+                                                  color = disc_color)%>%
+  flextable::highlight(j = colnames(IRT_itempar)%>%
+                         str_which(pattern = "Difficult"),color = diff_color)
+```
+
+
+
+# Wright Map
+
+
+
+In IRT, the difficulty of the items and the latent traits of the participants are measured on the same scale, which allows for comparability. This is a major advantage compared to CTT. The Wright map is a visual tool used to compare the distribution of item difficulty and the distribution of latent traits. By comparing the scatterplot distribution of item difficulty with the distribution of latent trait values, we can determine whether the test is relatively more difficult or easier for the subjects, or whether the difficulty level is moderate. We can also identify which items are more difficult and which are easier. 
+
+It is important noting that only when the test has appropriate difficulty can it effectively differentiate the subjects' differences in latent trait levels. Otherwise, there may be ceiling or floor effects, where the measurement tool cannot accurately assess the subjects' true abilities, leading to all subjects receiving high or low scores.
+
+
+
+```{r ,echo=FALSE,fig.cap=sprintf("The Wright map for the %s model",model), fig.id = "wright",fig.cap.style = "Image Caption",,fig.height=wright_map_height/142,fig.width=plot_width}
+print(IRT_wright) 
+
+```
+
+
+
+# Item Characteristic Curve (ICC)
+
+
+
+The ICC visualizes the probability of subjects obtaining a certain score based on the model's predictions. By looking at the ICC curve, we can see the probability of subjects at different levels of latent traits obtaining a specific score on each item.
+
+The ICC curve reflects the significance and characteristics of items for subjects at different levels of latent traits. Readers can study how to interpret the ICC curve through specialized books.
+
+
+
+```{r, echo=FALSE,fig.cap=sprintf("The item characteristic curve of this test"), fig.id = "ICC",fig.cap.style = "Image Caption",fig.height=wrap_height_value/142,fig.width=plot_width}
+#1cm=28px
+#1inch=2.54cm
+#1inch=71px
+print(IRT_ICC)
+```
+
+
+
+# Item Information Curve (IIC)
+
+
+
+The item information is an indicator of measurement error at the item level. The higher the value, the greater the contribution of the item to the more accurate measurement of the latent trait of the subjects. The value is often related to discrimination and difficulty. The IIC is a visual representation of the item information, and readers can examine the contribution of the items to the accurate measurement of a specific level of latent trait through the IIC.
+
+Similarly, to learn how to interpret the IIC curve, you may need to seek help from professional books. 
+
+
+
+
+```{r, echo=FALSE,fig.cap=sprintf("The item information curve of this test"), fig.id = "IIC",fig.cap.style = "Image Caption",fig.height=wrap_height_value/142,fig.width=plot_width}
+print(IRT_IIC)
+```
+
+
+# Test Information Curve (TIC)
+
+
+
+Test information is a measure of test accuracy in IRT, and its value is obtained by summing up the information from each item. A higher value indicates more precise measurement of the latent trait for the subjects. TestAnaAPP provides test information curves and measurement error curves to illustrate test quality. There is a fixed conversion relationship between test information $I(\theta)$ and measurement error $SE$, as shown in the formula:
+
+$$SE = 1/\sqrt{I(\theta)}$$
+
+
+
+```{r, echo=FALSE,fig.cap=sprintf("The test information curve and measurement error"), fig.id = "TIC",fig.cap.style = "Image Caption",fig.height=4,fig.width=plot_width}
+
+print(IRT_TIC)
+```
+
+\newpage
+
+# Reference
+
+
+
+| Barton, M. A., & Lord, F. M. (1981). An upper asymptote for the three-parameter logistic item response model (No. 150–453). Princeton, NJ: Educational Testing Service.
+| Birnbaum, A.(1957). Efficient design and use of tests of a mental ability for various decision making problems (Series Report No. 58-16). Randolph Air Force Base, TX: USAF School of Aviation Medicine.
+| Birnbaum, A. (1968). Some latent trait models and their use in inferring an examinee's ability. In F. M. Lord & M. R. Novick (Eds.), Statistical theories of mental test scores (pp. 397--479). Reading, MA: Addison-Wesley.
+| Browne, M. W., & Cudeck, R. (1993). Alternative ways of assessing model fit. In K. A. Bollen & J. S. Long (Eds.), Testing structural equation models (pp. 136–162). Newbury Park, CA: Sage. 
+| Masters, G. N. (1982). A Rasch model for partial credit scoring. Psychometrika, 47, 149–174.
+| Muraki, E. (1992). A generalized partial credit model: Application of an EM algorithm. Applied Psychological Measurement, 16, 159–176.
+| Rasch, G. (1960). Probabilistic Models for Some Intelligence and Attainment Tests. Denmarks Paedagogiske Institut, Copenhagen. Republished in 1980 by the University of Chicago Press. 
+
