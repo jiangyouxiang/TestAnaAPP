@@ -139,7 +139,7 @@ app_server <- function(input, output, session) {
     if(is.null(input$res_data))
       return("Please upload the score data.")
     inFile <- input$res_data
-    dataset <- import(inFile$datapath)
+    dataset <- bruceR::import(inFile$datapath)
     data <- as.data.frame(dataset)
     if(length(which(is.character(data))) >=1){
       return("Data can not contain any string data.")
@@ -209,7 +209,7 @@ app_server <- function(input, output, session) {
       return(NULL)
     Response <- mydata()%>%as.data.frame()
     colnames(Response) <- paste0("Item",1:ncol(Response))
-    fit <- EFA(data = Response , var = "Item", items = 1:ncol(Response),
+    fit <- bruceR::EFA(data = Response , var = "Item", items = 1:ncol(Response),
                method = EFA_method(input$EFA_method),
                rotation = EFA_rotation_method(input$rotation_method))
     fit
@@ -242,7 +242,7 @@ app_server <- function(input, output, session) {
     if(is.null(input$dimensionfile_cfa))
       return(NULL)
     inFile <- input$dimensionfile_cfa
-    dataset <- import(inFile$datapath)
+    dataset <- bruceR::import(inFile$datapath)
     data <- as.data.frame(dataset)
     if(sum(is.na(dataset)) >=1){
       return("Data cannot contain missing values!")
@@ -427,7 +427,7 @@ app_server <- function(input, output, session) {
   ###4.3 Correlation matrix---------------------------------
   CTT_relate_eff_rea <- reactive({
     Response <- mydata()
-    rea <- Corr(data = Response,method = "pearson",plot = FALSE)
+    rea <- bruceR::Corr(data = Response,method = "pearson",plot = FALSE)
     as.data.frame(rea$corr$r)%>%round(digits = 3)
 
   })
@@ -439,7 +439,7 @@ app_server <- function(input, output, session) {
   })
   CTT_relate_p_rea <- reactive({
     Response <- mydata()
-    rea <- Corr(data = Response,method = "pearson",plot = FALSE)
+    rea <- bruceR::Corr(data = Response,method = "pearson",plot = FALSE)
     as.data.frame(rea$corr$p)%>%round(digits = 3)
 
   })
@@ -896,7 +896,7 @@ app_server <- function(input, output, session) {
     if(is.null(input$dimensionfile))
       return(NULL)
     inFile <- input$dimensionfile
-    dataset <- import(inFile$datapath)
+    dataset <- bruceR::import(inFile$datapath)
     data <- as.data.frame(dataset)
     if(sum(is.na(dataset)) >=1){
       return("Data cannot contain missing values!")
