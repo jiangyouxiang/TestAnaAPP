@@ -2,10 +2,7 @@
 #'
 #' @param request Internal parameter for `{shiny}`.
 #'     DO NOT REMOVE.
-#' @import shiny
 #' @import shinydashboard
-#' @import shinycssloaders
-#' @import DT
 #' @noRd
 app_ui <- function() {
  dashboardPage(skin = "blue",

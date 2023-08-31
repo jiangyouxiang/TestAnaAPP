@@ -1,10 +1,15 @@
 Package: TestAnaAPP
-Title: Launches the shiny app to perform Test Analysis based on item
-    response theory and clasical test theory
+Title: The shiny app for test analysis and visualization
 Version: 0.1.2
 Authors@R: 
-    person("Youxiang", "Jiang", , "jiangyouxiang34@163.com", role = c("cre", "aut"))
-    person("Hongbo", "Wen", , "whb@bnu.edu.cn", role = c("cre", "aut"))
+    c(person(given = "Youxiang", family = "Jiang", 
+    email = "jiangyouxiang34@163.com", 
+    role = c("cre", "aut"),
+    comment = "0000-0003-4557-5038"),
+    person(given = "Hongbo", family = "Wen", 
+    email ="whb@bnu.edu.cn", 
+    role = c("ctb"),
+    comment = "0000-0001-8620-9734"))
 Description: This application can realize exploratory factor analysis,
     confirmatory factor analysis, classical measurement theory analysis,
     single and multi-dimensional item response theory analysis through the
@@ -12,7 +17,7 @@ Description: This application can realize exploratory factor analysis,
     results. The analysis results are easily downloaded in the interactive
     interface. At the same time, users can also download a brief project
     reaction theory analysis report on the interactive interface.
-Depends: bruceR, 
+Depends: bruceR (>= 2023.8.23), 
          config (>= 0.3.1), 
          cowplot,
          dplyr, 
@@ -24,13 +29,13 @@ Depends: bruceR,
          plotly, 
          plotrix, 
          shiny (>= 1.7.5), 
-         shinycssloaders, 
          shinydashboard, 
          stringr, 
          tidySEM
+License: Youxiang Jiang
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.1.1
+RoxygenNote: 7.2.3
 Imports: DT,
          officedown,
          officer,

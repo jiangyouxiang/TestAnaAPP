@@ -2,7 +2,7 @@
 #'
 #' @param input,output,session Internal parameters for {shiny}.
 #'     DO NOT REMOVE.
-#' @import shiny, tidyverse, mirt, ggplot2, openxlsx, plotly, tidySEM, flextable, cowplot, bruceR
+#' @import shiny dplyr stringr mirt ggplot2 openxlsx plotly tidySEM flextable cowplot bruceR plotrix config golem shiny
 #' @noRd
 app_server <- function(input, output, session) {
   options(shiny.maxRequestSize = 60*1024^2)
@@ -428,7 +428,7 @@ app_server <- function(input, output, session) {
   CTT_relate_eff_rea <- reactive({
     Response <- mydata()
     rea <- Corr(data = Response,method = "pearson",plot = FALSE)
-    as.data.frame(rea$r)%>%round(digits = 3)
+    as.data.frame(rea$corr$r)%>%round(digits = 3)
 
   })
   output$CTT_relate_eff <- DT::renderDataTable({
@@ -440,7 +440,7 @@ app_server <- function(input, output, session) {
   CTT_relate_p_rea <- reactive({
     Response <- mydata()
     rea <- Corr(data = Response,method = "pearson",plot = FALSE)
-    as.data.frame(rea$p)%>%round(digits = 3)
+    as.data.frame(rea$corr$p)%>%round(digits = 3)
 
   })
   output$CTT_relate_p <- DT::renderDataTable({
@@ -878,7 +878,8 @@ app_server <- function(input, output, session) {
       wright_map_height <- input$IRT_wright_map_height
       wrap_height_value <- input$wrap_height
       #Export analysis report
-      src <- normalizePath("IRT Analysis Report.Rmd")
+      path_sys <- system.file("rmd", "IRT Analysis Report.Rmd", package = "TestAnaAPP")
+      src <- normalizePath(path_sys)
       owd <- setwd(tempdir())
       on.exit(setwd(owd))
       file.copy(src,"IRT Analysis Report.Rmd", overwrite = TRUE)
@@ -1410,7 +1411,7 @@ app_server <- function(input, output, session) {
       MIRT_person_est_method <- input$MIRT_person_est_method
       MIRT_itemfit_method <- input$MIRT_itemfit_method
       #Model fit
-
+      MIRT_fit <- MIRT_fit_rea()
       dimension <- dimension()
       mode <- dimension_recode(dimension)
       MIRT_modelfit_relat <- MIRT_modelfit_relat_rea()
@@ -1428,11 +1429,22 @@ app_server <- function(input, output, session) {
       MIRT_ICC <- MIRT_ICC_rea()
       MIRT_TIC <- MIRT_TIC_rea()
       MIRT_IIC <- MIRT_IIC_rea()
+      #Test information
+      sim_theta <- seq(-4,4,0.01)
+      Response <- mydata() %>% as.data.frame()
+      item_info1 <- Item_infor(object = MIRT_fit,theta = matrix(rep(sim_theta,mode$F_n),
+                                                                ncol = mode$F_n,
+                                                                nrow = length(sim_theta)),
+                               mode = mode,colnames = colnames(Response))$dim_information
+      colnames(item_info1) <- c(mode$F_names, paste0(mode$F_names,"infor"))
+      sim_theta1_infor1 <- item_info1[,c(input$MIRT_dim_select,paste0(input$MIRT_dim_select,"infor"))]
+      F_name <- input$MIRT_dim_select
 
       wright_map_height <- input$MIRT_wright_map_height
       wrap_height_value <- input$wrap_height
       #Export analysis report
-      src <- normalizePath("MIRT Analysis Report.Rmd")
+      path_sys <- system.file("rmd", "MIRT Analysis Report.Rmd", package = "TestAnaAPP")
+      src <- normalizePath(path_sys)
       owd <- setwd(tempdir())
       on.exit(setwd(owd))
       file.copy(src,"MIRT Analysis Report.Rmd", overwrite = TRUE)
