@@ -1274,6 +1274,7 @@ app_server <- function(input, output, session) {
       selectInput(inputId = "MIRT_dim_select",label = "Dimension selection",
                   choices = apply(matrix(mode$F_names,ncol=1),
                                   MARGIN = 1,FUN = as.vector,simplify = FALSE),
+                  selected = mode$F_names[1],
                   selectize = TRUE)
     }
   })
