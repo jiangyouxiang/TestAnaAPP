@@ -15,19 +15,19 @@ TestAnaAPP::run_app() #run this application in R
 ## TestAnaAPP
 <br>
 
-![Figure 1 Test analysis application](Home.png)
+![](Home.png)
 
 
 ## Classical Test Theory Analysis
 <br>
-![Figure 2 Classical Test Theory Analysis](CTT_inter.png)
+![](CTT_inter.png)
 
 
 ## Item Response Theory Analysis
 <br>
-![Figure 3 IRT analysis interface](uniIRT.png)
+![](uniIRT.png)
 
 
 ## Continuous Item Response Model
 <br>
-![Figure 4 continuous IRT analysis](continuousIRT.png)
+![](continuousIRT.png)
