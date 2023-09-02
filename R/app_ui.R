@@ -6,7 +6,7 @@
 #' @noRd
 app_ui <- function() {
  dashboardPage(skin = "blue",
-                      dashboardHeader(title = "TEST ANALYSIS PLATFORM",titleWidth = 400),#The name of this platform
+                      dashboardHeader(title = "TEST ANALYSIS APPLICATION",titleWidth = 700),#The name of this platform
                       #Pages----------------------------------------------------------------------------------
                       dashboardSidebar(
                         sidebarMenu(id="sidebarmenu",
@@ -47,7 +47,12 @@ app_ui <- function() {
                                              menuSubItem("Wright Map",tabName = "MIRTwright",icon = shiny::icon("angle-double-right")),
                                              menuSubItem("Item Characteristic Curve",tabName = "MIRTicc",icon = shiny::icon("angle-double-right")),
                                              menuSubItem("Item Information Curve",tabName = "MIRTiic",icon = shiny::icon("angle-double-right")),
-                                             menuSubItem("Test Information Curve",tabName = "MIRTtic",icon = shiny::icon("angle-double-right")))
+                                             menuSubItem("Test Information Curve",tabName = "MIRTtic",icon = shiny::icon("angle-double-right"))),
+                                    menuItem("Continuous Response Model", tabName = "CRM", icon = icon("cogs"),
+                                             menuSubItem("Item Fit",tabName = "CRM_itemfit",icon = shiny::icon("angle-double-right")),
+                                             menuSubItem("Item Parameters",tabName = "CRM_itempara",icon = shiny::icon("angle-double-right")),
+                                             menuSubItem("Person Parameter",tabName = "CRM_personpar",icon = shiny::icon("angle-double-right")),
+                                             menuSubItem("Item Category Response Curves",tabName = "CRM_ICC",icon =  shiny::icon("angle-double-right")))
                         )),
                       dashboardBody(
                         #A. Introduction page---------------------------------------------------------------------------
@@ -61,9 +66,14 @@ app_ui <- function() {
                           tabItem(
                             tabName = "uploaddata",
                             fluidRow(column(8,
-                                            box(title="Score Data", DT::dataTableOutput("Response")%>%
-                                                  box_show_theme(),
-                                                solidHeader = TRUE, status = "warning",width = 12),
+                                            box(title="Score Data", solidHeader = TRUE, status = "warning",width = 12,
+                                                br(),
+                                                tags$b("Note: "), "If necessary, please convert the scoring direction of the
+                                                reverse-scored items before data analysis, and then upload them to this platform.",
+                                                br(),br(),br(),
+                                                DT::dataTableOutput("Response")%>%
+                                                  box_show_theme()
+                                                ),
                             ),
                             column(4,
                                    box(title = "Upload File", status = "warning", solidHeader = TRUE,
@@ -129,6 +139,9 @@ app_ui <- function() {
                             fluidRow(column(8,
                                             box(title = "Test Structure",status =  "warning",
                                                 solidHeader = TRUE, width = 12,
+                                                tags$b("Note: "),"In the current version, it does not support a test where a single
+                                                item measures multiple dimensions.",
+                                                br(),br(),
                                                 dataTableOutput("CFA_dimension_example")%>%
                                                   box_show_theme()),
                                             box(title = "Model Fit index",status =  "info",
@@ -186,6 +199,30 @@ app_ui <- function() {
                           tabItem(
                             tabName = "CTT_par",
                             fluidRow(column(8,
+                                            box(title = "Note", solidHeader = TRUE,status = "warning",width = 12,
+                                                "1. For binary scoring items (items with only two scoring possibilities), TestAnaAPP
+                                                categorizes the participants into a high-score group and a low-score group based on their
+                                                total scores being above or equal to the 73rd percentile and below or equal to the 27th percentile,
+                                                respectively. The pass rates for each item are then calculated separately for the high-score and
+                                                low-score groups, and the average pass rate for each item is taken as its difficulty level.",
+                                                br(),
+                                                "2. For multiple scoring items (items with more than two scoring possibilities), TestAnaAPP calculates the
+                                                difficulty of each item by dividing the average score on the item by the maximum score possible on the item.",
+                                                br(),
+                                                "Regardless of the number of scoring categories for an item, TestAnaAPP calculates the difference between
+                                                the mean scores of the high-score and low-score groups on the item and divides it by the maximum possible
+                                                score on the item to obtain the item discrimination index.",
+                                                br(),
+                                                "3. Coefficient of variation is obtained by multiplying the ratio of standard deviation to
+                                                mean on the item by 100%.",
+                                                br(),
+                                                "4. The correlation coefficient is the Pearson correlation coefficient between item scores and
+                                                the total score.",
+                                                br(),
+                                                "5. If the score data includes missing values, TestAnaAPP will elimate any case that contain missing data.",
+                                                br(),
+
+                                                ),
                                             box(title="Item parameters", DT::dataTableOutput("CTT_itempar")%>%
                                                   box_show_theme(),
                                                 solidHeader = TRUE, status = "info",width = 12)),
@@ -253,7 +290,7 @@ app_ui <- function() {
                                                                   "Partial credit model (PCM)",
                                                                   "Generalized partial credit model (GPCM)"),
                                                    selected = NULL),
-                                       "Note: the Rasch model, 2PL, 3PL, and 4PL model
+                                       tags$b("Note: "),"the Rasch model, 2PL, 3PL, and 4PL model
                                               are only applicable to items with two response categories",
                                        br(),br(),
 
@@ -264,16 +301,19 @@ app_ui <- function() {
                                                                   "Monte Carlo EM estimation",
                                                                   "Stochastic EM algorithm"),
                                                    selected = "standard EM algorithm"),
-                                       "Note: In the case of unidimensional models, it is advisable to employ the
+                                       tags$b("Note: "),"In the case of unidimensional models, it is advisable to employ the
                                        standard EM algorithm. For multidimensional models, it is recommended to utilize
                                        quasi-Monte Carlo EM estimation.",
                                        br(),br(),
 
                                        submitButton( "Updata results")),
                                    box(title = "Download results",solidHeader = TRUE,status = "success",width = 12,
+                                       "Download all the analysis results for unidimensional IRT in the TestAnaAPP.",br(),
                                        downloadButton(outputId = "IRT_resultfile", label = "Download results"),
                                        br(),
                                        br(),
+                                       "Generate data analysis reports based on the relevant settings of each interface
+                                       in unidimensional IRT",br(),
                                        downloadButton(outputId = "IRT_report",label = "Download analysis report")))
                             )),
                           tabItem(
@@ -402,12 +442,15 @@ app_ui <- function() {
                                            box(title = "Download figure",solidHeader = TRUE,status = "success",width = 12,
                                                downloadButton(outputId = "IRT_TICfile", label = "Download"))))
                           ),
-                          #I. MIRT page---------------------------------------------------------------------------------
+                          #G. MIRT page---------------------------------------------------------------------------------
                           tabItem(
                             tabName = "MIRTdim_info",
                             fluidPage(column(8,
                                              box(title = "Test dimension", solidHeader = TRUE,width = 12,
                                                  status = "warning",
+                                                 tags$b("Note: "),"In the current version, it does not support a test where a single
+                                                item measures multiple dimensions.",
+                                                 br(),br(),
                                                  dataTableOutput(outputId = "dimension_example")%>%
                                                    box_show_theme()),
                                              box(title = "Dimension and item",solidHeader = TRUE,width = 12,
@@ -458,7 +501,7 @@ app_ui <- function() {
                                                                             "Monte Carlo EM estimation",
                                                                             "Stochastic EM algorithm"),
                                                              selected = "quasi-Monte Carlo EM estimation"),
-                                                 "Note: For unidimensional models, it is recommended to use the standard EM algorithm.
+                                                 tags$b("Note: "), "For unidimensional models, it is recommended to use the standard EM algorithm.
                                                  For multidimensional models,
                                                  it is recommended to use quasi-Monte Carlo EM estimation.",
                                                  br(),br(),
@@ -467,7 +510,7 @@ app_ui <- function() {
                                                              choices = list("Yes",
                                                                             "No"),
                                                              selected = "No"),
-                                                 "Note: Estimating the covariance matrix can be time-consuming and may encounter
+                                                 tags$b("Note: "), "Estimating the covariance matrix can be time-consuming and may encounter
                                                  errors in some cases depending on the parameter estimation method. However,
                                                  it is necessary to estimate the covariance in multidimensional models",
                                                  br(),br(),
@@ -475,9 +518,12 @@ app_ui <- function() {
                                                  submitButton( "Updata results")),
 
                                              box(title = "Download results",solidHeader = TRUE,status = "success",width = 12,
+                                                 "Download all the analysis results for multidimensional IRT in the TestAnaAPP.",br(),
                                                  downloadButton(outputId = "MIRT_resultfile", label = "Download"),
                                                  br(),
                                                  br(),
+                                                 "Generate data analysis reports based on the relevant settings of each interface
+                                                 in multidimensional IRT",br(),
                                                  downloadButton(outputId = "MIRT_report",label = "Download analysis report")
                                              )))
 
@@ -613,7 +659,84 @@ app_ui <- function() {
                                                  uiOutput("MIRT_TIC_dim_select"),
                                                  submitButton( "Updata plot"))
                                       ))
-                          )
+                          ),
+                          #H continuous response model--------------------------------------------------------------
+                          tabItem(
+                            tabName = "CRM_itemfit",
+                            fluidPage(column(8,
+                                             box(title = "Note", solidHeader = TRUE, status = "warning",width = 12,
+
+                                                 "Samejima (1973) proposed the Continuous Response Model (CRM) as a
+                                                 limiting form of the graded response model for continuous item scores.
+                                                 Wang & Zeng (1998) proposed a re-parameterized version of the Continuous
+                                                 Response Model (CRM). In this application, the default model used is a
+                                                 re-parameterized version of the Continuous Response Model (CRM), and
+                                                 the method of estimation involves marginal maximum likelihood and the
+                                                 Expectation-Maximization (EM) algorithm.",
+                                                 br(), br(),
+                                                 tags$b("Reference"),br(),
+                                                 "Samejima, F.(1973). Homogeneous Case of the Continuous Response Model.
+                                                 Psychometrika, 38(2), 203-219.",
+                                                 br(),
+                                                 "Wang, T. & Zeng, L.(1998). Item Parameter Estimation for a Continuous
+                                                 Response Model Using an EM Algorithm. Applied Psychological Measurement,
+                                                 22(4), 333-343.",
+                                                 br()
+                                                 ),
+                                             box(title = "Item fit", solidHeader = TRUE, status = "info",width = 12,
+
+                                                 DT::dataTableOutput(outputId = "CRM_item_fit")%>%
+                                                   box_show_theme())),
+                                      column(4,
+                                             box(title = "Setup for item fit",
+                                                 solidHeader = TRUE,status = "warning",width = 12,
+
+                                                 sliderInput(inputId = "CRM_fit_group",
+                                                             label = "The number of ability groups to compute item fit residual statistics.",
+                                                             min = 2, max = 50, value = 20,step = 1),
+                                                 "Compute item fit residual statistics for the Continuous Response Model
+                                                 as described in Ferrando (2002).",
+                                                 br(),br(),
+                                                 tags$b("Reference"),br(),
+                                                 "Ferrando, P.J.(2002). Theoretical and Empirical Comparison between Two Models for
+                                                 Continuous Item Responses. Multivariate Behavioral Research, 37(4), 521-542.",
+                                                 br(),br(),
+                                                 submitButton( "Updata results")),
+                                             box(title = "Download results",solidHeader = TRUE,status = "success",width = 12,
+                                                 "Download all the analysis results for continuous response model in the TestAnaAPP.",br(),
+                                                 downloadButton(outputId = "CRM_results",label = "Download"))))
+                            ),
+                          tabItem(tabName = "CRM_itempara",
+                                  fluidPage(column(8,
+                                                   box(title = "Item parameters",solidHeader = TRUE, status = "info",width = 12,
+                                                       DT::dataTableOutput(outputId = "CRM_itempar")%>%
+                                                         box_show_theme())))
+
+                                  ),
+
+                          tabItem(tabName = "CRM_personpar",
+                                  fluidPage(column(8,
+                                                   box(title = "Person parameter",solidHeader = TRUE, status = "info",width = 12,
+                                                       tags$b("Note: "), "The maximum likelihood estimate (MLE) was used to estimate person parameter.",
+                                                       br(),br(),
+                                                       dataTableOutput(outputId = "CRM_person_par")%>%
+                                                         box_show_theme())))
+                          ),
+                          tabItem(tabName = "CRM_ICC",
+                                  fluidPage(column(8,
+                                                   box(title = "Three-Dimensional Item Category Response Curves",solidHeader = TRUE,
+                                                       status = "info",width = 12,
+                                                       plotOutput(outputId = "CRM_ICC")%>%
+                                                         box_show_theme()
+                                                       )),
+                                            column(4,
+                                                   box(title = "Item selection",width = 12,solidHeader = TRUE,
+                                                       status = "warning",
+                                                       uiOutput(outputId = "CRM_item_selection"),
+
+                                                       submitButton( "Updata plot")))),
+                                  )
+
                         )))
 
 }

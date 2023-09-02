@@ -8,14 +8,14 @@ Authors@R:
     comment = "0000-0003-4557-5038"),
     person(given = "Hongbo", family = "Wen", 
     email ="whb@bnu.edu.cn", 
-    role = c("ctb"),
+    role = c("ctb","ths"),
     comment = "0000-0001-8620-9734"))
 Description: This application enables exploratory factor analysis,
     confirmatory factor analysis, classical measurement theory analysis,
-    single and multi-dimensional item response theory analysis, through 
-    the shiny interactive interface. It also facilitates the visualization 
-    of the results. Users can easily download the analysis results from the 
-    interactive interface. Additionally, users can download a concise report 
+    unidimensional item response theory, multidimensional item response theory, and continuous item response
+    model analysis, through the shiny interactive interface. It also facilitates the visualization
+    of the results. Users can easily download the analysis results from the
+    interactive interface. Additionally, users can download a concise report
     about item and test quailty throught the interactive interface.
 Depends: bruceR (>= 2023.8.23), 
          config (>= 0.3.1), 
@@ -29,7 +29,8 @@ Depends: bruceR (>= 2023.8.23),
          shiny (>= 1.7.5), 
          shinydashboard (>= 0.7.2), 
          stringr (>= 1.5.0), 
-         tidySEM (>= 0.2.4)
+         tidySEM (>= 0.2.4),
+         EstCRM (>= 1.6)
 License: Youxiang Jiang
 Encoding: UTF-8
 LazyData: true

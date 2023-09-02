@@ -2,7 +2,7 @@
 #'
 #' @param input,output,session Internal parameters for {shiny}.
 #'     DO NOT REMOVE.
-#' @import shiny dplyr stringr mirt ggplot2 openxlsx bruceR tidySEM cowplot plotrix config golem
+#' @import shiny dplyr stringr mirt ggplot2 openxlsx bruceR tidySEM cowplot plotrix config golem EstCRM
 #' @noRd
 app_server <- function(input, output, session) {
   options(shiny.maxRequestSize = 1024^4)
@@ -160,14 +160,29 @@ app_server <- function(input, output, session) {
           shiny::p(strong('Dependence: '), "mirt, shiny, shinydashboard, tidyverse, ggplot2 et al."),
           shiny::p(strong('Description: '), "This application enables exploratory factor analysis,
     confirmatory factor analysis, classical measurement theory analysis,
-    single and multi-dimensional item response theory analysis, through
-    the shiny interactive interface. It also facilitates the visualization
+    unidimensional item response theory, multidimensional item response theory, and continuous item response
+    model analysis, through the shiny interactive interface. It also facilitates the visualization
     of the results. Users can easily download the analysis results from the
     interactive interface. Additionally, users can download a concise report
     about item and test quailty throught the interactive interface."),
           shiny::p(strong('Anthor: '), "Youxiang Jiang"),
-          shiny::p(strong('Email: '), tags$a(href="mailto:jiangyouxiang34@163.com", "jiangyouxiang34@163.com"))
-         # shiny::p(strong())
+          shiny::p(strong('Email: '), tags$a(href="mailto:jiangyouxiang34@163.com", "jiangyouxiang34@163.com")),
+
+
+          br(),br(),br(),
+
+
+          shiny::p(strong("How to use this application for data analysis?")),
+          shiny::p("1. When you see this interface, it indicates that you have successfully installed this program,
+                   which is the first step to using TestAnaAPP."),
+          shiny::p("2. You need to understand that TestAnaAPP presents various analysis contents in modular form.
+                   When you need to perform a specific analysis using TestAnaAPP, you can directly navigate to
+                   that interface after uploading the data. "),
+          shiny::p("3. When it involves dimensional information of the test, you need to upload an xlsx file
+                   in the interface of uploading dimensional information to illustrate the test structure.
+                   Please edit your document following the examples provided in TestAnaAPP. "),
+          shiny::p("4. During the operation, please carefully read the textual prompts presented on each interface
+                   to ensure that the program can execute your intentions correctly. ")
 
     )
   })
@@ -379,17 +394,10 @@ app_server <- function(input, output, session) {
     if(is.null(input$res_data))
       return(NULL)
     Response <- mydata()
-    if(length(which(is.na(Response)))>=1){
-      return(data.frame(X = "For the calculation of CTT parameters, the score data cannot contain missing values."))
-    }
     cat_all <- apply(Response, MARGIN = 2, FUN = cat_number)#The number of categories.
-    item_par <- item_ana(data = Response,
-                         cat_2 =  which( cat_all==2),#0 or 1
-                         cat_m = which(cat_all >2),#Multi-level scores
-                         item_s = apply(Response,2,max))%>%round(digits = 3)#The max score
+    item_par <- item_ana(data = Response)%>%round(digits = 3)#The max score
 
-    data.frame("Item" = colnames(Response),
-               "The number of categories" = cat_all,
+    data.frame("The number of categories" = cat_all,
                item_par) %>% DT_dataTable_Show()
 
   })
@@ -494,12 +502,8 @@ app_server <- function(input, output, session) {
     },
     content = function(file) {
       Response <- mydata() %>% as.data.frame()
-      cat_all <- apply(Response, MARGIN = 2, FUN = cat_number)
-      item_par <- item_ana(data = Response,
-                           cat_2 =  which( cat_all==2),
-                           cat_m = which(cat_all >2),
-                           item_s = apply(Response,2,max))%>%round(digits = 3)
-
+      item_par <- item_ana(data = Response)%>%round(digits = 3)
+      cat_all <- apply(Response, MARGIN = 2, FUN = cat_number)#The number of categories.
       datalist <- list("CTT_parameters" = data.frame(row.names = colnames(Response),
                                                      "The number of categories of scores" = cat_all,item_par))
 
@@ -1475,6 +1479,138 @@ app_server <- function(input, output, session) {
     }
   )
 
+  #10 Continuous response model----------------------------------------------------------------
+  max_min <- function(data.frame){
+    data.frame(max.item = apply(X = data.frame,MARGIN = 2, FUN = max,simplify = T),
+               min.item = apply(X = data.frame,MARGIN = 2, FUN = min,simplify = T))
+  }
+  ##10.1 Item parameters---------------------------------------------------------
+  CRM_item_par_rea <- reactive({
+    Response <- mydata() %>% as.data.frame()
+    max_min_value <- max_min(Response)
+    CRM <- EstCRMitem(Response, max_min_value$max.item,
+                      max_min_value$min.item,
+                      max.EMCycle = 2000, converge = 0.001)
+    par <- CRM$param  %>% round(digits = 3)
+    rownames(par) <- colnames(Response)
+    colnames(par) <- c("Discrimination", "Difficult", "Scaling parameter")
+    par
+  })
+
+  output$CRM_itempar <- DT::renderDataTable({
+    if(is.null(input$res_data))
+      return(NULL)
+    Response <- mydata() %>% as.data.frame()
+    if(any(is.na(Response)))
+      return(data.frame("Any missing values are not allowed."))
+
+    CRM_item_par_rea() %>% DT_dataTable_Show()
+  })
+
+  ##10.2 Person parameters--------------------------------------------------------
+  CRM_theta_rea <- reactive({
+    Response <- mydata() %>% as.data.frame()
+    max_min_value <- max_min(Response)
+    par <- CRM_item_par_rea()
+    CRMthetas <- EstCRMperson(data = Response, ipar = par,
+                              max.item = max_min_value$max.item,
+                              min.item = max_min_value$min.item
+                              )
+    CRMthetas
+
+  })
+
+  output$CRM_person_par <- renderDataTable({
+    if(is.null(input$res_data))
+      return(NULL)
+    Response <- mydata() %>% as.data.frame()
+    if(any(is.na(Response)))
+      return(data.frame("Any missing values are not allowed."))
+    CRMthetas <- CRM_theta_rea()
+    cbind("ID" = CRMthetas$thetas[,1], round(CRMthetas$thetas[,-1],digits = 3)) %>%
+      as.data.frame()
+  })
+  ##10.3 Item fit index-------------------------------------------------------
+  CRM_item_fit_rea <- reactive({
+    if(is.null(input$res_data))
+      return(NULL)
+    Response <- mydata() %>% as.data.frame()
+    max_min_value <- max_min(Response)
+    par <- CRM_item_par_rea()
+    CRMthetas <- CRM_theta_rea()
+    fit <- fitCRM(data = Response, ipar = par, est.thetas = CRMthetas,
+                  max.item = max_min_value$max.item, group = input$CRM_fit_group)
+    sta <- cbind("Interval"= fit$fit.stat[,1], fit$fit.stat[,-1] %>%
+                   round(digits = 3)) %>% as.data.frame()
+    rownames(sta) <- paste0("Group",1:input$CRM_fit_group)
+    sta
+
+
+  })
+
+  output$CRM_item_fit <- DT::renderDataTable({
+    if(is.null(input$res_data))
+      return(NULL)
+    Response <- mydata() %>% as.data.frame()
+    if(any(is.na(Response)))
+      return(data.frame("Any missing values are not allowed."))
+    CRM_item_fit_rea() %>% DT_dataTable_Show()
+  })
+
+  ##10.4 Draw Three-Dimensional Item Category Response Curves-----------------------------
+
+  CRM_plot_ICC <- reactive({
+    if(is.null(input$CRM_ICC_item))
+      return(NULL)
+    Response <- mydata() %>% as.data.frame()
+    max_min_value <- max_min(Response)
+    par <- CRM_item_par_rea()
+
+    item_name <- ifelse(is.null(input$CRM_ICC_item), colnames(Response)[1], input$CRM_ICC_item)
+
+    item <- which(colnames(Response) == item_name)
+    figure <- plotCRM(ipar = par,item = item,
+                      max.item = max_min_value$max.item,
+                      min.item = max_min_value$min.item)
+    figure
+  })
+
+  output$CRM_ICC <- renderPlot({
+    if(is.null(input$res_data))
+      return(NULL)
+    Response <- mydata() %>% as.data.frame()
+    if(any(is.na(Response)))
+      return(data.frame("Any missing values are not allowed."))
+    CRM_plot_ICC()
+  })
+
+
+  output$CRM_item_selection <- renderUI({
+    data <- mydata() %>% as.data.frame()
+    N <- colnames(data)
+
+    selectInput(inputId = "CRM_ICC_item",label = "Please select the item to be plotted.",
+                choices = apply(matrix(N, ncol=1),
+                                MARGIN = 1,FUN = as.vector,simplify = FALSE),selected = N[1],
+                selectize = TRUE)
+  })
+
+  ##10.5 Download results----------------------------------------------------------------------
+  output$CRM_results <- downloadHandler(
+    filename = function(){
+      paste0("CRM_results.xlsx")
+    },
+    content = function(file){
+      CRMthetas <- CRM_theta_rea()
+      datalist <- list("Item fit" = CRM_item_fit_rea(),
+                       "Item parameters" = CRM_item_par_rea(),
+                       "Person parameter" = CRMthetas$thetas)
+      write.xlsx(x = datalist,file = file, rowNames = T)
+    }
+  )
+
+
+
 }
 
 #Functions-----------------------------------------------------
@@ -1487,6 +1623,9 @@ box_show_theme <- function(value){
   return(shinycssloaders::withSpinner(ui_element = value,color="#0dc5c1",type=6,size = 1.5 ))
 }
 DT_dataTable_Show <- function(x){
+  if(is.data.frame(x) == F){
+    as.data.frame(x)
+  }
   DT::datatable(x,
                 filter =list(position = 'top', clear = TRUE, plain = TRUE),
                 options = list(scrollX = TRUE))
@@ -1495,11 +1634,16 @@ DT_dataTable_Show <- function(x){
 
 
 #CTT item parameters
-item_ana<- function(data, cat_2, cat_m, item_s){#Difficult, discrimination and CV
+item_ana<- function(data){#Difficult, discrimination and CV
   if(length(which(is.na(data)))>=1){
     data<- na.omit(data)
-    warning("The NA were deleted.")
+    warning("The case with NA were deleted.")
   }
+  cat_all <- apply(data, MARGIN = 2, FUN = cat_number)#The number of categories.
+  cat_2 =  which( cat_all == 2)#0 or 1
+  cat_m = which(cat_all >2)#Multi-level scores
+  item_s = apply(data, 2, max)
+
   item_analysis<- matrix(NA, nrow = ncol(data), ncol = 4)
   rownames(item_analysis)<- colnames(data)
   colnames(item_analysis)<- c("Difficult","Discrimination","Coefficient of variation", "Item-total correlation")
