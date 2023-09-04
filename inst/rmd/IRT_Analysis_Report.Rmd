@@ -38,9 +38,9 @@ output:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo=FALSE, warning = FALSE)
-library(officedown)
-library(officer)
-library(tidyverse)
+requireNamespace("officer")
+requireNamespace("rmarkdown")
+requireNamespace("officedown")
 fmt_tra_other <- function(ft, reset_width = TRUE){#Convert matrix to table.
   c <- ncol(ft)
   ft <- as.data.frame(ft)%>%flextable::flextable()

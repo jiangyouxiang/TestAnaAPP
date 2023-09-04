@@ -38,8 +38,9 @@ output:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo=FALSE, warning = FALSE)
-library(officedown)
-library(officer)
+requireNamespace("officer")
+requireNamespace("rmarkdown")
+requireNamespace("officedown")
 fmt_tra_other <- function(ft, reset_width = TRUE){#Convert matrix to table.
   c <- ncol(ft)
   ft <- as.data.frame(ft)%>%flextable::flextable()
@@ -352,7 +353,7 @@ $$SE = \frac{1}{\sqrt{I(\theta)}}$$
 Since the test is a between-item test, where each item measures only one of several latent traits, it is not feasible to visually represent $\theta$ in multiple dimensions. Therefore, TestAnaAPP is designed to display one dimension of the TIC at a time. Below is the TIC that you have chosen to display in the user interface.
 
 ```{r, echo=FALSE,fig.cap=sprintf("The test information curve and measurement error"), fig.id = "TIC",fig.cap.style = "Image Caption",fig.height=4,fig.width=plot_width}
-twoord.plot(lx = sim_theta1_infor1[,1],ly = sim_theta1_infor1[,2],
+plotrix::twoord.plot(lx = sim_theta1_infor1[,1],ly = sim_theta1_infor1[,2],
             rx = sim_theta1_infor1[,1],ry = 1/sqrt(sim_theta1_infor1[,2]),
             main = paste0("Test Information and Measurement Error of ",F_name),
             ylab = "Test information",

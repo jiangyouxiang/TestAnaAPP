@@ -2,7 +2,7 @@
 #'
 #' @param request Internal parameter for `{shiny}`.
 #'     DO NOT REMOVE.
-#' @import shinydashboard
+#' @import shinydashboard shinycssloaders
 #' @noRd
 app_ui <- function() {
  dashboardPage(skin = "blue",
@@ -38,7 +38,7 @@ app_ui <- function() {
                                              menuSubItem("Test Information Curve",tabName = "IRTtic",icon = shiny::icon("angle-double-right"))),
 
                                     menuItem("Multidimensional IRT",tabName = "MIRT",icon = icon("cogs"),
-                                             menuSubItem("Upload Dimension *",tabName = "MIRTdim_info",icon = shiny::icon("angle-double-right")),
+                                             menuSubItem("Upload Dimension *",tabName = "MIRTdim_info",icon = icon("table")),
                                              menuSubItem("Model Fit *",tabName = "MIRTmodelfit",icon = shiny::icon("angle-double-right")),
                                              menuSubItem("Hypothesis testing",tabName = "MIRTassum_test",icon = shiny::icon("angle-double-right")),
                                              menuSubItem("Item Fit",tabName = "MIRTitemfit",icon = shiny::icon("angle-double-right")),
@@ -48,7 +48,8 @@ app_ui <- function() {
                                              menuSubItem("Item Characteristic Curve",tabName = "MIRTicc",icon = shiny::icon("angle-double-right")),
                                              menuSubItem("Item Information Curve",tabName = "MIRTiic",icon = shiny::icon("angle-double-right")),
                                              menuSubItem("Test Information Curve",tabName = "MIRTtic",icon = shiny::icon("angle-double-right"))),
-                                    menuItem("Continuous Response Model", tabName = "CRM", icon = icon("cogs"),
+                                    menuItem("Continuous Response Model", tabName = "CRM_model", icon = icon("cogs"),
+                                             menuSubItem("Upload extreme data",tabName = "CRM_maxmin_print",icon = icon("table")),
                                              menuSubItem("Item Fit",tabName = "CRM_itemfit",icon = shiny::icon("angle-double-right")),
                                              menuSubItem("Item Parameters",tabName = "CRM_itempara",icon = shiny::icon("angle-double-right")),
                                              menuSubItem("Person Parameter",tabName = "CRM_personpar",icon = shiny::icon("angle-double-right")),
@@ -78,11 +79,11 @@ app_ui <- function() {
                             column(4,
                                    box(title = "Upload File", status = "warning", solidHeader = TRUE,
                                        fileInput("res_data", "Kindly submit the test data file that requires analysis.
-                                                 Acceptable file formats for uploading include TXT, CSV, Excel, SPSS, Stata, and others.
+                                                 Acceptable file formats for uploading include TXT, CSV, Excel, and SPSS.
                                                  Ensure that the file solely consists of score data, and refrain from
                                                  using purely numerical column names.",
                                                  placeholder="File",buttonLabel = "Browse",
-                                                 accept = c("xlsx","xls","csv","sav","txt","dta")
+                                                 accept = c("xlsx","xls","csv","sav","txt")
                                        ),width = 16))
                             )),
                           #C. EFA page-----------------------------------------------------------------------
@@ -362,6 +363,8 @@ app_ui <- function() {
                             tabName = "IRTperson",
                             fluidPage(column(8,
                                              box(title = "Person parameter", solidHeader = TRUE, status = "info",
+                                                 tags$b("Note: "), "The ID in the data corresponds to the row number of the subject's raw score data.",
+                                                 br(),br(),
                                                  dataTableOutput("IRT_person")%>%
                                                    box_show_theme(),
                                                  width = 12)),
@@ -578,6 +581,8 @@ app_ui <- function() {
                             tabName = "MIRTperson",
                             fluidPage(column(8,
                                              box(title = "Person parameters", solidHeader = TRUE, status = "info",
+                                                 tags$b("Note: "), "The ID in the data corresponds to the row number of the subject's raw score data.",
+                                                 br(),br(),
                                                  dataTableOutput("MIRT_person")%>%
                                                    box_show_theme(),width = 12)),
                                       column(4,
@@ -660,9 +665,10 @@ app_ui <- function() {
                                                  submitButton( "Updata plot"))
                                       ))
                           ),
-                          #H continuous response model--------------------------------------------------------------
+                          #H Continuous response model--------------------------------------------------------------
                           tabItem(
-                            tabName = "CRM_itemfit",
+                            tabName = "CRM_maxmin_print",
+
                             fluidPage(column(8,
                                              box(title = "Note", solidHeader = TRUE, status = "warning",width = 12,
 
@@ -673,6 +679,7 @@ app_ui <- function() {
                                                  re-parameterized version of the Continuous Response Model (CRM), and
                                                  the method of estimation involves marginal maximum likelihood and the
                                                  Expectation-Maximization (EM) algorithm.",
+
                                                  br(), br(),
                                                  tags$b("Reference"),br(),
                                                  "Samejima, F.(1973). Homogeneous Case of the Continuous Response Model.
@@ -682,7 +689,40 @@ app_ui <- function() {
                                                  Response Model Using an EM Algorithm. Applied Psychological Measurement,
                                                  22(4), 333-343.",
                                                  br()
-                                                 ),
+                                             ),
+                                             box(title = "The example of maximum and minimum scores",solidHeader = TRUE,
+                                                 status = "warning",width = 12,
+                                                 "The below example is a five-item visual analog scale question, where participants were
+                                                 asked to mark a line segment 112 millimeters long to indicate their level of
+                                                 agreement with the statement. Each millimeter away from the starting point
+                                                 represents one point higher in score. Therefore, the possible maximum score
+                                                 for this question is 112, and the possible minimum score is 0 (without considering
+                                                 actual data).",
+                                                 br(),br(),
+                                                 tags$b("Note: "),"This data represents the theoretical maximum and minimum scores
+                                                 and is not related to actual data.",
+                                                 dataTableOutput(outputId = "max_min_sim") %>%
+                                                   box_show_theme()),
+                                             box(title = "The uploaded data",solidHeader = TRUE, status = "warning",width = 12,
+                                                 DT::dataTableOutput(outputId = "max_min_real")%>%
+                                                   box_show_theme())
+                            ),
+                            column(4,
+                                   box(title = "Upload file", solidHeader = TRUE, status = "warning",width = 12,
+                                       "During the calculation process, it is necessary to transform the raw data
+                                                 using the maximum and minimum scores that may exist on the measurement tool.",
+                                       br(),br(),
+                                       fileInput(inputId = "max_min_file",
+                                                 "Please upload this data according to the example on the right.",
+                                                 placeholder="File",buttonLabel = "Browse",
+                                                 accept = c("xlsx","xls","csv"))))
+                            )
+                          ),
+                          tabItem(
+
+                            tabName = "CRM_itemfit",
+                            fluidPage(column(8,
+
                                              box(title = "Item fit", solidHeader = TRUE, status = "info",width = 12,
 
                                                  DT::dataTableOutput(outputId = "CRM_item_fit")%>%
@@ -717,7 +757,9 @@ app_ui <- function() {
                           tabItem(tabName = "CRM_personpar",
                                   fluidPage(column(8,
                                                    box(title = "Person parameter",solidHeader = TRUE, status = "info",width = 12,
-                                                       tags$b("Note: "), "The maximum likelihood estimate (MLE) was used to estimate person parameter.",
+                                                       tags$b("Note: "), br(),
+                                                       "1. The maximum likelihood estimate (MLE) was used to estimate person parameter.",br(),
+                                                       "2. The ID in the data corresponds to the row number of the subject's raw score data.",
                                                        br(),br(),
                                                        dataTableOutput(outputId = "CRM_person_par")%>%
                                                          box_show_theme())))

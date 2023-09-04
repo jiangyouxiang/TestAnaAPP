@@ -2,7 +2,15 @@
 #'
 #' @param input,output,session Internal parameters for {shiny}.
 #'     DO NOT REMOVE.
-#' @import shiny dplyr stringr mirt ggplot2 openxlsx bruceR tidySEM cowplot plotrix config golem EstCRM
+#' @import shiny dplyr stringr tidySEM mirt ggplot2 config golem EstCRM rmarkdown officer officedown flextable
+#' @importFrom openxlsx write.xlsx
+#' @importFrom plotrix twoord.plot
+#' @importFrom cowplot plot_grid
+#' @importFrom grDevices jpeg dev.off
+#' @importFrom graphics hist text
+#' @importFrom stats cor na.omit quantile sd
+#' @importFrom bruceR EFA Alpha CFA Corr Describe Freq import lavaan_summary
+#' @importFrom tidyr pivot_longer
 #' @noRd
 app_server <- function(input, output, session) {
   options(shiny.maxRequestSize = 1024^4)
@@ -107,7 +115,7 @@ app_server <- function(input, output, session) {
       return("WLE")
     }
   }
-  independent_method <- function(value){#独立性检验所用的方法
+  independent_method <- function(value){
     if(value == "LD-X2 (Chen & Thissen, 1997)"){
       return("LD")
     }
@@ -119,18 +127,18 @@ app_server <- function(input, output, session) {
     if(value == "chi-squared test (Kang & Chen, 2007)"){
       return("S_X2")
     }
-    if(value == "Zh (Drasgow, Levine, & Williams, 1985)"){
-      return("Zh")
-    }
+    # if(value == "Zh (Drasgow, Levine, & Williams, 1985)"){
+    #   return("Zh")
+    # }
     if(value == "chi-squared method (Bock,1972)"){
       return("X2")
     }
     if(value == "G2 statistic (McKinley & Mills, 1985)"){
       return("G2")
     }
-    if(value == "Stone’s (2000) fit statistics"){
-      return("X2*")
-    }
+    # if(value == "Stone's (2000) fit statistics"){
+    #   return("X2*")
+    # }
   }
 
   #Import the response data---------------------------------------------------
@@ -157,7 +165,7 @@ app_server <- function(input, output, session) {
   #Introduction of this platform-----------------------------------
   output$info <- renderText({
     paste(shiny::p(strong('Package: '), "TestAnaAPP"),
-          shiny::p(strong('Dependence: '), "mirt, shiny, shinydashboard, tidyverse, ggplot2 et al."),
+          shiny::p(strong('Dependence: '), "config, ggplot2, mirt, shinydashboard, EstCRM"),
           shiny::p(strong('Description: '), "This application enables exploratory factor analysis,
     confirmatory factor analysis, classical measurement theory analysis,
     unidimensional item response theory, multidimensional item response theory, and continuous item response
@@ -167,6 +175,7 @@ app_server <- function(input, output, session) {
     about item and test quailty throught the interactive interface."),
           shiny::p(strong('Anthor: '), "Youxiang Jiang"),
           shiny::p(strong('Email: '), tags$a(href="mailto:jiangyouxiang34@163.com", "jiangyouxiang34@163.com")),
+          shiny::p(strong('Contributor: '), "Hongbo wen"),
 
 
           br(),br(),br(),
@@ -264,7 +273,7 @@ app_server <- function(input, output, session) {
     dataset <- bruceR::import(inFile$datapath)
     data <- as.data.frame(dataset)
     if(sum(is.na(dataset)) >=1){
-      return("Data cannot contain missing values!")
+      return(data.frame("x" = "Data cannot contain missing values!"))
     }
     data
   })
@@ -285,7 +294,7 @@ app_server <- function(input, output, session) {
 
     S <- vector(mode = "character")
     for (i in 1:length(dimnames)) {
-      Ss <- paste0(dimnames[i]," = " ,paste0(dimension[which(dimension[,2]==dimnames[i]),1],",", collapse = ""))#不包含协方差矩阵的
+      Ss <- paste0(dimnames[i]," = " ,paste0(dimension[which(dimension[,2]==dimnames[i]),1],",", collapse = ""))
       if(i == length(dimnames)){
         S <- c(S, str_sub(string = Ss, start = 1, end = (str_length(Ss)-1)))#Remove the last ",".
       }else{
@@ -322,7 +331,7 @@ app_server <- function(input, output, session) {
   })
   CFA_loading_rea <- reactive({
     fit <- CFA_reactive()
-    round(lavaan_summary(fit)$measure, digits = 3)
+    round(bruceR::lavaan_summary(fit)$measure, digits = 3)
 
   })
   output$CFA_loading <- DT::renderDataTable({
@@ -336,7 +345,7 @@ app_server <- function(input, output, session) {
   CFA_fit_index_rea <- reactive({
     fit <- CFA_reactive()
 
-    as.data.frame(lavaan_summary(fit)$fit)%>%round(digits = 3)
+    as.data.frame(bruceR::lavaan_summary(fit)$fit)%>%round(digits = 3)
 
   })
   output$CFA_fit_index <- DT::renderDataTable({
@@ -349,7 +358,7 @@ app_server <- function(input, output, session) {
   })
   CFA_fit_plot_rea <- reactive({
     fit <- CFA_reactive()
-    graph_sem(model = fit)
+    tidySEM::graph_sem(model = fit)
   })
 
   output$CFA_fit_plot <- renderPlot({
@@ -383,7 +392,7 @@ app_server <- function(input, output, session) {
       paste0("CFA_result.xlsx")
     },
     content = function(file){
-      write.xlsx(list("Factor loadings" =  CFA_loading_rea(),
+      openxlsx::write.xlsx(list("Factor loadings" =  CFA_loading_rea(),
                       "Model fit" = CFA_fit_index_rea()),file = file,
                  rowNames = TRUE)
     }
@@ -432,7 +441,7 @@ app_server <- function(input, output, session) {
     content = function(file){
       datalist <- list("Test reliability" = CTT_relibility_rea(),
                        "Alpha coefficient" =  CTT_item_alpha_rea())
-      write.xlsx(x = datalist, file = file, rowNames =TRUE)
+      openxlsx::write.xlsx(x = datalist, file = file, rowNames =TRUE)
     }
   )
 
@@ -463,12 +472,12 @@ app_server <- function(input, output, session) {
   ###4.4 Downlaod correaltion matrix---------------------
   output$CTT_relatefile <- downloadHandler(
     filename = function(){
-      paste0("Correlation coefficient matrix.xlsx")
+      paste0("Correlation_coefficient_matrix.xlsx")
     },
     content = function(file){
       datalist <- list("Pearson coefficient" = CTT_relate_eff_rea(),
-                       "The P value corresponding to the correlation coefficient" = CTT_relate_p_rea())
-      write.xlsx(x = datalist, file = file, rowNames =TRUE)
+                       "The P value " = CTT_relate_p_rea())
+      openxlsx::write.xlsx(x = datalist, file = file, rowNames =TRUE)
     }
   )
 
@@ -481,18 +490,18 @@ app_server <- function(input, output, session) {
       fit <- EFA_fit()
       datalist <- list("Eigenvalues"= as.data.frame(fit$eigenvalues)%>%round(digits = 3),
                        "Factor loadings" = as.data.frame(fit$loadings)%>%round(digits = 3))
-      write.xlsx(x = datalist, file = file, rowNames =TRUE)
+      openxlsx::write.xlsx(x = datalist, file = file, rowNames =TRUE)
     }
   )
   #6. Download discriptive statistics--------------------------------------------
   output$summary_result <- downloadHandler(
     filename = function(){
-      paste0("Descriptive statistics.xlsx")
+      paste0("Descriptive_statistics.xlsx")
     },
     content = function(file){
       desc <-  desc_rea()
       datalist <- list("Descriptive statistics" = desc)
-      write.xlsx(x = datalist, file = file)
+      openxlsx::write.xlsx(x = datalist, file = file)
     }
   )
   #7. Download CTT results----------------------------------------------------
@@ -507,12 +516,12 @@ app_server <- function(input, output, session) {
       datalist <- list("CTT_parameters" = data.frame(row.names = colnames(Response),
                                                      "The number of categories of scores" = cat_all,item_par))
 
-      write.xlsx(x = datalist, file = file, rowNames =TRUE)
+      openxlsx::write.xlsx(x = datalist, file = file, rowNames =TRUE)
     })
   #Download the histogram
   output$scores_plotfile <- downloadHandler(
     filename = function(){
-      paste0("Total score distribution.jpeg")
+      paste0("Total_score_distribution.jpeg")
     },
     content = function(file){
       jpeg(file, width = 1200, height = 800)
@@ -528,7 +537,7 @@ app_server <- function(input, output, session) {
   #Download scree plot
   output$EFA_plotfile <- downloadHandler(
     filename = function(){
-      paste0("EFA_scree plot.jpeg")
+      paste0("EFA_scree_plot.jpeg")
     },
     content = function(file){
 
@@ -577,7 +586,7 @@ app_server <- function(input, output, session) {
     if(length(which(cat_all > 2)) >=1 ){
       fit_index <- M2(obj = IRT_fit, type = "M2*",na.rm = T)%>%round(digits = 3)#M2*
     }else{
-      fit_index <- M2(obj = IRT_fit, type = "M2",na.rm = T)%>%round(digits = 3)
+      fit_index <- M2(obj = IRT_fit, na.rm = T)%>%round(digits = 3)
     }
     as.data.frame(fit_index)
   })
@@ -655,7 +664,7 @@ app_server <- function(input, output, session) {
     IRT_person <- fscores(IRT_fit, method = est_person_method(input$IRT_person_est_method),
                           full.scores = T, response.pattern = Response)
     colnames(IRT_person) <- c("theta", "SE")
-    as.data.frame(IRT_person)%>%round(digits = 3)
+    data.frame("ID"= paste0(1:nrow(Response)), round(IRT_person, digits = 3))
   })
   output$IRT_person <- renderDataTable({
     if(is.null(input$res_data))
@@ -674,9 +683,17 @@ app_server <- function(input, output, session) {
 
     IRT_person <- IRT_person_rea()
 
-    wrightMap_new(person = IRT_person[,1],
-                  thresholds = item_par[,str_which(colnames(item_par) %>% str_to_lower(),
-                                                   pattern = "difficult")],
+    thresholds <- item_par[,str_which(colnames(item_par) %>% str_to_lower(),
+                                      pattern = "difficult")]
+
+    if(is.null(dim(thresholds))){
+      thresholds <- matrix(thresholds , ncol = 1)
+      rownames(thresholds ) <- rownames(item_par)
+      colnames(thresholds) <- "difficult"
+    }
+
+    wrightMap_new(person = as.numeric(IRT_person[,2]),
+                  thresholds = thresholds,
                   points_size = input$IRT_wright_map_p_size,
                   p_width =  input$IRT_wright_p_width )
 
@@ -698,7 +715,7 @@ app_server <- function(input, output, session) {
     IRT_fit  <- IRT_fit_reactive()
     prob <- probtrace(x = IRT_fit, Theta = sim_theta)
     ncol <- wrap_ncol_Value()
-    plot_wrap(x = sim_theta,
+    plot_wrap(theta = sim_theta,
               y_matrix = prob,
               lines = "ICC",
               grade_vector = cat_all,
@@ -732,7 +749,7 @@ app_server <- function(input, output, session) {
 
     item_info <- IRT_iteminfo_rea()
     ncol <- wrap_ncol_Value()
-    plot_wrap(x = sim_theta,
+    plot_wrap(theta = sim_theta,
               y_matrix = item_info,
               lines = "IIC",
               main_vector = colnames(Response),
@@ -796,7 +813,7 @@ app_server <- function(input, output, session) {
   )
   output$IRT_ICCfile <- downloadHandler(
     filename = function(){
-      paste0("IRT_item characteristic curve.jpeg")
+      paste0("IRT_item_characteristic_curve.jpeg")
     },
     content = function(file){
       jpeg(file, width = input$wrap_height*1.618, height = input$wrap_height)
@@ -806,7 +823,7 @@ app_server <- function(input, output, session) {
   )
   output$IRT_IICfile <- downloadHandler(
     filename = function(){
-      paste0("IRT_item information curve.jpeg")
+      paste0("IRT_item_information_curve.jpeg")
     },
     content = function(file){
       jpeg(file, width = input$wrap_height*1.618, height = input$wrap_height)
@@ -816,7 +833,7 @@ app_server <- function(input, output, session) {
   )
   output$IRT_TICfile <- downloadHandler(
     filename = function(){
-      paste0("IRT_test information curve.jpeg")
+      paste0("IRT_test_information_curve.jpeg")
     },
     content = function(file){
       jpeg(file, width = 1200, height = 800)
@@ -830,7 +847,7 @@ app_server <- function(input, output, session) {
       paste0("IRT_results.xlsx")
     },
     content = function(file){
-      sim_theta <-  IRT_person_rea()[,1]%>%as.numeric()#True theta
+      sim_theta <-  IRT_person_rea()[,2]%>%as.numeric()#True theta
       IRT_fit  <- IRT_fit_reactive()
       Response <- mydata()%>%as.data.frame()
       item_info <- testinfo(x = IRT_fit, Theta = sim_theta, individual = T)
@@ -846,14 +863,14 @@ app_server <- function(input, output, session) {
                        "Test Information" = data.frame("Test Information" = rowSums(item_info),
                                                        "Messurement Error" = 1/sqrt(rowSums(item_info)))
       )
-      write.xlsx(x = datalist, file = file, rowNames = T)
+      openxlsx::write.xlsx(x = datalist, file = file, rowNames = T)
     }
   )
 
   ##8.13 Downlaod analysis report-------------------------------------------
   output$IRT_report <- downloadHandler(
     filename = function(){
-      paste0("IRT Analysis Report.docx")
+      paste0("IRT_Analysis_Report.docx")
     },
     content = function(file){
       #Selections
@@ -886,13 +903,13 @@ app_server <- function(input, output, session) {
       wright_map_height <- input$IRT_wright_map_height
       wrap_height_value <- input$wrap_height
       #Export analysis report
-      path_sys <- system.file("rmd", "IRT Analysis Report.Rmd", package = "TestAnaAPP")
+      path_sys <- system.file("rmd", "IRT_Analysis_Report.Rmd", package = "TestAnaAPP")
       src <- normalizePath(path_sys)
       owd <- setwd(tempdir())
       on.exit(setwd(owd))
-      file.copy(src,"IRT Analysis Report.Rmd", overwrite = TRUE)
-      library(rmarkdown)
-      rmarkdown::render("IRT Analysis Report.Rmd",output_file = file)
+      file.copy(src,"IRT_Analysis_Report.Rmd", overwrite = TRUE)
+
+      rmarkdown::render("IRT_Analysis_Report.Rmd",output_file = file)
 
     }
   )
@@ -907,22 +924,33 @@ app_server <- function(input, output, session) {
     dataset <- bruceR::import(inFile$datapath)
     data <- as.data.frame(dataset)
     if(sum(is.na(dataset)) >=1){
-      return("Data cannot contain missing values!")
+      stop("Data cannot contain missing values!")
     }
     data
   })
 
 
   output$dimension_example <- renderDataTable({
+    dim_data <- dimension()
     if(is.null(input$res_data))
       return(NULL)
 
     if(is.null(input$dimensionfile)){
+
       data_exp <- data.frame("Column name" = colnames(mydata()),
                              "Dimensions (e.g. F1, F2, F3, etc.)" = c(rep("F1",3),rep("F2",(ncol(mydata())-3))))
-      as.data.frame(data_exp)
+      return(as.data.frame(data_exp))
+
     }else{
-      dimension()
+      Response <- mydata()
+      if(nrow(dim_data) != ncol(Response) ){#
+        stop("The data in the first column of the imported file is inconsistent with the data file column name!")
+      }else if( any(dim_data[,1]%>% as.vector() == colnames(Response))==F){
+        stop("The data in the first column of the imported file is inconsistent with the data file column name!
+             Please note that the program does not support column names consisting of only numbers.")
+
+      }
+      return(dim_data)
     }
   })
 
@@ -947,9 +975,15 @@ app_server <- function(input, output, session) {
       return(NULL)
     dim_data <- dimension()
     Response <- mydata()
-    if(sum(length(names(table(dim_data[,1]))==colnames(Response))) != ncol(Response)){#如果存在列名不等于行名
+
+    if(nrow(dim_data) != ncol(Response) ){#
       stop("The data in the first column of the imported file is inconsistent with the data file column name!")
+    }else if( any(dim_data[,1]%>% as.vector() == colnames(Response))==F){
+      stop("The data in the first column of the imported file is inconsistent with the data file column name!
+             Please note that the program does not support column names consisting of only numbers.")
+
     }
+
     mirtCluster()
     if(input$include_cov == "Yes"){
       MIRT_fit <- mirt(data = Response,model = dimension_recode(dim_data)$COV,
@@ -985,11 +1019,11 @@ app_server <- function(input, output, session) {
     if(length(which(cat_all > 2)) >=1 ){
       fit_index <- M2(obj = MIRT_fit, type = "M2*",na.rm = T)%>%round(digits = 3)#M2*
     }else{
-      fit_index <- M2(obj = MIRT_fit, type = "M2",na.rm = T)%>%round(digits = 3)
+      fit_index <- M2(obj = MIRT_fit,na.rm = T)%>%round(digits = 3)
     }
     as.data.frame(fit_index)
   })
-  output$MIRT_modelfit <- DT::renderDataTable({#输出
+  output$MIRT_modelfit <- DT::renderDataTable({#
     if(is.null(input$dimensionfile))
       return(NULL)
     if(is.null(model_selected(input$modelselect1)))
@@ -1103,7 +1137,7 @@ app_server <- function(input, output, session) {
       data.frame("Dimension" = colnames(cov),
                  cov)
     }else{
-      return(data.frame("The covariance matrix is not selected."))
+      return(data.frame("x" = "The covariance matrix is not selected."))
     }
   })
   output$cov_est <- renderDataTable({
@@ -1121,7 +1155,7 @@ app_server <- function(input, output, session) {
     Response <- mydata()
     MIRT_person <- fscores(MIRT_fit, method = est_person_method(input$MIRT_person_est_method),
                            full.scores = T, response.pattern = Response,QMC = TRUE)
-    as.data.frame(MIRT_person)%>%round(digits = 3)
+    data.frame("ID" =  paste0(1:nrow(Response)), round( MIRT_person, digits = 3))
   })
   output$MIRT_person <- renderDataTable({
     if(is.null(input$dimensionfile))
@@ -1163,13 +1197,28 @@ app_server <- function(input, output, session) {
     #Item parameters
     item_par <- MIRT_itempar_rea()
     dim_items <- which(dim_data[,2] == wright_dim)
-    item_par_dim <- item_par[dim_items,]
+
+    if(length(dim_items)==1){
+      item_par_dim <- item_par[dim_items,] %>% matrix(nrow = 1)
+      colnames(item_par_dim) <- colnames(item_par)
+      rownames(item_par_dim) <- rownames(item_par)[dim_items]
+    }else{
+      item_par_dim <- item_par[dim_items,]
+    }
     #Person parameters
-    MIRT_person <- MIRT_person_rea()
+    MIRT_person <- MIRT_person_rea()[,-1]
+
+    thresholds <- item_par_dim[,c(str_which(colnames(item_par) %>% str_to_lower(),
+                              pattern = "difficult"))]
+
+    if(is.null(dim(thresholds))){
+      thresholds <- matrix(thresholds , ncol = 1)
+      rownames(thresholds ) <- rownames(item_par_dim)
+      colnames(thresholds) <- "difficult"
+    }
 
     wrightMap_new(person = MIRT_person[,wright_dim],
-                  thresholds = item_par_dim[,c(str_which(colnames(item_par) %>% str_to_lower(),
-                                                         pattern = "difficult"))],
+                  thresholds = thresholds ,
                   points_size = input$MIRT_wright_map_p_size,
                   p_width = input$MIRT_wright_p_width)
   })
@@ -1193,7 +1242,7 @@ app_server <- function(input, output, session) {
     prob <- probtrace(x = MIRT_fit, Theta = matrix(rep(sim_theta,mode$F_n),
                                                    nrow = length(sim_theta),ncol = mode$F_n))
     ncol <- MIRT_wrap_ncol_value()
-    plot_wrap(x = sim_theta,
+    plot_wrap(theta = sim_theta,
               y_matrix = prob,
               lines = "ICC",
               grade_vector = cat_all,
@@ -1258,7 +1307,7 @@ app_server <- function(input, output, session) {
     Response <- mydata()%>%as.data.frame()
     item_info <- MIRT_iteminfo_rea()
     ncol <- MIRT_wrap_ncol_value()
-    plot_wrap(x = sim_theta,
+    plot_wrap(theta = sim_theta,
               y_matrix = item_info,
               lines = "IIC",
               main_vector = colnames(Response),
@@ -1306,7 +1355,7 @@ app_server <- function(input, output, session) {
                              mode = mode,colnames = colnames(Response))$dim_information
     colnames(item_info1) <- c(mode$F_names, paste0(mode$F_names,"infor"))
     sim_theta1_infor1 <- item_info1[,c(input$MIRT_dim_select,paste0(input$MIRT_dim_select,"infor"))]
-    test_infor<- twoord.plot(lx = sim_theta1_infor1[,1],ly = sim_theta1_infor1[,2],
+    test_infor<- plotrix::twoord.plot(lx = sim_theta1_infor1[,1],ly = sim_theta1_infor1[,2],
                              rx = sim_theta1_infor1[,1],ry = 1/sqrt(sim_theta1_infor1[,2]),
                              main = paste0("Test Information and Measurement Error of ",input$MIRT_dim_select),
                              ylab = "Test information",
@@ -1362,7 +1411,7 @@ app_server <- function(input, output, session) {
   )
   output$MIRT_ICCfile <- downloadHandler(
     filename = function(){
-      paste0("MIRT_item characteristic curve.jpeg")
+      paste0("MIRT_item_characteristic_curve.jpeg")
     },
     content = function(file){
       jpeg(file, width = input$MIRT_wrap_height*1.618, height = input$MIRT_wrap_height)
@@ -1372,7 +1421,7 @@ app_server <- function(input, output, session) {
   )
   output$MIRT_IICfile <- downloadHandler(
     filename = function(){
-      paste0("MIRT_item information curve.jpeg")
+      paste0("MIRT_item_information_curve.jpeg")
     },
     content = function(file){
       jpeg(file, width = input$MIRT_wrap_height*1.618, height = input$MIRT_wrap_height)
@@ -1413,14 +1462,14 @@ app_server <- function(input, output, session) {
                        "Test information" = dim_infor)
       bruceR::export(x = datalist,file = file)
       print(datalist)
-      write.xlsx(x = datalist, file = file, rowNames = T)
+      openxlsx::write.xlsx(x = datalist, file = file, rowNames = T)
     }
   )
 
   ##9.13 Downlaod analysis report-------------------------------------------
   output$MIRT_report <- downloadHandler(
     filename = function(){
-      paste0("MIRT Analysis Report.docx")
+      paste0("MIRT_Analysis_Report.docx")
     },
     content = function(file){
       #Selections
@@ -1468,26 +1517,52 @@ app_server <- function(input, output, session) {
       wright_map_height <- input$MIRT_wright_map_height
       wrap_height_value <- input$wrap_height
       #Export analysis report
-      path_sys <- system.file("rmd", "MIRT Analysis Report.Rmd", package = "TestAnaAPP")
+      path_sys <- system.file("rmd", "MIRT_Analysis_Report.Rmd", package = "TestAnaAPP")
       src <- normalizePath(path_sys)
       owd <- setwd(tempdir())
       on.exit(setwd(owd))
-      file.copy(src,"MIRT Analysis Report.Rmd", overwrite = TRUE)
-      library(rmarkdown)
-      rmarkdown::render("MIRT Analysis Report.Rmd",output_file = file)
+      file.copy(src,"MIRT_Analysis_Report.Rmd", overwrite = TRUE)
+
+      rmarkdown::render("MIRT_Analysis_Report.Rmd",output_file = file)
 
     }
   )
 
   #10 Continuous response model----------------------------------------------------------------
-  max_min <- function(data.frame){
-    data.frame(max.item = apply(X = data.frame,MARGIN = 2, FUN = max,simplify = T),
-               min.item = apply(X = data.frame,MARGIN = 2, FUN = min,simplify = T))
-  }
+  output$max_min_sim <- renderDataTable({
+
+    data.frame("Item" = paste0("Item_",1:5),
+               "Maximum" = rep(112, 5),
+               "Minimum" = rep(0, 5))
+  })
+
+  max_min_rea <- reactive({
+    if(is.null(input$max_min_file))
+      return(NULL)
+    inFile <- input$max_min_file
+    dataset <- bruceR::import(inFile$datapath)[,-1] %>% unlist() %>% as.numeric() %>% matrix(ncol = 2)
+    data <- as.data.frame(dataset)
+    Response <- mydata() %>% as.data.frame()
+    if(max(data) < max(Response) | min(data) > min(Response))
+      stop("The range of uploaded data is smaller than the range of score data.")
+
+    colnames(data) <- c("max.item", "min.item")
+    rownames(data) <- bruceR::import(inFile$datapath)[,1]
+
+    data
+  })
+
+  output$max_min_real <- DT::renderDataTable({
+    if(is.null(input$max_min_file))
+      return(NULL)
+    max_min_rea() %>% DT_dataTable_Show()
+
+  })
+
   ##10.1 Item parameters---------------------------------------------------------
   CRM_item_par_rea <- reactive({
     Response <- mydata() %>% as.data.frame()
-    max_min_value <- max_min(Response)
+    max_min_value <- max_min_rea()
     CRM <- EstCRMitem(Response, max_min_value$max.item,
                       max_min_value$min.item,
                       max.EMCycle = 2000, converge = 0.001)
@@ -1500,6 +1575,8 @@ app_server <- function(input, output, session) {
   output$CRM_itempar <- DT::renderDataTable({
     if(is.null(input$res_data))
       return(NULL)
+    if(is.null(input$max_min_file))
+      return(NULL)
     Response <- mydata() %>% as.data.frame()
     if(any(is.na(Response)))
       return(data.frame("Any missing values are not allowed."))
@@ -1510,7 +1587,7 @@ app_server <- function(input, output, session) {
   ##10.2 Person parameters--------------------------------------------------------
   CRM_theta_rea <- reactive({
     Response <- mydata() %>% as.data.frame()
-    max_min_value <- max_min(Response)
+    max_min_value <-  max_min_rea()
     par <- CRM_item_par_rea()
     CRMthetas <- EstCRMperson(data = Response, ipar = par,
                               max.item = max_min_value$max.item,
@@ -1523,6 +1600,8 @@ app_server <- function(input, output, session) {
   output$CRM_person_par <- renderDataTable({
     if(is.null(input$res_data))
       return(NULL)
+    if(is.null(input$max_min_file))
+      return(NULL)
     Response <- mydata() %>% as.data.frame()
     if(any(is.na(Response)))
       return(data.frame("Any missing values are not allowed."))
@@ -1534,8 +1613,9 @@ app_server <- function(input, output, session) {
   CRM_item_fit_rea <- reactive({
     if(is.null(input$res_data))
       return(NULL)
+
     Response <- mydata() %>% as.data.frame()
-    max_min_value <- max_min(Response)
+    max_min_value <-  max_min_rea()
     par <- CRM_item_par_rea()
     CRMthetas <- CRM_theta_rea()
     fit <- fitCRM(data = Response, ipar = par, est.thetas = CRMthetas,
@@ -1551,9 +1631,11 @@ app_server <- function(input, output, session) {
   output$CRM_item_fit <- DT::renderDataTable({
     if(is.null(input$res_data))
       return(NULL)
+    if(is.null(input$max_min_file))
+      return(NULL)
     Response <- mydata() %>% as.data.frame()
     if(any(is.na(Response)))
-      return(data.frame("Any missing values are not allowed."))
+      stop("Any missing values are not allowed.")
     CRM_item_fit_rea() %>% DT_dataTable_Show()
   })
 
@@ -1563,7 +1645,7 @@ app_server <- function(input, output, session) {
     if(is.null(input$CRM_ICC_item))
       return(NULL)
     Response <- mydata() %>% as.data.frame()
-    max_min_value <- max_min(Response)
+    max_min_value <-  max_min_rea()
     par <- CRM_item_par_rea()
 
     item_name <- ifelse(is.null(input$CRM_ICC_item), colnames(Response)[1], input$CRM_ICC_item)
@@ -1578,9 +1660,11 @@ app_server <- function(input, output, session) {
   output$CRM_ICC <- renderPlot({
     if(is.null(input$res_data))
       return(NULL)
+    if(is.null(input$max_min_file))
+      return(NULL)
     Response <- mydata() %>% as.data.frame()
     if(any(is.na(Response)))
-      return(data.frame("Any missing values are not allowed."))
+      stop("Any missing values are not allowed.")
     CRM_plot_ICC()
   })
 
@@ -1605,7 +1689,7 @@ app_server <- function(input, output, session) {
       datalist <- list("Item fit" = CRM_item_fit_rea(),
                        "Item parameters" = CRM_item_par_rea(),
                        "Person parameter" = CRMthetas$thetas)
-      write.xlsx(x = datalist,file = file, rowNames = T)
+      openxlsx::write.xlsx(x = datalist,file = file, rowNames = T)
     }
   )
 
@@ -1659,12 +1743,12 @@ item_ana<- function(data){#Difficult, discrimination and CV
 
   for (i in cat_2) {
     #Difficult
-    item_analysis[i,1]<- ((mean(high_data[,i])+mean(low_data[,i]))/item_s[i])/2#按公式计算第i题的Difficult,作文题除外
+    item_analysis[i,1]<- ((mean(high_data[,i])+mean(low_data[,i]))/item_s[i])/2#
     #Discrimination
-    item_analysis[i,2]<- (mean(high_data[,i])-mean(low_data[,i]))/item_s[i]#按公式计算区分度
+    item_analysis[i,2]<- (mean(high_data[,i])-mean(low_data[,i]))/item_s[i]#
 
     #CV
-    item_analysis[i,3]<- (sd(data[,i])/mean(data[,i]))*100#按公式计算差异系数
+    item_analysis[i,3]<- (sd(data[,i])/mean(data[,i]))*100
     item_analysis[i,4] <- cor(x = data[,i], y = zf)
   }
 
@@ -1681,8 +1765,8 @@ item_ana<- function(data){#Difficult, discrimination and CV
 
   return(item_analysis)
 }
-plot_wrap <- function(x,              #x
-                      y_matrix,       #y
+plot_wrap <- function(theta,
+                      y_matrix,
                       lines = "ICC",  #or IIC
                       is.include.zore = FALSE,
                       grade_vector = NULL,     #The number of curve for a single item.
@@ -1692,16 +1776,21 @@ plot_wrap <- function(x,              #x
                       title = NULL,   #The main for wrap.
                       ncol = 5,
                       scale = "fixed"){
+  #Item <- colnames(main_vector)
 
   #A single curve
   if(lines == "IIC"){
     colnames(y_matrix) <- main_vector
-    plot_data <- bind_cols(theta = x, y_matrix)%>%
-      pivot_longer(cols = -theta, names_to = "Item", values_to = "y")%>%
-      mutate(Item = factor(Item, levels = main_vector))
+    plot_data <- bind_cols("theta" = theta, y_matrix)%>%
+      pivot_longer(cols = -1, names_to = "Item", values_to = "y")
+
+    plot_data <- data.frame(plot_data,
+                            "Item" = factor(plot_data$Item, levels = main_vector))
+
 
     #plot
-    gra <- ggplot(plot_data,mapping = aes(x = theta, y = y))+
+    gra <- ggplot(plot_data, mapping = aes(x = plot_data$theta,
+                                           y = plot_data$y))+
       geom_line(linewidth =1.2)+
       labs(x =  x_lab ,y = y_lab, title =  title)+
       theme(plot.title = element_text(hjust = 0.5,size = 8),
@@ -1710,9 +1799,9 @@ plot_wrap <- function(x,              #x
   }else if(lines == "ICC"){
 
     di_items <- which(grade_vector == 1)
-    varname <- colnames(y_matrix)%>%str_split(pattern = ".P.",simplify = T)%>%
-      .[,1]%>%unique()
-    if(sum(varname != main_vector)){
+    varname <- colnames(y_matrix)%>%str_split(pattern = ".P.",simplify = T)
+    varname <- varname[,1]%>%unique()
+    if(sum(varname != main_vector) >= 1){
       colnames_y_matrix <- vector(mode = "character")
       low_grade <- ifelse(test = is.include.zore, yes = 0, no = 1)
       for (i in 1:length(main_vector)) {
@@ -1730,22 +1819,26 @@ plot_wrap <- function(x,              #x
       }
       colnames(y_matrix) <- colnames_y_matrix
     }
-    plot_data1 <- bind_cols(theta = x, y_matrix)%>%
-      pivot_longer(cols = -theta, names_to = c("Item","score"),values_to = "y",
-                   names_sep = ".P.")%>%
-      mutate(score = factor(str_sub(score,start = 1,end = 1),
-                            levels = 0:max(score)),
-             Item = factor(Item, levels = main_vector))
+    plot_data1 <- bind_cols("theta" = theta, y_matrix) %>%
+      pivot_longer(cols = -1, names_to = c("Item","score"),values_to = "y",
+                   names_sep = ".P.") %>% as.data.frame()
+    plot_data1 <-
+      data.frame("score" = factor(str_sub(plot_data1$score,start = 1,end = 1),
+                                  levels = 0:max(plot_data1$score)),
+                 "Item" = factor(plot_data1$Item, levels = main_vector),
+                 "theta" = plot_data1$theta,
+                 "y" = plot_data1$y)
 
     if(is.include.zore == F){
-      plot_data <-  plot_data1 %>%
-        filter(score != 0)
+      plot_data <- plot_data1[which(plot_data1$score != 0), ]
     }else{
       plot_data <- plot_data1
     }
 
-    gra <-  ggplot(plot_data, mapping = aes(x = theta, y = y,
-                                            colour = score, linetype = score))+
+    gra <-  ggplot( plot_data, mapping = aes(x = plot_data$theta,
+                                            y = plot_data$y,
+                                            colour = plot_data$score,
+                                            linetype = plot_data$score))+
       geom_line(linewidth = 1.05)+
       labs(x = x_lab, y = y_lab, title = title)+
       theme(legend.position = "top",
@@ -1759,8 +1852,8 @@ plot_wrap <- function(x,              #x
 #WrightMap
 wrightMap_new <- function(person, thresholds, points_size,p_width){
   #histogram for person parameters
-  person <- data.frame(x = person)
-  histogram <- ggplot(person, aes(x = x)) +
+  person <- data.frame("x" = person)
+  histogram <- ggplot(person, aes(x = person$x)) +
     geom_histogram(fill = "gray", color = "black",
                    bins = 50) +
     labs(x="Latent trait",y = "Frequency")+
@@ -1791,10 +1884,10 @@ wrightMap_new <- function(person, thresholds, points_size,p_width){
       labels <- c(labels,
                   paste0(rownames(thresholds),"_",colnames(thresholds)[i]))
     }
-    data <- data.frame(y = y, labels = labels)
+    data <- data.frame("y" = y, "labels" = labels)
   }else{
-    data <- data.frame(y = as.numeric(thresholds),
-                       labels = rownames(thresholds))
+    data <- data.frame("y" = as.numeric(thresholds),
+                       "labels" = rownames(thresholds))
   }
   points_plot <- ggplot() +
     labs(x = "Item",y = "Thresholds")+
@@ -1813,7 +1906,7 @@ wrightMap_new <- function(person, thresholds, points_size,p_width){
     scale_y_continuous(position = "right",
                        limits = c(-4,4),breaks = -4:4)
 
-  combined_plot <- plot_grid(histogram, points_plot,labels = NULL,
+  combined_plot <- cowplot::plot_grid(histogram, points_plot,labels = NULL,
                              rel_widths = c(1, p_width), align = "h")
   return(combined_plot)
 }
