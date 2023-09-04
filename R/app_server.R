@@ -172,7 +172,7 @@ app_server <- function(input, output, session) {
     model analysis, through the Shiny interactive interface. It also facilitates the visualization
     of the results. Users can easily download the analysis results from the
     interactive interface. Additionally, users can download a concise report
-    about items and tests quailty throught the interactive interface."),
+    about items and test quailty throught the interactive interface."),
           shiny::p(strong('Anthor: '), "Youxiang Jiang"),
           shiny::p(strong('Email: '), tags$a(href="mailto:jiangyouxiang34@163.com", "jiangyouxiang34@163.com")),
           shiny::p(strong('Contributor: '), "Hongbo Wen"),

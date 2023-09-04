@@ -16,7 +16,7 @@ Description: This application enables exploratory factor analysis,
     model analysis, through the shiny interactive interface. It also facilitates the visualization
     of the results. Users can easily download the analysis results from the
     interactive interface. Additionally, users can download a concise report
-    about item and test quality on the interactive interface.
+    about items and test quality on the interactive interface.
 Depends: config (>= 0.3.1), 
          ggplot2 (>= 3.4.3), 
          mirt (>= 1.40), 
