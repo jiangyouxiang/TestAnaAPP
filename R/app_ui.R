@@ -201,13 +201,13 @@ app_ui <- function() {
                             tabName = "CTT_par",
                             fluidRow(column(8,
                                             box(title = "Note", solidHeader = TRUE,status = "warning",width = 12,
-                                                "1. For binary scoring items (items with only two scoring possibilities), TestAnaAPP
+                                                "1. For binary scoring items (items with only two type of scores), TestAnaAPP
                                                 categorizes the participants into a high-score group and a low-score group based on their
                                                 total scores being above or equal to the 73rd percentile and below or equal to the 27th percentile,
-                                                respectively. The pass rates for each item are then calculated separately for the high-score and
-                                                low-score groups, and the average pass rate for each item is taken as its difficulty level.",
+                                                respectively. Then the pass rate of each item in the high-score and low-score groups is calculated,
+                                                and the average pass rate of each item is taken as its difficulty level.",
                                                 br(),
-                                                "2. For multiple scoring items (items with more than two scoring possibilities), TestAnaAPP calculates the
+                                                "2. For multiple scoring items (items with more than two type of scores), TestAnaAPP calculates the
                                                 difficulty of each item by dividing the average score on the item by the maximum score possible on the item.",
                                                 br(),
                                                 "Regardless of the number of scoring categories for an item, TestAnaAPP calculates the difference between
@@ -220,7 +220,7 @@ app_ui <- function() {
                                                 "4. The correlation coefficient is the Pearson correlation coefficient between item scores and
                                                 the total score.",
                                                 br(),
-                                                "5. If the score data includes missing values, TestAnaAPP will elimate any case that contain missing data.",
+                                                "5. If the score data includes missing values, TestAnaAPP will delete any case that inludes missing data.",
                                                 br(),
 
                                                 ),
@@ -303,8 +303,7 @@ app_ui <- function() {
                                                                   "Stochastic EM algorithm"),
                                                    selected = "standard EM algorithm"),
                                        tags$b("Note: "),"In the case of unidimensional models, it is advisable to employ the
-                                       standard EM algorithm. For multidimensional models, it is recommended to utilize
-                                       quasi-Monte Carlo EM estimation.",
+                                       standard EM algorithm.",
                                        br(),br(),
 
                                        submitButton( "Updata results")),
@@ -514,7 +513,7 @@ app_ui <- function() {
                                                                             "No"),
                                                              selected = "No"),
                                                  tags$b("Note: "), "Estimating the covariance matrix can be time-consuming and may encounter
-                                                 errors in some cases depending on the parameter estimation method. However,
+                                                 errors in some cases, depending on the parameter estimation method. However,
                                                  it is necessary to estimate the covariance in multidimensional models",
                                                  br(),br(),
 

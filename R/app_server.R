@@ -169,13 +169,13 @@ app_server <- function(input, output, session) {
           shiny::p(strong('Description: '), "This application enables exploratory factor analysis,
     confirmatory factor analysis, classical measurement theory analysis,
     unidimensional item response theory, multidimensional item response theory, and continuous item response
-    model analysis, through the shiny interactive interface. It also facilitates the visualization
+    model analysis, through the Shiny interactive interface. It also facilitates the visualization
     of the results. Users can easily download the analysis results from the
     interactive interface. Additionally, users can download a concise report
-    about item and test quailty throught the interactive interface."),
+    about items and tests quailty throught the interactive interface."),
           shiny::p(strong('Anthor: '), "Youxiang Jiang"),
           shiny::p(strong('Email: '), tags$a(href="mailto:jiangyouxiang34@163.com", "jiangyouxiang34@163.com")),
-          shiny::p(strong('Contributor: '), "Hongbo wen"),
+          shiny::p(strong('Contributor: '), "Hongbo Wen"),
 
 
           br(),br(),br(),
@@ -184,10 +184,10 @@ app_server <- function(input, output, session) {
           shiny::p(strong("How to use this application for data analysis?")),
           shiny::p("1. When you see this interface, it indicates that you have successfully installed this program,
                    which is the first step to using TestAnaAPP."),
-          shiny::p("2. You need to understand that TestAnaAPP presents various analysis contents in modular form.
+          shiny::p("2. You need to understand that TestAnaAPP presents various analysis contents in modular forms.
                    When you need to perform a specific analysis using TestAnaAPP, you can directly navigate to
                    that interface after uploading the data. "),
-          shiny::p("3. When it involves dimensional information of the test, you need to upload an xlsx file
+          shiny::p("3. When it involves dimensional information of the test, you need to upload an ELSX file
                    in the interface of uploading dimensional information to illustrate the test structure.
                    Please edit your document following the examples provided in TestAnaAPP. "),
           shiny::p("4. During the operation, please carefully read the textual prompts presented on each interface
