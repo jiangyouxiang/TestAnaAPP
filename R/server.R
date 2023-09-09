@@ -2,7 +2,7 @@
 #'
 #' @param input,output,session Internal parameters for {shiny}.
 #'     DO NOT REMOVE.
-#' @import shiny dplyr stringr tidySEM mirt ggplot2 config golem EstCRM rmarkdown officer officedown flextable
+#' @import shiny dplyr stringr tidySEM mirt ggplot2 golem EstCRM rmarkdown officer officedown flextable
 #' @importFrom openxlsx write.xlsx
 #' @importFrom plotrix twoord.plot
 #' @importFrom cowplot plot_grid
@@ -169,7 +169,7 @@ app_server <- function(input, output, session) {
           shiny::p(strong('Description: '), "This application enables exploratory factor analysis,
     confirmatory factor analysis, classical measurement theory analysis,
     unidimensional item response theory, multidimensional item response theory, and continuous item response
-    model analysis, through the Shiny interactive interface. It also facilitates the visualization
+    model analysis, through the 'Shiny' interactive interface. It also facilitates the visualization
     of the results. Users can easily download the analysis results from the
     interactive interface. Additionally, users can download a concise report
     about items and test quailty throught the interactive interface."),
@@ -183,13 +183,13 @@ app_server <- function(input, output, session) {
 
           shiny::p(strong("How to use this application for data analysis?")),
           shiny::p("1. When you see this interface, it indicates that you have successfully installed this program,
-                   which is the first step to using TestAnaAPP."),
-          shiny::p("2. You need to understand that TestAnaAPP presents various analysis contents in modular forms.
-                   When you need to perform a specific analysis using TestAnaAPP, you can directly navigate to
+                   which is the first step to using 'TestAnaAPP'."),
+          shiny::p("2. You need to understand that 'TestAnaAPP' presents various analysis contents in modular forms.
+                   When you need to perform a specific analysis using 'TestAnaAPP', you can directly navigate to
                    that interface after uploading the data. "),
           shiny::p("3. When it involves dimensional information of the test, you need to upload an ELSX file
                    in the interface of uploading dimensional information to illustrate the test structure.
-                   Please edit your document following the examples provided in TestAnaAPP. "),
+                   Please edit your document following the examples provided in 'TestAnaAPP'. "),
           shiny::p("4. During the operation, please carefully read the textual prompts presented on each interface
                    to ensure that the program can execute your intentions correctly. ")
 
@@ -238,8 +238,8 @@ app_server <- function(input, output, session) {
     Response <- mydata()%>%as.data.frame()
     colnames(Response) <- paste0("Item",1:ncol(Response))
     fit <- bruceR::EFA(data = Response , var = "Item", items = 1:ncol(Response),
-               method = EFA_method(input$EFA_method),
-               rotation = EFA_rotation_method(input$rotation_method))
+                       method = EFA_method(input$EFA_method),
+                       rotation = EFA_rotation_method(input$rotation_method))
     fit
   })
   output$CTT_EFA_eigenvalues <- DT::renderDataTable({
@@ -249,12 +249,13 @@ app_server <- function(input, output, session) {
     as.data.frame(fit$eigenvalues)%>%round(digits = 3) %>% DT_dataTable_Show()
   })
   EFA_plot_rea <- reactive({
-    if(is.null(input$res_data))
-      return(NULL)
     fit <- EFA_fit()
     fit$scree.plot
+
   })
   output$EFA_plot <- renderPlot({#Scree plot
+    if(is.null(input$res_data))
+      return(NULL)
     EFA_plot_rea()
   })
 
@@ -381,7 +382,7 @@ app_server <- function(input, output, session) {
     },
     content = function(file){
       jpeg(filename = file, width = input$CFA_plot_height*1.618, height = input$CFA_plot_height )
-      print(CFA_fit_plot_rea())
+      CFA_fit_plot_rea() %>% print()
       dev.off()
 
     }
@@ -393,8 +394,8 @@ app_server <- function(input, output, session) {
     },
     content = function(file){
       openxlsx::write.xlsx(list("Factor loadings" =  CFA_loading_rea(),
-                      "Model fit" = CFA_fit_index_rea()),file = file,
-                 rowNames = TRUE)
+                                "Model fit" = CFA_fit_index_rea()),file = file,
+                           rowNames = TRUE)
     }
   )
   #4. CTT ------------------------------------------------
@@ -531,7 +532,7 @@ app_server <- function(input, output, session) {
       scores_plot1 <- hist(rowSums(Response), breaks = 100,
                            main = "Total score distribution", xlab = "Total score", ylab = "Frequency")
 
-      print(scores_plot1)
+      scores_plot1
       dev.off()
     })
   #Download scree plot
@@ -542,7 +543,9 @@ app_server <- function(input, output, session) {
     content = function(file){
 
       jpeg(file, width = 1200, height = 800)
-      print(EFA_plot_rea())
+      if(!is.null(file)){
+        EFA_plot_rea() %>% print()
+      }
       dev.off()
     }
   )
@@ -807,7 +810,7 @@ app_server <- function(input, output, session) {
     },
     content = function(file){
       jpeg(file, width =  input$IRT_wright_map_height*1.618, height = input$IRT_wright_map_height)
-      IRT_wright_rea()%>% print()
+      IRT_wright_rea() %>% print()
       dev.off()
     }
   )
@@ -817,7 +820,7 @@ app_server <- function(input, output, session) {
     },
     content = function(file){
       jpeg(file, width = input$wrap_height*1.618, height = input$wrap_height)
-      print(IRT_ICC_rea())
+      IRT_ICC_rea()%>% print()
       dev.off()
     }
   )
@@ -827,7 +830,7 @@ app_server <- function(input, output, session) {
     },
     content = function(file){
       jpeg(file, width = input$wrap_height*1.618, height = input$wrap_height)
-      print(IRT_IIC_rea())
+      IRT_IIC_rea()%>% print()
       dev.off()
     }
   )
@@ -837,7 +840,7 @@ app_server <- function(input, output, session) {
     },
     content = function(file){
       jpeg(file, width = 1200, height = 800)
-      print(IRT_TIC_rea())
+      IRT_TIC_rea() %>% print()
       dev.off()
     }
   )
@@ -1209,7 +1212,7 @@ app_server <- function(input, output, session) {
     MIRT_person <- MIRT_person_rea()[,-1]
 
     thresholds <- item_par_dim[,c(str_which(colnames(item_par) %>% str_to_lower(),
-                              pattern = "difficult"))]
+                                            pattern = "difficult"))]
 
     if(is.null(dim(thresholds))){
       thresholds <- matrix(thresholds , ncol = 1)
@@ -1356,17 +1359,17 @@ app_server <- function(input, output, session) {
     colnames(item_info1) <- c(mode$F_names, paste0(mode$F_names,"infor"))
     sim_theta1_infor1 <- item_info1[,c(input$MIRT_dim_select,paste0(input$MIRT_dim_select,"infor"))]
     test_infor<- plotrix::twoord.plot(lx = sim_theta1_infor1[,1],ly = sim_theta1_infor1[,2],
-                             rx = sim_theta1_infor1[,1],ry = 1/sqrt(sim_theta1_infor1[,2]),
-                             main = paste0("Test Information and Measurement Error of ",input$MIRT_dim_select),
-                             ylab = "Test information",
-                             rylab = "Measurement error",
-                             xlab = "Latent Trait",
-                             rcol = "red",
-                             lytickpos = seq(0, max(sim_theta1_infor1[,2]),
-                                             ceiling(max(sim_theta1_infor1[,2])/5)),
-                             lylim = c(0,(max(sim_theta1_infor1[,2])+0.5)),
+                                      rx = sim_theta1_infor1[,1],ry = 1/sqrt(sim_theta1_infor1[,2]),
+                                      main = paste0("Test Information and Measurement Error of ",input$MIRT_dim_select),
+                                      ylab = "Test information",
+                                      rylab = "Measurement error",
+                                      xlab = "Latent Trait",
+                                      rcol = "red",
+                                      lytickpos = seq(0, max(sim_theta1_infor1[,2]),
+                                                      ceiling(max(sim_theta1_infor1[,2])/5)),
+                                      lylim = c(0,(max(sim_theta1_infor1[,2])+0.5)),
 
-                             type = c("l","p"),rpch = 1)
+                                      type = c("l","p"),rpch = 1)
     text(x = sim_theta1_infor1[which.max(sim_theta1_infor1[,2]),1],
          y = max(sim_theta1_infor1[,2])
          ,labels = paste(round(max(sim_theta1_infor1[,2]),3)))
@@ -1405,7 +1408,7 @@ app_server <- function(input, output, session) {
     },
     content = function(file){
       jpeg(file, width = input$MIRT_wright_map_height*1.618, height = input$MIRT_wright_map_height)
-      print(MIRT_wright_rea())
+      MIRT_wright_rea() %>% print()
       dev.off()
     }
   )
@@ -1415,7 +1418,7 @@ app_server <- function(input, output, session) {
     },
     content = function(file){
       jpeg(file, width = input$MIRT_wrap_height*1.618, height = input$MIRT_wrap_height)
-      print(MIRT_ICC_rea())
+      MIRT_ICC_rea() %>% print()
       dev.off()
     }
   )
@@ -1425,7 +1428,7 @@ app_server <- function(input, output, session) {
     },
     content = function(file){
       jpeg(file, width = input$MIRT_wrap_height*1.618, height = input$MIRT_wrap_height)
-      print(MIRT_IIC_rea())
+      MIRT_IIC_rea() %>% print()
       dev.off()
     }
   )
@@ -1460,8 +1463,7 @@ app_server <- function(input, output, session) {
                        "Person parameters" = MIRT_person_rea(),
                        "Item information" = item_info,
                        "Test information" = dim_infor)
-      bruceR::export(x = datalist,file = file)
-      print(datalist)
+
       openxlsx::write.xlsx(x = datalist, file = file, rowNames = T)
     }
   )
@@ -1592,7 +1594,7 @@ app_server <- function(input, output, session) {
     CRMthetas <- EstCRMperson(data = Response, ipar = par,
                               max.item = max_min_value$max.item,
                               min.item = max_min_value$min.item
-                              )
+    )
     CRMthetas
 
   })
@@ -1665,7 +1667,7 @@ app_server <- function(input, output, session) {
     Response <- mydata() %>% as.data.frame()
     if(any(is.na(Response)))
       stop("Any missing values are not allowed.")
-    CRM_plot_ICC()
+    CRM_plot_ICC() %>% print()
   })
 
 
@@ -1836,9 +1838,9 @@ plot_wrap <- function(theta,
     }
 
     gra <-  ggplot( plot_data, mapping = aes(x = plot_data$theta,
-                                            y = plot_data$y,
-                                            colour = plot_data$score,
-                                            linetype = plot_data$score))+
+                                             y = plot_data$y,
+                                             colour = plot_data$score,
+                                             linetype = plot_data$score))+
       geom_line(linewidth = 1.05)+
       labs(x = x_lab, y = y_lab, title = title)+
       theme(legend.position = "top",
@@ -1907,6 +1909,7 @@ wrightMap_new <- function(person, thresholds, points_size,p_width){
                        limits = c(-4,4),breaks = -4:4)
 
   combined_plot <- cowplot::plot_grid(histogram, points_plot,labels = NULL,
-                             rel_widths = c(1, p_width), align = "h")
+                                      rel_widths = c(1, p_width), align = "h")
   return(combined_plot)
 }
+

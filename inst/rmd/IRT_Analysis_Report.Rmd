@@ -98,12 +98,12 @@ In the field of psychological and educational measurement, two commonly used mea
 | (4) Others.
 
 
-The TestAnaAPP is an interactive program developed in the R language for test analysis. It addresses the high computational cost and complexity of IRT models and provides practitioners of test quality analysis with a comprehensive set of evaluation indicators for items. Additionally, it offers professional visualization for the results.
+The 'TestAnaAPP' is an interactive program developed in the R language for test analysis. It addresses the high computational cost and complexity of IRT models and provides practitioners of test quality analysis with a comprehensive set of evaluation indicators for items. Additionally, it offers professional visualization for the results.
 
 
 # Introduction to IRT Models
 
-TestAnaAPP offers a range of commonly used scoring models in the field of selection, catering to both dichotomous and polytomous data. The dichotomous scoring models consist of the Rasch model, the one-parameter logistic model (1PL), the two-parameter logistic model (2PL), the three-parameter logistic model (3PL), and the four-parameter logistic model (4PL). On the other hand, the polytomous scoring models encompass the graded response model (GRM), the partial credit model (PCM), and the generalized partial credit model (GPCM). These models are widely recognized and utilized in the field.
+'TestAnaAPP' offers a range of commonly used scoring models in the field of selection, catering to both dichotomous and polytomous data. The dichotomous scoring models consist of the Rasch model, the one-parameter logistic model (1PL), the two-parameter logistic model (2PL), the three-parameter logistic model (3PL), and the four-parameter logistic model (4PL). On the other hand, the polytomous scoring models encompass the graded response model (GRM), the partial credit model (PCM), and the generalized partial credit model (GPCM). These models are widely recognized and utilized in the field.
 
 It is important to note that in IRT, the Rasch model is equivalent to the One-Parameter Logistic (1PL) model. The terms "one-parameter" and "two-parameter" refer to the number of item parameters in the IRT models. The specific models are described below:
 
@@ -111,7 +111,7 @@ It is important to note that in IRT, the Rasch model is equivalent to the One-Pa
 
 Let $X_{ij}$ denote the response of test taker $j$ (where $j = 1,2,3,...,J$) to item $i$ (where $i = 1,2,3,...,I$) in dichotomous scoring data. In this type of data, the value of $X_{ij}$ is assigned as 0 (for incorrect responses) or 1 (for correct responses). Moreover, let $\beta_i$ represent the item difficulty parameter, and $\theta_j$ represent the latent trait parameter of the test taker. In the context of IRT analysis, the difficulty parameters and the latent trait parameters of test takers typically follow a standard normal distribution, allowing for comparability. This comparability enables the determination of the difficulty level of an item for test takers at specific levels, based on the relative magnitudes of these two parameters.
 
-The TestAnaAPP program supports the following specific IRT models for dichotomous scoring data:
+The 'TestAnaAPP' program supports the following specific IRT models for dichotomous scoring data:
 
 
 
@@ -185,7 +185,7 @@ It is important to note that the GRM model, in contrast to the GPCM and PCM mode
 
 # Selected Model and Settings
 
-**The results presented in this document were estimated based on the settings you selected in the interactive TestAnaAPP program, along with default options within the program. The following settings were employed:**
+**The results presented in this document were estimated based on the settings you selected in the interactive 'TestAnaAPP' program, along with default options within the program. The following settings were employed:**
 
 * **IRT model: **`r model`；
 * **Model parameter estimation method: **`r IRT_est_method`；
@@ -201,7 +201,7 @@ The model's fitting results included both relative fit indices and absolute fit 
 
 ## Relative Fit Indices
 
-The TestAnaAPP program utilizes the "mirt" package for parameter estimation and calculates relative fit indices, including AIC, SABIC, HQ, BIC, and Log-likelihood. Smaller values of AIC, SABIC, HQ, and BIC indicate a higher degree of model fit. A greater value of Log-likelihood signifies a higher degree of model fit. To employ relative fit indices for IRT model selection, you can opt for various models during parameter estimation in TestAnaAPP and record the corresponding relative fit index magnitudes.
+The 'TestAnaAPP' program utilizes the 'mirt' package for parameter estimation and calculates relative fit indices, including AIC, SABIC, HQ, BIC, and Log-likelihood. Smaller values of AIC, SABIC, HQ, and BIC indicate a higher degree of model fit. A greater value of Log-likelihood signifies a higher degree of model fit. To employ relative fit indices for IRT model selection, you can opt for various models during parameter estimation in 'TestAnaAPP' and record the corresponding relative fit index magnitudes.
 
 ```{r fitindex, echo=FALSE,tab.cap=sprintf("The relative fit indices of the %s", model),tab.id = "realet_fit", tab.cap.style = "Table Caption"}
 fmt_tra_other(ft = IRT_modelfit_relat)
@@ -210,7 +210,7 @@ fmt_tra_other(ft = IRT_modelfit_relat)
 
 ## Absolute Fit Indices
 
-TestAnaAPP generates absolute fit indices, including M2, RMSEA, SRMSR, TLI, and CFI.
+'TestAnaAPP' generates absolute fit indices, including M2, RMSEA, SRMSR, TLI, and CFI.
 
 * M2: If the corresponding p-value is less than 0.05 (α<0.05), the null hypothesis is rejected, suggesting inadequate fit of the model to the data.
 * RMSEA: Browne and Cudeck (1993) provided a well-regarded guide to interpreting RMSEA. A value below 0.05 indicates a very good fit (close fit), 0.05 to 0.08 suggests a relatively good fit (fair fit), 0.08 to 0.10 implies a mediocre fit, and a value above 0.10 indicates a poor fit.
@@ -228,7 +228,7 @@ fmt_tra_other(ft = IRT_modelfit)
 
 ## Unidimensionality Test
 
-Common methods used for testing unidimensionality include exploratory and confirmatory factor analysis. The software TestAnaAPP generates exploratory factor analysis results for the unidimensionality testing. To assess conformity to the unidimensionality hypothesis, the criterion is that the eigenvalue of the first factor is at least 3-5 times greater than the eigenvalue of the second factor. If `r EFA_method` is used for exploratory factor analysis, the eigenvalue of the first factor is `r round(CTT_EFA_eigenvalues[1,2]/CTT_EFA_eigenvalues[2,2], 2)` times higher than the eigenvalue of the second factor. Therefore, **`r ifelse(CTT_EFA_eigenvalues[1,2]/CTT_EFA_eigenvalues[2,2]>=3,"it conforms to the unidimensionality hypothesis.", "it does not conform to the unidimensionality hypothesis and multidimensional IRT should be used for analysis.")`**
+Common methods used for testing unidimensionality include exploratory and confirmatory factor analysis. The software 'TestAnaAPP' generates exploratory factor analysis results for the unidimensionality testing. To assess conformity to the unidimensionality hypothesis, the criterion is that the eigenvalue of the first factor is at least 3-5 times greater than the eigenvalue of the second factor. If `r EFA_method` is used for exploratory factor analysis, the eigenvalue of the first factor is `r round(CTT_EFA_eigenvalues[1,2]/CTT_EFA_eigenvalues[2,2], 2)` times higher than the eigenvalue of the second factor. Therefore, **`r ifelse(CTT_EFA_eigenvalues[1,2]/CTT_EFA_eigenvalues[2,2]>=3,"it conforms to the unidimensionality hypothesis.", "it does not conform to the unidimensionality hypothesis and multidimensional IRT should be used for analysis.")`**
 
 ```{r, echo=FALSE,tab.cap="Results of unidimensionality test (EFA eigenvalue)",tab.id = "dim_test", tab.cap.style = "Table Caption"}
 fmt_tra_other(ft = CTT_EFA_eigenvalues)
@@ -239,7 +239,7 @@ fmt_tra_other(ft = CTT_EFA_eigenvalues)
 
 ## Independence Test
 
-TestAnaAPP provides the Q3 and LD-X2 statistics for independent testing in IRT. Larger absolute values indicate stronger dependencies between the two items. Due to the lack of uniform standards across different studies, we do not provide the cutoff values for Q3 and LD-X2. Readers are encouraged to refer to professional books or papers for data interpretation.
+'TestAnaAPP' provides the Q3 and LD-X2 statistics for independent testing in IRT. Larger absolute values indicate stronger dependencies between the two items. Due to the lack of uniform standards across different studies, we do not provide the cutoff values for Q3 and LD-X2. Readers are encouraged to refer to professional books or papers for data interpretation.
 
 In this analysis, you selected **`r IRT_select_independent`** as the statistic for the independence test.
 
@@ -252,7 +252,7 @@ fmt_tra_other(IRT_Q3,  reset_width = FALSE)
 
 # Item Fit
 
-The item fit test is utilized to assess the existence of a significant disparity between the predicted model responses and the actual responses. TestAnaAPP provides the $X^2$ and $G2$ statistics for performing the item fit test. A $P$ value less than 0.05 denotes a significant disparity between the predicted model values and the actual data. Furthermore, an RMSEA value greater than 0.1 suggests a substantial discrepancy between the predicted values and the actual data. A comprehensive assessment can be made by considering the test situation and statistical indicators. Selecting an alternative model for the fit could potentially yield divergent outcomes.
+The item fit test is utilized to assess the existence of a significant disparity between the predicted model responses and the actual responses. 'TestAnaAPP' provides the $X^2$ and $G2$ statistics for performing the item fit test. A $P$ value less than 0.05 denotes a significant disparity between the predicted model values and the actual data. Furthermore, an RMSEA value greater than 0.1 suggests a substantial discrepancy between the predicted values and the actual data. A comprehensive assessment can be made by considering the test situation and statistical indicators. Selecting an alternative model for the fit could potentially yield divergent outcomes.
 
 
 ```{r, echo=FALSE,tab.cap= sprintf("The results of item fit (%s-%s)",model, IRT_itemfit_method),tab.id = "item_fit", tab.cap.style = "Table Caption"}
@@ -339,7 +339,7 @@ print(IRT_IIC)
 
 # Test Information Curve (TIC)
 
-Test information is a quantitative measure of test accuracy in IRT, calculated by summing the information obtained from each item. A higher test information value indicates a more precise measurement of the latent trait for the subjects being assessed. TestAnaAPP offers test information curves (TIC) and measurement error curves as graphical representations to demonstrate the quality of the test. A consistent conversion relationship exists between test information ($I(\theta)$) and measurement error ($SE$), which can be expressed by the following formula:
+Test information is a quantitative measure of test accuracy in IRT, calculated by summing the information obtained from each item. A higher test information value indicates a more precise measurement of the latent trait for the subjects being assessed. 'TestAnaAPP' offers test information curves (TIC) and measurement error curves as graphical representations to demonstrate the quality of the test. A consistent conversion relationship exists between test information ($I(\theta)$) and measurement error ($SE$), which can be expressed by the following formula:
 
 $$SE = 1/\sqrt{I(\theta)}$$
 
@@ -350,7 +350,7 @@ print(IRT_TIC)
 
 It is important to note that users can download the item information and test information from the user interface. This allows them to create custom figures using the downloaded files. 
 
-**Statement:** TestAnaAPP is mainly designed to provide convenient item and test analysis programs for practitioners in the field of psychological and educational measurement. The purpose of providing this report is to present the analysis results in a complete and clear manner, and to provide universal and optimal result interpretation is not the primary objective of TestAnaAPP. **Therefore, while we hope users can benefit from the user-friendly nature of this program, we also encourage maintaining a cautious attitude towards the interpretation of results in order to avoid potential biases. Additionally, if users discover any errors in this program, we would greatly appreciate your contact with us (<jiangyouxiang34@163.com>).**
+**Statement:** 'TestAnaAPP' is mainly designed to provide convenient item and test analysis programs for practitioners in the field of psychological and educational measurement. The purpose of providing this report is to present the analysis results in a complete and clear manner, and to provide universal and optimal result interpretation is not the primary objective of 'TestAnaAPP'. **Therefore, while we hope users can benefit from the user-friendly nature of this program, we also encourage maintaining a cautious attitude towards the interpretation of results in order to avoid potential biases. Additionally, if users discover any errors in this program, we would greatly appreciate your contact with us (<jiangyouxiang34@163.com>).**
 
 
 \newpage

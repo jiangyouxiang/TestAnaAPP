@@ -1,31 +1,19 @@
-#' Run the test analysis application
-#'
-#' @param ... arguments to pass to golem_opts.
-#' See `?golem::get_golem_options` for more details.
-#' @inheritParams shiny::shinyApp
+#' By using run_app() function in 'TestAnaAPP' package without any arguments,
+#'  you can perform your test analysis in a friendly interactive interface.
 #'
 #' @export
 #' @importFrom shiny shinyApp
-#' @importFrom golem with_golem_options
+#' @returns No explicit return value. The function is called for its side effects,
+#' which include running the interactive application.
+#' @examples
+#' if(interactive()){
+#' TestAnaAPP::run_app()
+#' }
 #'
-run_app <- function(
-    onStart = NULL,
-    options = list(),
-    enableBookmarking = NULL,
-    uiPattern = "/",
-    ...
-) {
-  with_golem_options(
-    app = shinyApp(
-      ui = app_ui,
-      server = app_server,
-      onStart = onStart,
-      options = options,
-      enableBookmarking = enableBookmarking,
-      uiPattern = uiPattern
-    ),
-    golem_opts = list(...)
+run_app <- function() {
+  shinyApp(
+    ui = app_ui,
+    server = app_server,
   )
 }
-
 

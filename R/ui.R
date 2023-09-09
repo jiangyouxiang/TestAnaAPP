@@ -4,56 +4,60 @@
 #'     DO NOT REMOVE.
 #' @import shinydashboard shinycssloaders
 #' @noRd
+#'
+#'
+
+
 app_ui <- function() {
- dashboardPage(skin = "blue",
-                      dashboardHeader(title = "TEST ANALYSIS APPLICATION",titleWidth = 700),#The name of this platform
+  dashboardPage(skin = "blue",
+                dashboardHeader(title = "TEST ANALYSIS APPLICATION",titleWidth = 700),#The name of this platform
                       #Pages----------------------------------------------------------------------------------
                       dashboardSidebar(
                         sidebarMenu(id="sidebarmenu",
-                                    menuItem("TestAnaAPP",tabName = "info",icon = icon("info-circle")),#Introduction
-                                    menuItem("Upload Response *",tabName = "uploaddata",icon = icon("table")),
-                                    menuItem("Exploratory Factor Analysis",tabName = "EFA",icon = icon("list-alt"),
-                                             menuSubItem("Factor Loading",tabName = "loading",icon = shiny::icon("angle-double-right")),
-                                             menuSubItem("Scree Plot",tabName = "screen_plot",icon = shiny::icon("angle-double-right"))),
+                                     menuItem("TestAnaAPP",tabName = "info",icon = icon("info-circle")),#Introduction
+                                     menuItem("Upload Response *",tabName = "uploaddata",icon = icon("table")),
+                                     menuItem("Exploratory Factor Analysis",tabName = "EFA",icon = icon("list-alt"),
+                                               menuSubItem("Factor Loading",tabName = "loading",icon = shiny::icon("angle-double-right")),
+                                               menuSubItem("Scree Plot",tabName = "screen_plot",icon = shiny::icon("angle-double-right"))),
 
-                                    menuItem("Confirmatory Factor Analysis",tabName = "CFA",icon = icon("list-alt"),
-                                             menuSubItem("Factor Loading",tabName = "loading_CFA",icon = shiny::icon("angle-double-right")),
-                                             menuSubItem("Path Diagram",tabName = "path_plot",icon = shiny::icon("angle-double-right"))),
+                                     menuItem("Confirmatory Factor Analysis",tabName = "CFA",icon = icon("list-alt"),
+                                               menuSubItem("Factor Loading",tabName = "loading_CFA",icon = shiny::icon("angle-double-right")),
+                                               menuSubItem("Path Diagram",tabName = "path_plot",icon = shiny::icon("angle-double-right"))),
 
-                                    menuItem("Classic Test Theory",tabName = "CTT",icon = icon("th"),
-                                             menuSubItem("Descriptive Statistics",tabName = "summary",icon = shiny::icon("angle-double-right")),
-                                             menuSubItem("CTT Parameters",tabName = "CTT_par",icon = shiny::icon("angle-double-right")),
-                                             menuSubItem("CTT Reliability",tabName = "CTT_relia",icon = shiny::icon("angle-double-right")),
-                                             menuSubItem("Correlation Coefficient",tabName = "relate_eff",icon = shiny::icon("angle-double-right"))),
+                                     menuItem("Classic Test Theory",tabName = "CTT",icon = icon("th"),
+                                               menuSubItem("Descriptive Statistics",tabName = "summary",icon = shiny::icon("angle-double-right")),
+                                               menuSubItem("CTT Parameters",tabName = "CTT_par",icon = shiny::icon("angle-double-right")),
+                                               menuSubItem("CTT Reliability",tabName = "CTT_relia",icon = shiny::icon("angle-double-right")),
+                                               menuSubItem("Correlation Coefficient",tabName = "relate_eff",icon = shiny::icon("angle-double-right"))),
 
-                                    menuItem("Item Response Theory",tabName = "IRT",icon = icon("cogs"),
-                                             menuSubItem("Model fit *",tabName = "IRTmodelfit",icon = shiny::icon("angle-double-right")),
-                                             menuSubItem("Hypothesis Testing",tabName = "IRTassum_test",icon = shiny::icon("angle-double-right")),
-                                             menuSubItem("Item Fit",tabName = "IRTitemfit",icon = shiny::icon("angle-double-right")),
-                                             menuSubItem("Item Parameters",tabName = "IRTitempar",icon = shiny::icon("angle-double-right")),
-                                             menuSubItem("Person Parameters",tabName = "IRTperson",icon = shiny::icon("angle-double-right")),
-                                             menuSubItem("WrightMap",tabName = "IRTwright",icon = shiny::icon("angle-double-right")),
-                                             menuSubItem("Item Characteristic Curve",tabName = "IRTicc",icon = shiny::icon("angle-double-right")),
-                                             menuSubItem("Item Information Curve",tabName = "IRTiic",icon = shiny::icon("angle-double-right")),
-                                             menuSubItem("Test Information Curve",tabName = "IRTtic",icon = shiny::icon("angle-double-right"))),
+                                     menuItem("Item Response Theory",tabName = "IRT",icon = icon("cogs"),
+                                               menuSubItem("Model fit *",tabName = "IRTmodelfit",icon = shiny::icon("angle-double-right")),
+                                               menuSubItem("Hypothesis Testing",tabName = "IRTassum_test",icon = shiny::icon("angle-double-right")),
+                                               menuSubItem("Item Fit",tabName = "IRTitemfit",icon = shiny::icon("angle-double-right")),
+                                               menuSubItem("Item Parameters",tabName = "IRTitempar",icon = shiny::icon("angle-double-right")),
+                                               menuSubItem("Person Parameters",tabName = "IRTperson",icon = shiny::icon("angle-double-right")),
+                                               menuSubItem("WrightMap",tabName = "IRTwright",icon = shiny::icon("angle-double-right")),
+                                               menuSubItem("Item Characteristic Curve",tabName = "IRTicc",icon = shiny::icon("angle-double-right")),
+                                               menuSubItem("Item Information Curve",tabName = "IRTiic",icon = shiny::icon("angle-double-right")),
+                                               menuSubItem("Test Information Curve",tabName = "IRTtic",icon = shiny::icon("angle-double-right"))),
 
-                                    menuItem("Multidimensional IRT",tabName = "MIRT",icon = icon("cogs"),
-                                             menuSubItem("Upload Dimension *",tabName = "MIRTdim_info",icon = icon("table")),
-                                             menuSubItem("Model Fit *",tabName = "MIRTmodelfit",icon = shiny::icon("angle-double-right")),
-                                             menuSubItem("Hypothesis testing",tabName = "MIRTassum_test",icon = shiny::icon("angle-double-right")),
-                                             menuSubItem("Item Fit",tabName = "MIRTitemfit",icon = shiny::icon("angle-double-right")),
-                                             menuSubItem("Item Parameters",tabName = "MIRTitempar",icon = shiny::icon("angle-double-right")),
-                                             menuSubItem("Person Parameters",tabName = "MIRTperson",icon = shiny::icon("angle-double-right")),
-                                             menuSubItem("Wright Map",tabName = "MIRTwright",icon = shiny::icon("angle-double-right")),
-                                             menuSubItem("Item Characteristic Curve",tabName = "MIRTicc",icon = shiny::icon("angle-double-right")),
-                                             menuSubItem("Item Information Curve",tabName = "MIRTiic",icon = shiny::icon("angle-double-right")),
-                                             menuSubItem("Test Information Curve",tabName = "MIRTtic",icon = shiny::icon("angle-double-right"))),
-                                    menuItem("Continuous Response Model", tabName = "CRM_model", icon = icon("cogs"),
-                                             menuSubItem("Upload extreme data",tabName = "CRM_maxmin_print",icon = icon("table")),
-                                             menuSubItem("Item Fit",tabName = "CRM_itemfit",icon = shiny::icon("angle-double-right")),
-                                             menuSubItem("Item Parameters",tabName = "CRM_itempara",icon = shiny::icon("angle-double-right")),
-                                             menuSubItem("Person Parameter",tabName = "CRM_personpar",icon = shiny::icon("angle-double-right")),
-                                             menuSubItem("Item Category Response Curves",tabName = "CRM_ICC",icon =  shiny::icon("angle-double-right")))
+                                     menuItem("Multidimensional IRT",tabName = "MIRT",icon = icon("cogs"),
+                                               menuSubItem("Upload Dimension *",tabName = "MIRTdim_info",icon = icon("table")),
+                                               menuSubItem("Model Fit *",tabName = "MIRTmodelfit",icon = shiny::icon("angle-double-right")),
+                                               menuSubItem("Hypothesis testing",tabName = "MIRTassum_test",icon = shiny::icon("angle-double-right")),
+                                               menuSubItem("Item Fit",tabName = "MIRTitemfit",icon = shiny::icon("angle-double-right")),
+                                               menuSubItem("Item Parameters",tabName = "MIRTitempar",icon = shiny::icon("angle-double-right")),
+                                               menuSubItem("Person Parameters",tabName = "MIRTperson",icon = shiny::icon("angle-double-right")),
+                                               menuSubItem("Wright Map",tabName = "MIRTwright",icon = shiny::icon("angle-double-right")),
+                                               menuSubItem("Item Characteristic Curve",tabName = "MIRTicc",icon = shiny::icon("angle-double-right")),
+                                               menuSubItem("Item Information Curve",tabName = "MIRTiic",icon = shiny::icon("angle-double-right")),
+                                               menuSubItem("Test Information Curve",tabName = "MIRTtic",icon = shiny::icon("angle-double-right"))),
+                                     menuItem("Continuous Response Model", tabName = "CRM_model", icon = icon("cogs"),
+                                               menuSubItem("Upload extreme data",tabName = "CRM_maxmin_print",icon = icon("table")),
+                                               menuSubItem("Item Fit",tabName = "CRM_itemfit",icon = shiny::icon("angle-double-right")),
+                                               menuSubItem("Item Parameters",tabName = "CRM_itempara",icon = shiny::icon("angle-double-right")),
+                                               menuSubItem("Person Parameter",tabName = "CRM_personpar",icon = shiny::icon("angle-double-right")),
+                                               menuSubItem("Item Category Response Curves",tabName = "CRM_ICC",icon =  shiny::icon("angle-double-right")))
                         )),
                       dashboardBody(
                         #A. Introduction page---------------------------------------------------------------------------
@@ -158,7 +162,7 @@ app_ui <- function() {
                                                 fileInput(inputId = "dimensionfile_cfa",
                                                           "Kindly upload an Excel file containing example data on the left side to
                                                           demonstrate the relationship between each question and dimension.
-                                                          Please note that TestAnaAPP currently does not support
+                                                          Please note that 'TestAnaAPP' currently does not support
                                                           the analysis of data where a single item measures multiple dimensions simultaneously.",
                                                           placeholder="File",buttonLabel = "Browse",
                                                           accept = c("xlsx","xls","csv"))),
@@ -201,16 +205,16 @@ app_ui <- function() {
                             tabName = "CTT_par",
                             fluidRow(column(8,
                                             box(title = "Note", solidHeader = TRUE,status = "warning",width = 12,
-                                                "1. For binary scoring items (items with only two type of scores), TestAnaAPP
+                                                "1. For binary scoring items (items with only two type of scores), 'TestAnaAPP'
                                                 categorizes the participants into a high-score group and a low-score group based on their
                                                 total scores being above or equal to the 73rd percentile and below or equal to the 27th percentile,
                                                 respectively. Then the pass rate of each item in the high-score and low-score groups is calculated,
                                                 and the average pass rate of each item is taken as its difficulty level.",
                                                 br(),
-                                                "2. For multiple scoring items (items with more than two type of scores), TestAnaAPP calculates the
+                                                "2. For multiple scoring items (items with more than two type of scores), 'TestAnaAPP' calculates the
                                                 difficulty of each item by dividing the average score on the item by the maximum score possible on the item.",
                                                 br(),
-                                                "Regardless of the number of scoring categories for an item, TestAnaAPP calculates the difference between
+                                                "Regardless of the number of scoring categories for an item, 'TestAnaAPP' calculates the difference between
                                                 the mean scores of the high-score and low-score groups on the item and divides it by the maximum possible
                                                 score on the item to obtain the item discrimination index.",
                                                 br(),
@@ -220,7 +224,7 @@ app_ui <- function() {
                                                 "4. The correlation coefficient is the Pearson correlation coefficient between item scores and
                                                 the total score.",
                                                 br(),
-                                                "5. If the score data includes missing values, TestAnaAPP will delete any case that inludes missing data.",
+                                                "5. If the score data includes missing values, 'TestAnaAPP' will delete any case that inludes missing data.",
                                                 br(),
 
                                                 ),
@@ -308,7 +312,7 @@ app_ui <- function() {
 
                                        submitButton( "Updata results")),
                                    box(title = "Download results",solidHeader = TRUE,status = "success",width = 12,
-                                       "Download all the analysis results for unidimensional IRT in the TestAnaAPP.",br(),
+                                       "Download all the analysis results for unidimensional IRT in the 'TestAnaAPP'.",br(),
                                        downloadButton(outputId = "IRT_resultfile", label = "Download results"),
                                        br(),
                                        br(),
@@ -464,7 +468,7 @@ app_ui <- function() {
                                                  fileInput(inputId = "dimensionfile",
                                                            "Kindly upload an Excel file with example data on the left side to demonstrate
                                                            the correlation between each question and dimension. Please note that currently,
-                                                           TestAnaAPP does not support the analysis of data where a single item measures multiple
+                                                           'TestAnaAPP' does not support the analysis of data where a single item measures multiple
                                                            dimensions simultaneously.",
                                                            placeholder="File",buttonLabel = "Browse",
                                                            accept = c("xlsx","xls","csv")))))
@@ -520,7 +524,7 @@ app_ui <- function() {
                                                  submitButton( "Updata results")),
 
                                              box(title = "Download results",solidHeader = TRUE,status = "success",width = 12,
-                                                 "Download all the analysis results for multidimensional IRT in the TestAnaAPP.",br(),
+                                                 "Download all the analysis results for multidimensional IRT in the 'TestAnaAPP'.",br(),
                                                  downloadButton(outputId = "MIRT_resultfile", label = "Download"),
                                                  br(),
                                                  br(),
@@ -742,7 +746,7 @@ app_ui <- function() {
                                                  br(),br(),
                                                  submitButton( "Updata results")),
                                              box(title = "Download results",solidHeader = TRUE,status = "success",width = 12,
-                                                 "Download all the analysis results for continuous response model in the TestAnaAPP.",br(),
+                                                 "Download all the analysis results for continuous response model in the 'TestAnaAPP'.",br(),
                                                  downloadButton(outputId = "CRM_results",label = "Download"))))
                             ),
                           tabItem(tabName = "CRM_itempara",
@@ -791,3 +795,5 @@ DT_dataTable_Show <- function(x){
                 filter =list(position = 'top', clear = TRUE, plain = TRUE),
                 options = list(scrollX = TRUE))
 }
+
+
