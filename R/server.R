@@ -169,7 +169,7 @@ app_server <- function(input, output, session) {
           shiny::p(strong('Description: '), "This application enables exploratory factor analysis,
     confirmatory factor analysis, classical measurement theory analysis,
     unidimensional item response theory, multidimensional item response theory, and continuous item response
-    model analysis, through the 'Shiny' interactive interface. It also facilitates the visualization
+    model analysis, through the 'shiny' interactive interface. It also facilitates the visualization
     of the results. Users can easily download the analysis results from the
     interactive interface. Additionally, users can download a concise report
     about items and test quailty throught the interactive interface."),
