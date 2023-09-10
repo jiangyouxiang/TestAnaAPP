@@ -1,5 +1,5 @@
 Package: TestAnaAPP
-Title: The 'Shiny' App for Test Analysis and Visualization
+Title: The 'shiny' App for Test Analysis and Visualization
 Version: 0.1.2
 Authors@R: 
     c(person(given = "Youxiang", family = "Jiang", 
