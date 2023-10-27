@@ -2,7 +2,7 @@
 #'
 #' @param input,output,session Internal parameters for {shiny}.
 #'     DO NOT REMOVE.
-#' @import shiny dplyr stringr tidySEM mirt ggplot2 golem EstCRM rmarkdown officer officedown flextable
+#' @import shiny dplyr stringr mirt tidySEM ggplot2 golem EstCRM rmarkdown officer officedown flextable
 #' @importFrom openxlsx write.xlsx
 #' @importFrom plotrix twoord.plot
 #' @importFrom cowplot plot_grid
@@ -11,6 +11,7 @@
 #' @importFrom stats cor na.omit quantile sd
 #' @importFrom bruceR EFA Alpha CFA Corr Describe Freq import lavaan_summary
 #' @importFrom tidyr pivot_longer
+
 #' @noRd
 app_server <- function(input, output, session) {
   options(shiny.maxRequestSize = 1024^4)
@@ -1268,7 +1269,7 @@ app_server <- function(input, output, session) {
   ##9.9 IIC----------------------------------------------------------
   Item_infor<- function(object,theta,mode,colnames){
     D <- mode$F_n
-    degrees <- rep(45, D)
+    degrees <- rep(0, D)
 
     TRUE_information <- testinfo(object, Theta = theta[,1:mode$F_n],
                                  degrees = degrees, individual = T)
@@ -1751,7 +1752,7 @@ item_ana<- function(data){#Difficult, discrimination and CV
 
     #CV
     item_analysis[i,3]<- (sd(data[,i])/mean(data[,i]))*100
-    item_analysis[i,4] <- cor(x = data[,i], y = zf)
+    item_analysis[i,4] <- cor(x = data[,i], y = rowSums(data))
   }
 
   for (j in cat_m) {
@@ -1762,7 +1763,7 @@ item_ana<- function(data){#Difficult, discrimination and CV
 
     #CV
     item_analysis[j,3]<- (sd(data[,j])/mean(data[,j]))*100
-    item_analysis[j,4] <- cor(x = data[,j], y = zf)
+    item_analysis[j,4] <- cor(x = data[,j], y = rowSums(data))
   }
 
   return(item_analysis)
