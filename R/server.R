@@ -698,6 +698,7 @@ app_server <- function(input, output, session) {
 
     wrightMap_new(person = as.numeric(IRT_person[,2]),
                   thresholds = thresholds,
+                  point_label = input$IRT_point_label,
                   points_size = input$IRT_wright_map_p_size,
                   p_width =  input$IRT_wright_p_width )
 
@@ -705,7 +706,8 @@ app_server <- function(input, output, session) {
   output$IRT_wright <- renderPlot({
     if(is.null(input$res_data))
       return(NULL)
-    if(is.null(model_selected(input$modelselect)))
+
+    if(model_selected(input$modelselect) != "Rasch")
       return(NULL)
     IRT_wright_rea()
   },height = exprToFunction(input$IRT_wright_map_height))
@@ -752,7 +754,7 @@ app_server <- function(input, output, session) {
     Response <- mydata()%>%as.data.frame()
 
     item_info <- IRT_iteminfo_rea()
-    ncol <- wrap_ncol_Value()
+    ncol <- as.numeric(input$wrap_ncol_iic)
     plot_wrap(theta = sim_theta,
               y_matrix = item_info,
               lines = "IIC",
@@ -761,15 +763,16 @@ app_server <- function(input, output, session) {
               x_lab = "Theta",
               title = "Item Information Curve",
               ncol = ncol,
-              scale = "free")
+              scale = input$IRTiic_scale %>% stringr::str_to_lower())
   })
   output$IRT_IIC <- renderPlot({
     if(is.null(input$res_data))
       return(NULL)
     if(is.null(model_selected(input$modelselect)))
       return(NULL)
+
     IRT_IIC_rea()
-  },height =  exprToFunction(input$wrap_height))
+  },height =  exprToFunction(input$wrap_height_iic))
 
   ##8.9 TIC----------------------------------------------------------------------------
   IRT_TIC_rea<- reactive({
@@ -801,7 +804,7 @@ app_server <- function(input, output, session) {
   })
   output$IRT_IIC1 <- renderUI({
     ncol <- wrap_ncol_Value()
-    plotOutput(outputId = "IRT_IIC", height = paste0(input$wrap_height,"px"))
+    plotOutput(outputId = "IRT_IIC", height = paste0(input$wrap_height_iic,"px"))
   })
 
   ##8.11 Download figures------------------------------------------------------------
@@ -830,7 +833,7 @@ app_server <- function(input, output, session) {
       paste0("IRT_item_information_curve.jpeg")
     },
     content = function(file){
-      jpeg(file, width = input$wrap_height*1.618, height = input$wrap_height)
+      jpeg(file, width = input$wrap_height_iic*1.618, height = input$wrap_height_iic)
       IRT_IIC_rea()%>% print()
       dev.off()
     }
@@ -906,6 +909,10 @@ app_server <- function(input, output, session) {
 
       wright_map_height <- input$IRT_wright_map_height
       wrap_height_value <- input$wrap_height
+
+
+      wrap_height_value_iic <- input$wrap_height_iic
+
       #Export analysis report
       path_sys <- system.file("rmd", "IRT_Analysis_Report.Rmd", package = "TestAnaAPP")
       src <- normalizePath(path_sys)
@@ -1223,13 +1230,15 @@ app_server <- function(input, output, session) {
 
     wrightMap_new(person = MIRT_person[,wright_dim],
                   thresholds = thresholds ,
+                  point_label = input$MIRT_point_label,
                   points_size = input$MIRT_wright_map_p_size,
                   p_width = input$MIRT_wright_p_width)
   })
   output$MIRT_wright <- renderPlot({
     if(is.null(input$dimensionfile))
       return(NULL)
-    if(is.null(model_selected(input$modelselect1)))
+
+    if(model_selected(input$modelselect1) != "Rasch")
       return(NULL)
     MIRT_wright_rea()
   },height = exprToFunction(input$MIRT_wright_map_height))
@@ -1310,7 +1319,7 @@ app_server <- function(input, output, session) {
     sim_theta <- seq(-4,4,0.01)
     Response <- mydata()%>%as.data.frame()
     item_info <- MIRT_iteminfo_rea()
-    ncol <- MIRT_wrap_ncol_value()
+    ncol <- as.numeric(input$MIRT_wrap_ncol_iic)
     plot_wrap(theta = sim_theta,
               y_matrix = item_info,
               lines = "IIC",
@@ -1319,7 +1328,7 @@ app_server <- function(input, output, session) {
               x_lab = "Theta",
               title = "Item Information Curve",
               ncol = ncol,
-              scale = "free")
+              scale = input$MIRTiic_scale %>% stringr::str_to_lower())
   })
   output$MIRT_IIC <- renderPlot({
     if(is.null(input$dimensionfile))
@@ -1327,7 +1336,7 @@ app_server <- function(input, output, session) {
     if(is.null(model_selected(input$modelselect1)))
       return(NULL)
     MIRT_IIC_rea()
-  },height =  exprToFunction(input$MIRT_wrap_height))
+  },height =  exprToFunction(input$MIRT_wrap_height_iic))
 
   ##9.10 TIC---------------------------------------------------------------------
   output$MIRT_TIC_dim_select <- renderUI({
@@ -1398,7 +1407,7 @@ app_server <- function(input, output, session) {
   })
   output$MIRT_IIC1 <- renderUI({
     S <- MIRT_wrap_ncol_value()
-    plotOutput(outputId = "MIRT_IIC", height = paste0(input$MIRT_wrap_height,"px"))
+    plotOutput(outputId = "MIRT_IIC", height = paste0(input$MIRT_wrap_height_iic,"px"))
   })
 
 
@@ -1428,7 +1437,7 @@ app_server <- function(input, output, session) {
       paste0("MIRT_item_information_curve.jpeg")
     },
     content = function(file){
-      jpeg(file, width = input$MIRT_wrap_height*1.618, height = input$MIRT_wrap_height)
+      jpeg(file, width = input$MIRT_wrap_height_iic*1.618, height = input$MIRT_wrap_height_iic)
       MIRT_IIC_rea() %>% print()
       dev.off()
     }
@@ -1518,7 +1527,8 @@ app_server <- function(input, output, session) {
       F_name <- TIC_dim
 
       wright_map_height <- input$MIRT_wright_map_height
-      wrap_height_value <- input$wrap_height
+      wrap_height_value <- input$MIRT_wrap_height
+      wrap_height_value_iic <- input$MIRT_wrap_height_iic
       #Export analysis report
       path_sys <- system.file("rmd", "MIRT_Analysis_Report.Rmd", package = "TestAnaAPP")
       src <- normalizePath(path_sys)
@@ -1853,7 +1863,15 @@ plot_wrap <- function(theta,
   return(gra)
 }
 #WrightMap
-wrightMap_new <- function(person, thresholds, points_size,p_width){
+wrightMap_new <- function(person, thresholds, point_label, points_size,p_width){
+  if(point_label == "Numeric"){
+    names1 <- 1:nrow(thresholds)
+
+  }else if(point_label == "Column names"){
+    names1 <- rownames(thresholds)
+  }
+
+
   #histogram for person parameters
   person <- data.frame("x" = person)
   histogram <- ggplot(person, aes(x = person$x)) +
@@ -1872,7 +1890,7 @@ wrightMap_new <- function(person, thresholds, points_size,p_width){
     coord_flip()
 
   #points plot for item parameters
-  if(ncol(thresholds) >=1 ){
+  if(ncol(thresholds) >1 ){
 
     item_names <- rownames(thresholds)
     if(is.list(thresholds)){
@@ -1885,12 +1903,13 @@ wrightMap_new <- function(person, thresholds, points_size,p_width){
     labels <- vector(mode = "character")
     for (i in 1:ncol(thresholds)) {
       labels <- c(labels,
-                  paste0(rownames(thresholds),"_",colnames(thresholds)[i]))
+                  paste0(names1,
+                         "_",colnames(thresholds)[i]))
     }
     data <- data.frame("y" = y, "labels" = labels)
   }else{
     data <- data.frame("y" = as.numeric(thresholds),
-                       "labels" = rownames(thresholds))
+                       "labels" = names1)
   }
   points_plot <- ggplot() +
     labs(x = "Item",y = "Thresholds")+

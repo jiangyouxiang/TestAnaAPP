@@ -280,22 +280,22 @@ Item parameters serve as crucial indicators for assessing item quality. Provided
 The `r model` model was chosen for this analysis. Parameter estimation was performed using the `r IRT_est_method`. The item parameters are presented below:
 
 ```{r, echo=FALSE,tab.cap=sprintf("The item parameters of the %s",model),tab.id = "item_par", tab.cap.style = "Table Caption"}
-disc_color <- function(x){
-  out <- rep("white", length(x))
-  out[x <= 0] <- "red"
-  out[x <= 0.3] <- "yellow"
-  out
-}
-diff_color <- function(x){
-  out <- rep("white", length(x))
-  out[abs(x) > 4 ] <- "yellow"
-  out
-}
-fmt_tra_other(IRT_itempar)%>%flextable::highlight(j = colnames(IRT_itempar)%>%
-                                                    str_which(pattern = "Discrimination"),
-                                                  color = disc_color)%>%
-  flextable::highlight(j = colnames(IRT_itempar)%>%
-                         str_which(pattern = "Difficult"),color = diff_color)
+# disc_color <- function(x){
+#   out <- rep("white", length(x))
+#   out[x <= 0] <- "red"
+#   out[x <= 0.3] <- "yellow"
+#   out
+# }
+# diff_color <- function(x){
+#   out <- rep("white", length(x))
+#   out[abs(x) > 4 ] <- "yellow"
+#   out
+# }
+fmt_tra_other(IRT_itempar)#%>%flextable::highlight(j = colnames(IRT_itempar)%>%
+  #                                                   str_which(pattern = "Discrimination"),
+  #                                                 color = disc_color)%>%
+  # flextable::highlight(j = colnames(IRT_itempar)%>%
+  #                        str_which(pattern = "Difficult"),color = diff_color)
 ```
 
 # Wright Map
@@ -333,7 +333,7 @@ Item information represents the level of measurement error associated with each 
 
 Professional books can provide guidance on interpreting the IIC curve for those seeking to gain a comprehensive understanding.
 
-```{r, echo=FALSE,fig.cap=sprintf("The item information curve of this test"), fig.id = "IIC",fig.cap.style = "Image Caption",fig.height=wrap_height_value/142,fig.width=plot_width}
+```{r, echo=FALSE,fig.cap=sprintf("The item information curve of this test"), fig.id = "IIC",fig.cap.style = "Image Caption",fig.height=wrap_height_value_iic/142,fig.width=plot_width}
 print(IRT_IIC)
 ```
 

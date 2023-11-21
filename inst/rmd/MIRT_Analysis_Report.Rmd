@@ -281,22 +281,8 @@ In this analysis, the `r model` model was selected. The `r MIRT_est_method` was 
 The item parameters are as follows:
 
 ```{r, echo=FALSE,tab.cap=sprintf("The item parameters of the %s",model),tab.id = "item_par", tab.cap.style = "Table Caption"}
-disc_color <- function(x){
-  out <- rep("white", length(x))
-  out[x <= 0] <- "red"
-  out[x <= 0.3] <- "yellow"
-  out
-}
-diff_color <- function(x){
-  out <- rep("white", length(x))
-  out[abs(x) > 4 ] <- "yellow"
-  out
-}
-fmt_tra_other(MIRT_itempar)%>%flextable::highlight(j = colnames(MIRT_itempar)%>%
-                                                    str_which(pattern = "Discrimination"),
-                                                  color = disc_color)%>%
-  flextable::highlight(j = colnames(MIRT_itempar)%>%
-                         str_which(pattern = "Difficult"),color = diff_color)
+
+fmt_tra_other(MIRT_itempar)
 ```
 
 # Wright Map
@@ -339,7 +325,7 @@ Professional books can provide guidance on interpreting the IIC curve for those 
 
 In the between-item test, which is considered acceptable according to 'TestAnaAPP', the IIC figures are based on a single latent trait that corresponds to each item.
 
-```{r, echo=FALSE,fig.cap=sprintf("The item information curve of this test"), fig.id = "IIC",fig.cap.style = "Image Caption",fig.height=wrap_height_value/142,fig.width=plot_width}
+```{r, echo=FALSE,fig.cap=sprintf("The item information curve of this test"), fig.id = "IIC",fig.cap.style = "Image Caption",fig.height=wrap_height_value_iic/142,fig.width=plot_width}
 print(MIRT_IIC)
 ```
 

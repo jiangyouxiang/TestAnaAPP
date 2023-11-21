@@ -1,6 +1,6 @@
 Package: TestAnaAPP
 Title: The 'shiny' App for Test Analysis and Visualization
-Version: 0.1.3
+Version: 0.1.4
 Authors@R: 
     c(person(given = "Youxiang", family = "Jiang", 
     email = "jiangyouxiang34@163.com", 
@@ -10,13 +10,7 @@ Authors@R:
     email ="whb@bnu.edu.cn", 
     role = c("ctb","ths"),
     comment = "0000-0001-8620-9734"))
-Description: This application enables exploratory factor analysis,
-    confirmatory factor analysis, classical measurement theory analysis,
-    unidimensional item response theory, multidimensional item response theory, and continuous item response
-    model analysis, through the 'shiny' interactive interface. It also facilitates the visualization
-    of the results. Users can easily download the analysis results from the
-    interactive interface. Additionally, users can download a concise report
-    about items and test quality on the interactive interface.
+Description: This application enables exploratory factor analysis, confirmatory factor analysis, classical measurement theory analysis, unidimensional item response theory, multidimensional item response theory, and continuous item response model analysis, through the 'shiny' interactive interface. It also facilitates the visualization of the results. Users can easily download the analysis results from the interactive interface. Additionally, users can download a concise report about items and test quality on the interactive interface.
 Depends: ggplot2 (>= 3.4.3), 
          mirt (>= 1.40), 
          shinydashboard (>= 0.7.2), 
