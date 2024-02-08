@@ -41,6 +41,11 @@ knitr::opts_chunk$set(echo=FALSE, warning = FALSE)
 requireNamespace("officer")
 requireNamespace("rmarkdown")
 requireNamespace("officedown")
+if (!require(latticeExtra)) {
+  install.packages("latticeExtra")
+  requireNamespace("latticeExtra")
+}
+
 fmt_tra_other <- function(ft, reset_width = TRUE){#Convert matrix to table.
   c <- ncol(ft)
   ft <- as.data.frame(ft)%>%flextable::flextable()
@@ -66,9 +71,11 @@ fmt_tra_other <- function(ft, reset_width = TRUE){#Convert matrix to table.
   return(ft)
 }
 bold_print <- function(text){
-  text_format <- fp_text(bold = TRUE, font.family = "Time News Roman",font.size = 12)
-  fp <- fp_par(text.align = "center")
-  return(fpar(ftext(text, prop = text_format), fp_p = fp))
+  text_format <- officer::fp_text(bold = TRUE, 
+                                  font.family = "Time News Roman",
+                                  font.size = 12)
+  fp <- officer::fp_par(text.align = "center")
+  return(officer::fpar(officer::ftext(text, prop = text_format), fp_p = fp))
 }
 
 plot_width <- 6.299
@@ -150,7 +157,7 @@ For more details on the 4PL model, refer to Barton and Lord (1981).
 
 ## IRT Models for Polytomous Data
 
-Let $X_{ij}$ denote the response of subject $j$ (where $j=1,2,3,...,J$) to item $i$ (where $i=1,2,3,...,I$) in a polytomous data context, where there exist $m_i$ response categories. Specifically, $X_{ij}=k$, where $k\in\{0,1,2,...,m_i\}$. Moreover, in the polytomous item response theory (IRT) model, the item threshold (or difficulty) parameters are represented as $\beta_{ih}$, with $h\in\{1,2,...,m_i\}$, while the latent trait parameter for the subject is denoted as $\theta_j$.
+Let $X_{ikj}$ denote the response of subject $j$ (where $j=1,2,3,...,J$) to item $i$ (where $i=1,2,3,...,I$) in a polytomous data context, where there exist $m_i$ response categories. Specifically, $X_{ikj}=k$, where $k\in\{0,1,2,...,m_i\}$. Moreover, in the polytomous item response theory (IRT) model, the item threshold (or difficulty) parameters are represented as $\beta_{ih}$, with $h\in\{1,2,...,m_i\}$, while the latent trait parameter for the subject is denoted as $\theta_j$.
 
 
 ### Partial credit model (PCM)
@@ -175,7 +182,7 @@ $$P(X_{ikj}=k | \theta_{j}) = \frac{e^{\sum_{h=0}^{k}[\alpha_i(\theta_j-\beta_{i
 
 ### Graded Response Model (GRM)
 
-Both the PCM and GPCM models are founded on the modeling of the probability of response categories $k$ for item $i$. In contrast, the GRM model estimates the cumulative probability of response categories $k$ or higher. The cumulative response probability function for the GRM model can be expressed as:
+Both the PCM and GPCM models are founded on the modeling of the probability of response categories $k$ for item $i$. In contrast, the GRM model estimates the cumulative probability of response categories $k$ or higher. The cumulative response probability function for the GRM model can be expressed as:   
 
 $$P(X_{ij}{\geq} k | \theta_{j}) = \frac{e^{[\alpha_i(\theta_j-\beta_{ik})]}}{1+e^{[\alpha_i(\theta_j-\beta_{ik})]}}\tag{7}$$
 where $P(X_{ij}{\geq} k | \theta_{j})$ represents the probability that subject $j$ responds to item $i$ with category $k$ or a higher category. The parameter $\beta_{ik}$ corresponds to the threshold (difficulty) of response category $k$ on item $i$. To calculate the probability of a specific response category, it is necessary to subtract the adjoining cumulative probabilities:

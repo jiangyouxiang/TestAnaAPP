@@ -291,30 +291,53 @@ app_server <- function(input, output, session) {
       dimension_cfa()
     }
   })
-  dimension_recode <- function(dimension){
-    dimnames <- table(dimension[,2])%>%names()
-
-    S <- vector(mode = "character")
-    for (i in 1:length(dimnames)) {
-      Ss <- paste0(dimnames[i]," = " ,paste0(dimension[which(dimension[,2]==dimnames[i]),1],",", collapse = ""))
-      if(i == length(dimnames)){
-        S <- c(S, str_sub(string = Ss, start = 1, end = (str_length(Ss)-1)))#Remove the last ",".
-      }else{
-        S <- c(S, str_sub(string = Ss, start = 1, end = (str_length(Ss)-1)))
+  dimension_recode <- function(dimension = NULL, Qmatrix){
+    if(is.null(dimension)){
+      item_names <- rownames(Qmatrix)
+      dimnames <- colnames(Qmatrix)
+      S <- vector(mode = "character")
+      for (i in 1:ncol(Qmatrix)) {
+        Ss <- c(dimnames[i],"=",paste0(item_names[which(Qmatrix[,i]==1)],","))%>%
+          paste0(collapse = "")
+        if(i==length(dimnames)){
+          S <- c(S, str_sub(string = Ss, start = 1, end = (str_length(Ss)-1)))#Remove the last ",".
+        }else{
+          S <- c(S, str_sub(string = Ss, start = 1, end = (str_length(Ss)-1)))
+        }
       }
+      cov <- paste0("COV = ",paste0(dimnames, "*", collapse = ""))
+
+      S <- paste0(S, "
+                ",collapse = "")#No COV matrix
+      SS <- paste0(S, str_sub(cov, start = 1, end = (str_length(cov)-1)),collapse = "")#Include COV matrix
+      is.within_item <- ifelse(sum(Qmatrix)>length(item_names),TRUE, FALSE)
+    }else{
+      dimnames <- table(dimension[,2])%>%names()
+
+      S <- vector(mode = "character")
+      for (i in 1:length(dimnames)) {
+        Ss <- paste0(dimnames[i]," = " ,paste0(dimension[which(dimension[,2]==dimnames[i]),1],",", collapse = ""))
+        if(i == length(dimnames)){
+          S <- c(S, str_sub(string = Ss, start = 1, end = (str_length(Ss)-1)))#Remove the last ",".
+        }else{
+          S <- c(S, str_sub(string = Ss, start = 1, end = (str_length(Ss)-1)))
+        }
+
+      }
+      cov <- paste0("COV = ",paste0(dimnames, "*", collapse = ""))
+
+      S <- paste0(S, "
+                ",collapse = "")#No COV matrix
+      SS <- paste0(S, str_sub(cov, start = 1, end = (str_length(cov)-1)),collapse = "")#Include COV matrix
+      is.within_item <- NULL
 
     }
-    cov <- paste0("COV = ",paste0(dimnames, "*", collapse = ""))
-
-    S <- paste0(S, "
-                ",collapse = "")#No COV matrix
-    SS <- paste0(S, str_sub(cov, start = 1, end = (str_length(cov)-1)),collapse = "")#Include COV matrix
-
-    return(list(dim = S, COV = SS, F_names = dimnames, F_n = length(dimnames)))
+    return(list(dim = S, COV = SS, F_names = dimnames, F_n = length(dimnames),
+                is.within_item = is.within_item))
   }
 
   CFA_mode <- function(dimension){
-    dim_mode <- dimension_recode(dimension)$dim#The relationship between item and dimension.
+    dim_mode <- dimension_recode(dimension = dimension)$dim#The relationship between item and dimension.
 
     return(str_replace_all(string = dim_mode, pattern = "=",replacement = "=~")%>%
              str_replace_all(pattern =",",replacement = "+")%>%
@@ -680,6 +703,8 @@ app_server <- function(input, output, session) {
 
   ###8.6 WrightMap------
   IRT_wright_rea <- reactive({
+    if(model_selected(input$modelselect) != "Rasch")
+      return(NULL)
     Response <- mydata()%>%as.data.frame()
     cat_all <- apply(Response, MARGIN = 2, FUN = cat_number)
 
@@ -933,41 +958,53 @@ app_server <- function(input, output, session) {
       return(NULL)
     inFile <- input$dimensionfile
     dataset <- bruceR::import(inFile$datapath)
-    data <- as.data.frame(dataset)
-    if(sum(is.na(dataset)) >=1){
+
+    dataset1 <- dataset[,-1] %>% unlist() %>% as.numeric() %>%
+      matrix(nrow = nrow(dataset),ncol = (ncol(dataset)-1))
+    rownames(dataset1) <- dataset[,1]
+    colnames(dataset1) <- colnames(dataset)[-1]
+
+    if(str_detect(colnames(dataset1),pattern = " ") %>% any()){
+      colnames(dataset1) <- colnames(dataset1) %>% str_replace_all(pattern = " ",replacement = "_")
+    }
+
+    data <- as.data.frame(dataset1)
+    if(sum(is.na(dataset1)) >=1){
       stop("Data cannot contain missing values!")
     }
     data
   })
 
 
-  output$dimension_example <- renderDataTable({
+  output$dimension_example <- DT::renderDataTable({
     dim_data <- dimension()
-    if(is.null(input$res_data))
-      return(NULL)
-
     if(is.null(input$dimensionfile)){
 
-      data_exp <- data.frame("Column name" = colnames(mydata()),
-                             "Dimensions (e.g. F1, F2, F3, etc.)" = c(rep("F1",3),rep("F2",(ncol(mydata())-3))))
-      return(as.data.frame(data_exp))
+      Q <- matrix(0,nrow = 10, ncol = 3)
+      Q[1:3,1] <- 1
+      Q[4:6,2] <- 1
+      Q[7:10,3] <- 1
+      colnames(Q) <- paste0("Trait_",1:3)
+      data_exp <- data.frame("Column name" = paste0("Item",1:10),
+                             Q  )
+      return(as.data.frame(data_exp)%>% DT_dataTable_Show())
 
     }else{
       Response <- mydata()
       if(nrow(dim_data) != ncol(Response) ){#
         stop("The data in the first column of the imported file is inconsistent with the data file column name!")
-      }else if( any(dim_data[,1]%>% as.vector() == colnames(Response))==F){
+      }else if( any(rownames(dim_data)%>% as.vector() == colnames(Response))==F){
         stop("The data in the first column of the imported file is inconsistent with the data file column name!
              Please note that the program does not support column names consisting of only numbers.")
 
       }
-      return(dim_data)
+      return(dim_data%>% DT_dataTable_Show())
     }
   })
 
   dimension_output <- reactive({
     dim_data <- dimension()
-    mode <- dimension_recode(dim_data)
+    mode <- dimension_recode(Qmatrix = dim_data)
     if(input$include_cov == "Yes"){
       return(mode$COV)
     }else{
@@ -977,7 +1014,7 @@ app_server <- function(input, output, session) {
   output$dimension_code <- renderText({
     if(is.null(input$dimensionfile))
       return(NULL)
-    dimension_output()
+    dimension_output()%>%as.character()
   })
 
   ##9.1 MIRT Model fit----------------------------------------------
@@ -989,7 +1026,7 @@ app_server <- function(input, output, session) {
 
     if(nrow(dim_data) != ncol(Response) ){#
       stop("The data in the first column of the imported file is inconsistent with the data file column name!")
-    }else if( any(dim_data[,1]%>% as.vector() == colnames(Response))==F){
+    }else if( any(rownames(dim_data)%>% as.vector() == colnames(Response))==F){
       stop("The data in the first column of the imported file is inconsistent with the data file column name!
              Please note that the program does not support column names consisting of only numbers.")
 
@@ -997,11 +1034,11 @@ app_server <- function(input, output, session) {
 
     mirtCluster()
     if(input$include_cov == "Yes"){
-      MIRT_fit <- mirt(data = Response,model = dimension_recode(dim_data)$COV,
+      MIRT_fit <- mirt(data = Response,model = dimension_recode(Qmatrix = dim_data)$COV,
                        itemtype = model_selected(value = input$modelselect1),
                        method = est_IRT_method(input$MIRT_est_method))
     }else if(input$include_cov == "No"){
-      MIRT_fit <- mirt(data = Response,model = dimension_recode(dim_data)$dim,
+      MIRT_fit <- mirt(data = Response,model = dimension_recode(Qmatrix = dim_data)$dim,
                        itemtype = model_selected(value = input$modelselect1),
                        method = est_IRT_method(input$MIRT_est_method))
     }
@@ -1121,7 +1158,7 @@ app_server <- function(input, output, session) {
   MIRT_itempar_rea <- reactive({
     MIRT_fit <- MIRT_fit_rea()
     dim_data <- dimension()
-    mode <- dimension_recode(dim_data)
+    mode <- dimension_recode(Qmatrix = dim_data)
     item_par_raw <- coef(MIRT_fit, simplify = TRUE)$items
     item_par <- diff_trans(item_par = item_par_raw,
                            F_n = mode$F_n, MDISC = MDISC(MIRT_fit))
@@ -1164,8 +1201,12 @@ app_server <- function(input, output, session) {
   MIRT_person_rea <- reactive({
     MIRT_fit <- MIRT_fit_rea()
     Response <- mydata()
+    dim_data <- dimension() %>% as.data.frame()
+    mode <- dimension_recode(Qmatrix = dim_data )
+
     MIRT_person <- fscores(MIRT_fit, method = est_person_method(input$MIRT_person_est_method),
                            full.scores = T, response.pattern = Response,QMC = TRUE)
+    colnames(MIRT_person) <- c(mode$F_names, paste0("SE_",mode$F_names))
     data.frame("ID" =  paste0(1:nrow(Response)), round( MIRT_person, digits = 3))
   })
   output$MIRT_person <- renderDataTable({
@@ -1186,7 +1227,7 @@ app_server <- function(input, output, session) {
                   selectize = TRUE,selected = "All")
     }else{
       dim_data <- dimension()
-      mode <- dimension_recode(dim_data)
+      mode <- dimension_recode(Qmatrix = dim_data)
       selectInput(inputId = "wright_dim_select",label = "Dimension selection",
                   choices = apply(matrix(mode$F_names,ncol=1),
                                   MARGIN = 1,FUN = as.vector,simplify = FALSE),
@@ -1194,20 +1235,24 @@ app_server <- function(input, output, session) {
     }
   })
   MIRT_wright_rea <- reactive({
+    if(model_selected(input$modelselect1) != "Rasch")
+      return(NULL)
+    dim_data <- dimension() %>% as.data.frame()
+    mode <- dimension_recode(Qmatrix = dim_data )
+    if(mode$is.within_item==TRUE){
+      return(NULL)
+    }
     Response <- mydata()%>%as.data.frame()
     cat_all <- apply(Response, MARGIN = 2, FUN = cat_number)
-    dim_data <- dimension()
-    mode <- dimension_recode(dim_data )
-
     if(is.null(input$wright_dim_select)){
       wright_dim <- as.vector(mode$F_names)[1]
     }else{
-      wright_dim <-  input$wright_dim_select
+      wright_dim <-  input$wright_dim_select %>% as.character()
     }
 
     #Item parameters
     item_par <- MIRT_itempar_rea()
-    dim_items <- which(dim_data[,2] == wright_dim)
+    dim_items <- which(dim_data[,wright_dim] == 1)
 
     if(length(dim_items)==1){
       item_par_dim <- item_par[dim_items,] %>% matrix(nrow = 1)
@@ -1218,6 +1263,7 @@ app_server <- function(input, output, session) {
     }
     #Person parameters
     MIRT_person <- MIRT_person_rea()[,-1]
+
 
     thresholds <- item_par_dim[,c(str_which(colnames(item_par) %>% str_to_lower(),
                                             pattern = "difficult"))]
@@ -1245,10 +1291,14 @@ app_server <- function(input, output, session) {
 
   ##9.8 ICC------------------------------------------------
   MIRT_ICC_rea <- reactive({
+    dim_data <- dimension()
+    mode <- dimension_recode(Qmatrix = dim_data )
+    if(mode$is.within_item==TRUE){
+      return(NULL)
+    }
     sim_theta <- seq(-4,4,0.01)
     Response <- mydata()%>%as.data.frame()
-    dim_data <- dimension()
-    mode <- dimension_recode(dim_data)
+
     cat_all <- apply(Response, MARGIN = 2, FUN = cat_number)
     #Model fit
     MIRT_fit  <- MIRT_fit_rea()
@@ -1276,26 +1326,22 @@ app_server <- function(input, output, session) {
     MIRT_ICC_rea()
   },height =  exprToFunction(input$MIRT_wrap_height))
   ##9.9 IIC----------------------------------------------------------
-  Item_infor<- function(object,theta,mode,colnames){
-    D <- mode$F_n
+  Item_infor<- function(object,theta,Qmatrix,colnames){
+    D <- ncol(Qmatrix)
     degrees <- rep(0, D)
 
-    TRUE_information <- testinfo(object, Theta = theta[,1:mode$F_n],
+    TRUE_information <- testinfo(object, Theta = theta[,1:D],
                                  degrees = degrees, individual = T)
     colnames(TRUE_information) <- colnames
     dim_inf <- matrix(NA, ncol = D, nrow = nrow(theta));
-    colnames(dim_inf) <- paste0(mode$F_names[1:D],"-information")
+    colnames(dim_inf) <- paste0(colnames(Qmatrix),"-information")
 
     for(i in 1:D){
-      items <- str_split(mode$dim, pattern = "\n")[[1]][i]%>%
-        str_remove_all(pattern = " ")%>%
-        str_remove_all(pattern = mode$F_names[i])%>%
-        str_remove_all(pattern = "=")%>%
-        str_split(pattern = ",")
-      if(length(items[[1]])>1){
-        dim_inf[,i] <- rowSums(TRUE_information[,items[[1]]])
+      items <- which(Qmatrix[,i]==1)
+      if(length(items)>1){
+        dim_inf[,i] <- rowSums(TRUE_information[,items])
       }else{
-        dim_inf[,i] <- TRUE_information[,items[[1]]]
+        dim_inf[,i] <- TRUE_information[,items]
       }
     }
     result <- list(Item_information = TRUE_information,
@@ -1308,14 +1354,19 @@ app_server <- function(input, output, session) {
     MIRT_fit  <- MIRT_fit_rea()
     dim_data <- dimension()
     Response <- mydata()
-    mode <- dimension_recode(dim_data)
+    mode <- dimension_recode(Qmatrix = dim_data)
     item_info1 <- Item_infor(object = MIRT_fit,theta = matrix(rep(sim_theta,mode$F_n),
                                                               ncol = mode$F_n,
                                                               nrow = length(sim_theta)),
-                             mode = mode,colnames = colnames(Response))$Item_information
+                             Qmatrix = dim_data,colnames = colnames(Response))$Item_information
     as.data.frame(item_info1)
   })
   MIRT_IIC_rea <- reactive({
+    dim_data <- dimension()
+    mode <- dimension_recode(Qmatrix = dim_data )
+    if(mode$is.within_item==TRUE){
+      return(NULL)
+    }
     sim_theta <- seq(-4,4,0.01)
     Response <- mydata()%>%as.data.frame()
     item_info <- MIRT_iteminfo_rea()
@@ -1340,6 +1391,7 @@ app_server <- function(input, output, session) {
 
   ##9.10 TIC---------------------------------------------------------------------
   output$MIRT_TIC_dim_select <- renderUI({
+
     if(is.null(input$dimensionfile)){
       selectInput(inputId = "MIRT_dim_select",label = "Dimension selection",
                   choices = apply(matrix(paste0("F",1:3),ncol=1),
@@ -1347,7 +1399,7 @@ app_server <- function(input, output, session) {
                   selectize = TRUE)
     }else{
       dim_data <- dimension()
-      mode <- dimension_recode(dim_data)
+      mode <- dimension_recode(Qmatrix = dim_data)
       selectInput(inputId = "MIRT_dim_select",label = "Dimension selection",
                   choices = apply(matrix(mode$F_names,ncol=1),
                                   MARGIN = 1,FUN = as.vector,simplify = FALSE),
@@ -1355,17 +1407,22 @@ app_server <- function(input, output, session) {
     }
   })
   MIRT_TIC_rea<- reactive({
+    dim_data <- dimension()
+    mode <- dimension_recode(Qmatrix = dim_data )
+    if(mode$is.within_item==TRUE){
+      return(NULL)
+    }
     if(is.null(input$MIRT_dim_select))
       return(NULL)
     sim_theta <- seq(-4,4,0.01)
     MIRT_fit  <- MIRT_fit_rea()
     dim_data <- dimension()
     Response <- mydata()
-    mode <- dimension_recode(dim_data)
+    mode <- dimension_recode(Qmatrix = dim_data)
     item_info1 <- Item_infor(object = MIRT_fit,theta = matrix(rep(sim_theta,mode$F_n),
                                                               ncol = mode$F_n,
                                                               nrow = length(sim_theta)),
-                             mode = mode,colnames = colnames(Response))$dim_information
+                             Qmatrix = dim_data,colnames = colnames(Response))$dim_information
     colnames(item_info1) <- c(mode$F_names, paste0(mode$F_names,"infor"))
     sim_theta1_infor1 <- item_info1[,c(input$MIRT_dim_select,paste0(input$MIRT_dim_select,"infor"))]
     test_infor<- plotrix::twoord.plot(lx = sim_theta1_infor1[,1],ly = sim_theta1_infor1[,2],
@@ -1453,27 +1510,39 @@ app_server <- function(input, output, session) {
       MIRT_fit  <- MIRT_fit_rea()
       dim_data <- dimension() %>% as.data.frame()
       Response <- mydata() %>% as.data.frame()
-      mode <- dimension_recode(dim_data)
-      sim_theta <- MIRT_person_rea()[,as.vector(mode$F_name)]
+      mode <- dimension_recode(Qmatrix = dim_data)
+      sim_theta <- MIRT_person_rea()[,2:(ncol(dim_data)+1)]
       item_info1 <- Item_infor(object = MIRT_fit,
                                theta = sim_theta,
-                               mode = mode,
+                               Qmatrix = dim_data,
                                colnames = colnames(Response))
       item_info <- item_info1$Item_information
       colnames(item_info ) <- colnames(Response)
       dim_infor <- item_info1$dim_information
       colnames(dim_infor) <- c(mode$F_names, paste0(mode$F_names, "_Information"))
 
-      datalist <- list("Score data" = Response,
-                       "Dimension" = dim_data ,
-                       "Model fit" = MIRT_modelfit_rea(),
-                       "Dependence test" = MIRT_Q3_rea(),
-                       "Item fit" = MIRT_itemfit_rea(),
-                       "Item parameters" = MIRT_itempar_rea(),
-                       "Person parameters" = MIRT_person_rea(),
-                       "Item information" = item_info,
-                       "Test information" = dim_infor)
 
+
+      if(mode$is.within_item==FALSE){
+        datalist <- list("Score data" = Response,
+                         "Dimension" = dim_data ,
+                         "Model fit" = MIRT_modelfit_rea(),
+                         "Dependence test" = MIRT_Q3_rea(),
+                         "Item fit" = MIRT_itemfit_rea(),
+                         "Item parameters" = MIRT_itempar_rea(),
+                         "Person parameters" = MIRT_person_rea(),
+                         "Item information" = item_info,
+                         "Test information" = dim_infor)
+      }else{
+        datalist <- list("Score data" = Response,
+                         "Dimension" = dim_data ,
+                         "Model fit" = MIRT_modelfit_rea(),
+                         "Dependence test" = MIRT_Q3_rea(),
+                         "Item fit" = MIRT_itemfit_rea(),
+                         "Item parameters" = MIRT_itempar_rea(),
+                         "Person parameters" = MIRT_person_rea(),
+                         "Item information" = item_info)
+      }
       openxlsx::write.xlsx(x = datalist, file = file, rowNames = T)
     }
   )
@@ -1485,14 +1554,15 @@ app_server <- function(input, output, session) {
     },
     content = function(file){
       #Selections
+
       model <- input$modelselect1
       MIRT_est_method <- input$MIRT_est_method
       MIRT_person_est_method <- input$MIRT_person_est_method
       MIRT_itemfit_method <- input$MIRT_itemfit_method
       #Model fit
       MIRT_fit <- MIRT_fit_rea()
-      dimension <- dimension()
-      mode <- dimension_recode(dimension)
+      dimension <- dimension()  %>% as.data.frame()
+      mode <- dimension_recode(Qmatrix = dimension)
       MIRT_modelfit_relat <- MIRT_modelfit_relat_rea()
       MIRT_modelfit <- MIRT_modelfit_rea()
       #Hypothesis test
@@ -1507,6 +1577,7 @@ app_server <- function(input, output, session) {
       MIRT_wright <- MIRT_wright_rea()
       MIRT_ICC <- MIRT_ICC_rea()
       MIRT_TIC <- MIRT_TIC_rea()
+
       MIRT_IIC <- MIRT_IIC_rea()
       #Test information
       sim_theta <- seq(-4,4,0.01)
@@ -1514,17 +1585,8 @@ app_server <- function(input, output, session) {
       item_info1 <- Item_infor(object = MIRT_fit,theta = matrix(rep(sim_theta,mode$F_n),
                                                                 ncol = mode$F_n,
                                                                 nrow = length(sim_theta)),
-                               mode = mode,colnames = colnames(Response))$dim_information
+                               Qmatrix = dimension, colnames = colnames(Response))$dim_information
       colnames(item_info1) <- c(mode$F_names, paste0(mode$F_names,"infor"))
-
-      if(is.null(input$MIRT_dim_select)){
-        TIC_dim <- as.vector(mode$F_names)[1]
-      }else{
-        TIC_dim <- input$MIRT_dim_select
-      }
-
-      sim_theta1_infor1 <- item_info1[,c(TIC_dim,paste0(TIC_dim,"infor"))]
-      F_name <- TIC_dim
 
       wright_map_height <- input$MIRT_wright_map_height
       wrap_height_value <- input$MIRT_wrap_height

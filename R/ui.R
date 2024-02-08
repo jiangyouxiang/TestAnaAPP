@@ -317,7 +317,7 @@ app_ui <- function() {
                                        br(),
                                        br(),
                                        "Generate data analysis reports based on the relevant settings of each interface
-                                       in unidimensional IRT",br(),
+                                       in unidimensional IRT.",br(),
                                        downloadButton(outputId = "IRT_report",label = "Download analysis report")))
                             )),
                           tabItem(
@@ -474,10 +474,13 @@ app_ui <- function() {
                             fluidPage(column(8,
                                              box(title = "Test dimension", solidHeader = TRUE,width = 12,
                                                  status = "warning",
-                                                 tags$b("Note: "),"In the current version, it does not support a test where a single
-                                                item measures multiple dimensions.",
+                                                 tags$b("Note: "),"The Q-matrix is a numerical matrix utilized to delineate which items
+                                                 measure which traits. In the Q-matrix, the number of rows corresponds to the number of
+                                                 items, and the number of columns corresponds to the number of traits. A value of 1 in
+                                                 the matrix indicates that the item is used to assess the corresponding trait, while a
+                                                 value of 0 signifies that the item does not assess the trait.",
                                                  br(),br(),
-                                                 dataTableOutput(outputId = "dimension_example")%>%
+                                                 DT::dataTableOutput(outputId = "dimension_example")%>%
                                                    box_show_theme()),
                                              box(title = "Dimension and item",solidHeader = TRUE,width = 12,
                                                  status = "warning",
@@ -487,9 +490,7 @@ app_ui <- function() {
                                              box(title = "Upload dimension information",solidHeader = TRUE,status = "warning",width = 12,
                                                  fileInput(inputId = "dimensionfile",
                                                            "Kindly upload an Excel file with example data on the left side to demonstrate
-                                                           the correlation between each question and dimension. Please note that currently,
-                                                           'TestAnaAPP' does not support the analysis of data where a single item measures multiple
-                                                           dimensions simultaneously.",
+                                                           the correlation between each question and dimension.",
                                                            placeholder="File",buttonLabel = "Browse",
                                                            accept = c("xlsx","xls","csv")))))
                           ),
@@ -538,7 +539,7 @@ app_ui <- function() {
                                                              selected = "No"),
                                                  tags$b("Note: "), "Estimating the covariance matrix can be time-consuming and may encounter
                                                  errors in some cases, depending on the parameter estimation method. However,
-                                                 it is necessary to estimate the covariance in multidimensional models",
+                                                 it is necessary to estimate the covariance in multidimensional models.",
                                                  br(),br(),
 
                                                  submitButton( "Updata results")),
@@ -549,7 +550,7 @@ app_ui <- function() {
                                                  br(),
                                                  br(),
                                                  "Generate data analysis reports based on the relevant settings of each interface
-                                                 in multidimensional IRT",br(),
+                                                 in multidimensional IRT.",br(),
                                                  downloadButton(outputId = "MIRT_report",label = "Download analysis report")
                                              )))
 
@@ -624,7 +625,8 @@ app_ui <- function() {
                             tabName = "MIRTwright",
                             fluidPage(column(8,
                                              box(title = "WrightMap", solidHeader = TRUE, status = "info",width = 12,
-                                                 tags$b("Note: "), "You can only draw WrightMap for Rasch and partial credit models.",
+                                                 tags$b("Note: "), "You can only draw WrightMap for Rasch and partial credit models.
+                                                 The within-item multidimensional test does not currently support drawing.",
                                                  br(),br(),
                                                  uiOutput("MIRT_wright1")%>%
                                                    box_show_theme() )),
@@ -653,6 +655,8 @@ app_ui <- function() {
                             tabName = "MIRTicc",
                             fluidPage(column(8,
                                              box(title = "Item characteristic curve (ICC)", solidHeader = TRUE, status = "info",
+                                                 tags$b("Note: "), "The within-item multidimensional test does not currently support drawing.",
+                                                 br(),br(),
                                                  uiOutput(outputId = "MIRT_ICC1")%>%
                                                    box_show_theme(),
                                                  width = 12)),
@@ -675,6 +679,8 @@ app_ui <- function() {
                             tabName = "MIRTiic",
                             fluidPage(column(8,
                                              box(title = "Item information curve (IIC)", solidHeader = TRUE, status = "info",
+                                                 tags$b("Note: "), "The within-item multidimensional test does not currently support drawing.",
+                                                 br(),br(),
                                                  uiOutput("MIRT_IIC1")%>%
                                                    box_show_theme(),
                                                  width = 12)),
@@ -699,6 +705,8 @@ app_ui <- function() {
                             tabName = "MIRTtic",
                             fluidPage(column(8,
                                              box(title = "Test information curve (TIC)", solidHeader = TRUE, status = "info",width = 12,
+                                                 tags$b("Note: "), "The within-item multidimensional test does not currently support drawing.",
+                                                 br(),br(),
                                                  plotOutput("MIRT_TIC")%>%
                                                    box_show_theme())),
                                       column(4,

@@ -41,6 +41,10 @@ knitr::opts_chunk$set(echo=FALSE, warning = FALSE)
 requireNamespace("officer")
 requireNamespace("rmarkdown")
 requireNamespace("officedown")
+if (!require(latticeExtra)) {
+  install.packages("latticeExtra")
+  requireNamespace("latticeExtra")
+}
 fmt_tra_other <- function(ft, reset_width = TRUE){#Convert matrix to table.
   c <- ncol(ft)
   ft <- as.data.frame(ft)%>%flextable::flextable()
@@ -48,17 +52,16 @@ fmt_tra_other <- function(ft, reset_width = TRUE){#Convert matrix to table.
   ft <- flextable::fontsize(ft, size = 10, part = "all")
   ft <- flextable::font(ft, fontname = "Times New Roman")
   ft <- flextable::align_nottext_col(ft, align = "center")
-  #合并单元，调整格式
+  #
   ft <- flextable::merge_h(ft, part = "header")%>%
     flextable::merge_v(part = "header")%>%
     flextable::theme_booktabs()%>%
     flextable::bold( part = "header")%>% # Bold
     flextable::bold(j=1, part = "body")%>%
-    #居中
+    #center
     flextable::align_text_col(align = "center")%>%
     flextable::valign(valign = "center")%>%
     flextable::padding(padding = 2)
-  
   if(reset_width == TRUE){
     ft <- flextable::autofit(ft)%>%
     flextable::width(j = 1:c,width = (16/2.54)/c)
@@ -66,11 +69,12 @@ fmt_tra_other <- function(ft, reset_width = TRUE){#Convert matrix to table.
   return(ft)
 }
 bold_print <- function(text){
-  text_format <- fp_text(bold = TRUE, font.family = "Time News Roman",font.size = 12)
-  fp <- fp_par(text.align = "center")
-  return(fpar(ftext(text, prop = text_format), fp_p = fp))
+  text_format <- officer::fp_text(bold = TRUE, 
+                                  font.family = "Time News Roman",
+                                  font.size = 12)
+  fp <- officer::fp_par(text.align = "center")
+  return(officer::fpar(officer::ftext(text, prop = text_format), fp_p = fp))
 }
-
 plot_width <- 6.299
 
 ```
@@ -148,7 +152,7 @@ $$P(X_{ij}=1 | \theta_{jq}) = c_i+(u_i-c_i)\frac{1}{1+e^{(-(\alpha_{iq}\theta_{j
 
 ## MIRT Models for Polytomous Data
 
-Let $X_{ij}$ denote the response of subject $j$ $(j = 1,2,3,...,J)$ to item $i$ $(i = 1,2,3,...,I)$ in the context of polytomous data. If $X_{ij}$ is equal to $k$, then $k{\in}{(0,1,2,...,m_i)}$. In the polytomous IRT model, the item difficulty parameters are represented by $\beta_{ih}$, where $h{\in}{(1,2,...,m_i)}$. The latent trait parameter for the subject is denoted by $\theta_{jq}$.
+Let $X_{ikj}$ denote the response of subject $j$ $(j = 1,2,3,...,J)$ to item $i$ $(i = 1,2,3,...,I)$ in the context of polytomous data. If $X_{ikj}$ is equal to $k$, then $k{\in}{(0,1,2,...,m_i)}$. In the polytomous IRT model, the item difficulty parameters are represented by $\beta_{ih}$, where $h{\in}{(1,2,...,m_i)}$. The latent trait parameter for the subject is denoted by $\theta_{jq}$.
 
 ### Multidimensional Partial credit model (MPCM)
 
@@ -276,7 +280,7 @@ Item parameters serve as crucial indicators for assessing item quality. Provided
 | Very high    | >1.70 | 2.00 |
 | Perfect      | $+\infty$ | $+\infty$ |
 
-In this analysis, the `r model` model was selected. The `r MIRT_est_method` was used for parameter estimation. Generally, the discrimination and difficulty are assessed using $MDISC_i$ and $beta_i$. Therefore, the 'TestAnaAPP' transformed the $alpha_{iq}$ and $d_i$ parameters into $MDISC_i$ and $beta_i$ respectively. In a between-item test, $MDISC_i$ equals the absolute value of $alpha_{iq}$ since each item only has one $alpha_{i.}$. To obtain the $d_i$ parameter in the above formula, users can calculate $d_i$ using $beta_i$ as follows: $d_i = \frac{MDISC_{i}}{-\beta_i}$.
+In this analysis, the `r model` model was selected. The `r MIRT_est_method` was used for parameter estimation. Generally, the discrimination and difficulty are assessed using $MDISC_i$ and $\beta_i$. Therefore, the 'TestAnaAPP' transformed the $\alpha_{iq}$ and $d_i$ parameters into $MDISC_i$ and $\beta_i$ respectively. In a between-item test, $MDISC_i$ equals the absolute value of $\alpha_{iq}$ since each item only has one $\alpha_{i.}$. To obtain the $d_i$ parameter in the above formula, users can calculate $d_i$ using $\beta_i$ as follows: $d_i = \frac{MDISC_{i}}{-\beta_i}$.
 
 The item parameters are as follows:
 
@@ -339,7 +343,15 @@ $$SE = \frac{1}{\sqrt{I(\theta)}}$$
 Since the test is a between-item test, where each item measures only one of several latent traits, it is not feasible to visually represent $\theta$ in multiple dimensions. Therefore, 'TestAnaAPP' is designed to display one dimension of the TIC at a time. Below is the TIC that you have chosen to display in the user interface.
 
 ```{r, echo=FALSE,fig.cap=sprintf("The test information curve and measurement error"), fig.id = "TIC",fig.cap.style = "Image Caption",fig.height=4,fig.width=plot_width}
-plotrix::twoord.plot(lx = sim_theta1_infor1[,1],ly = sim_theta1_infor1[,2],
+if(mode$is.within_item==TRUE){
+  NULL%>%print()
+}else{
+   for(i in 1:mode$F_n){
+     TIC_dim <- mode$F_names[i]
+     sim_theta1_infor1 <- item_info1[,c(TIC_dim,paste0(TIC_dim,"infor"))]
+     F_name <- TIC_dim
+     
+     plotrix::twoord.plot(lx = sim_theta1_infor1[,1],ly = sim_theta1_infor1[,2],
             rx = sim_theta1_infor1[,1],ry = 1/sqrt(sim_theta1_infor1[,2]),
             main = paste0("Test Information and Measurement Error of ",F_name),
             ylab = "Test information",
@@ -353,6 +365,10 @@ plotrix::twoord.plot(lx = sim_theta1_infor1[,1],ly = sim_theta1_infor1[,2],
     text(x = sim_theta1_infor1[which.max(sim_theta1_infor1[,2]),1],
          y = max(sim_theta1_infor1[,2])
          ,labels = paste(round(max(sim_theta1_infor1[,2]),3)))
+   }
+
+}
+
 ```
 
 
