@@ -759,7 +759,10 @@ app_server <- function(input, output, session) {
               x_lab = "Theta",
               title = "Item Characteristic Curve",
               ncol = ncol,
-              scale = "fixed")
+              scale = "fixed",
+              title_size = input$IRT_ICC_title_size,
+              xy_size = input$IRT_ICC_label_size,
+              Item_label_size = input$IRT_ICC_itemlabel_size)
   })
 
   output$IRT_ICC <-  renderPlot({
@@ -792,7 +795,10 @@ app_server <- function(input, output, session) {
               x_lab = "Theta",
               title = "Item Information Curve",
               ncol = ncol,
-              scale = input$IRTiic_scale %>% stringr::str_to_lower())
+              scale = input$IRTiic_scale %>% stringr::str_to_lower(),
+              title_size = input$IRT_IIC_title_size,
+              xy_size = input$IRT_IIC_label_size,
+              Item_label_size = input$IRT_IIC_itemlabel_size)
   })
   output$IRT_IIC <- renderPlot({
     if(is.null(input$res_data))
@@ -1391,7 +1397,10 @@ app_server <- function(input, output, session) {
               x_lab = "Theta",
               title = "Item Characteristic Curve",
               ncol = ncol,
-              scale = "fixed")
+              scale = "fixed",
+              title_size = input$MIRT_ICC_title_size,
+              xy_size = input$MIRT_ICC_label_size,
+              Item_label_size = input$MIRT_ICC_itemlabel_size)
 
   })
 
@@ -1456,7 +1465,10 @@ app_server <- function(input, output, session) {
               x_lab = "Theta",
               title = "Item Information Curve",
               ncol = ncol,
-              scale = input$MIRTiic_scale %>% stringr::str_to_lower())
+              scale = input$MIRTiic_scale %>% stringr::str_to_lower(),
+              title_size = input$MIRT_IIC_title_size,
+              xy_size = input$MIRT_IIC_label_size,
+              Item_label_size = input$MIRT_IIC_itemlabel_size)
   })
   output$MIRT_IIC <- renderPlot({
     if(is.null(input$dimensionfile))
@@ -1602,6 +1614,13 @@ app_server <- function(input, output, session) {
       prob <- probtrace(x = MIRT_fit, Theta = matrix(rep(sim_theta,mode$F_n),
                                                      nrow = length(sim_theta),
                                                      ncol = mode$F_n))
+      #information value for plot IIC
+      sim_theta_infor <- Item_infor(object = MIRT_fit,
+                                    theta = matrix(rep(sim_theta,mode$F_n),
+                                                   nrow = length(sim_theta),
+                                                   ncol = mode$F_n),
+                                    Qmatrix = dim_data,
+                                    colnames = colnames(Response))
 
 
 
@@ -1613,10 +1632,13 @@ app_server <- function(input, output, session) {
                          "Item fit" = MIRT_itemfit_rea(),
                          "Item parameters" = MIRT_itempar_rea(),
                          "Person parameters" = MIRT_person_rea(),
-                         "Response probability" = data.frame("Theta" = sim_theta,
+                         "Response probability" = data.frame("Simulated theta" = sim_theta,
                                                              prob),
                          "Item information" = item_info,
-                         "Test information" = dim_infor)
+                         "Test information" = dim_infor,
+                         "Item information for plot" = data.frame("Simulated theta" = sim_theta,
+                                                                 sim_theta_infor$Item_information),
+                         "Test information for plot" = sim_theta_infor$dim_information)
       }else{
         datalist <- list("Score data" = Response,
                          "Dimension" = dim_data ,
@@ -1625,7 +1647,7 @@ app_server <- function(input, output, session) {
                          "Item fit" = MIRT_itemfit_rea(),
                          "Item parameters" = MIRT_itempar_rea(),
                          "Person parameters" = MIRT_person_rea(),
-                         "Response probability" = data.frame("Theta" = sim_theta,
+                         "Response probability" = data.frame("Simulated theta" = sim_theta,
                                                              prob),
                          "Item information" = item_info)
       }
@@ -1936,36 +1958,33 @@ plot_wrap <- function(theta,
                       x_lab = NULL,
                       title = NULL,   #The main for wrap.
                       ncol = 5,
-                      scale = "fixed"){
-  #Item <- colnames(main_vector)
+                      scale = "fixed",
+                      title_size = 15,
+                      xy_size = 12,
+                      Item_label_size = 10){
 
   #A single curve
   if(lines == "IIC"){
     colnames(y_matrix) <- main_vector
     plot_data <- bind_cols("theta" = theta, y_matrix)%>%
-      pivot_longer(cols = -1, names_to = "Item", values_to = "y")
-
-    # plot_data <- data.frame(plot_data,
-    #                         "Item" = factor(plot_data$Item, levels = main_vector))
-    #
-    plot_data <- plot_data %>%
+      pivot_longer(cols = -1, names_to = "Item", values_to = "y") %>%
       mutate("Item" = factor(Item, levels = main_vector))
 
-
-
     #plot
-    gra <- ggplot(plot_data, mapping = aes(x = plot_data$theta,
-                                           y = plot_data$y))+
-      geom_line(linewidth =1.2)+
+    gra <- ggplot(plot_data, mapping = aes(x = theta, y = y))+
+      geom_line(linewidth =1.05)+
       labs(x =  x_lab ,y = y_lab, title =  title)+
-      theme(plot.title = element_text(hjust = 0.5,size = 8),
-            axis.title = element_text(size = 7))+
+      theme_classic()+
+      theme(plot.title = element_text(hjust = 0.5,size = title_size),
+            axis.title = element_text(size = xy_size),
+            strip.background = element_blank(),
+            strip.text = element_text(size = Item_label_size))+
       facet_wrap(facets = ~Item, ncol = ncol, scales = scale)
   }else if(lines == "ICC"){
 
     di_items <- which(grade_vector == 1)
-    varname <- colnames(y_matrix)%>%str_split(pattern = ".P.",simplify = T)
-    varname <- varname[,1]%>%unique()
+    varname <- colnames(y_matrix)%>%str_split(pattern = ".P.",simplify = T) %>%
+      .[,1]%>%unique()
     if(sum(varname != main_vector) >= 1){
       colnames_y_matrix <- vector(mode = "character")
       low_grade <- ifelse(test = is.include.zore, yes = 0, no = 1)
@@ -1986,29 +2005,31 @@ plot_wrap <- function(theta,
     }
     plot_data1 <- bind_cols("theta" = theta, y_matrix) %>%
       pivot_longer(cols = -1, names_to = c("Item","score"),values_to = "y",
-                   names_sep = ".P.") %>% as.data.frame()
-    plot_data1 <-
-      data.frame("score" = factor(str_sub(plot_data1$score,start = 1,end = 1),
-                                  levels = 0:max(plot_data1$score)),
-                 "Item" = factor(plot_data1$Item, levels = main_vector),
-                 "theta" = plot_data1$theta,
-                 "y" = plot_data1$y)
+                   names_sep = ".P.") %>%
+      mutate(
+        "Score" = factor(str_sub(score,start = 1,end = 1),
+                         levels = 0:max(score)),
+        "Item" = factor(Item, levels = main_vector)
+      )
 
     if(is.include.zore == F){
-      plot_data <- plot_data1[which(plot_data1$score != 0), ]
+      plot_data <- plot_data1[which(plot_data1$Score != 0), ]
     }else{
       plot_data <- plot_data1
     }
 
-    gra <-  ggplot( plot_data, mapping = aes(x = plot_data$theta,
-                                             y = plot_data$y,
-                                             colour = plot_data$score,
-                                             linetype = plot_data$score))+
+    gra <-  ggplot( plot_data, mapping = aes(x = theta,
+                                             y = y,
+                                             colour = Score,
+                                             linetype = Score))+
       geom_line(linewidth = 1.05)+
       labs(x = x_lab, y = y_lab, title = title)+
-      theme(legend.position = "top",
-            plot.title = element_text(hjust = 0.5,size = 8),
-            axis.title = element_text(size = 7))+
+      theme_classic()+
+      theme(legend.position = "right",
+            plot.title = element_text(hjust = 0.5,size = title_size),
+            axis.title = element_text(size = xy_size),
+            strip.background = element_blank(),
+            strip.text = element_text(size = Item_label_size))+
       facet_wrap(facets = ~Item, ncol = ncol, scales = scale)
   }
 
