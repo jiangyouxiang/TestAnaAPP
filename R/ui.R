@@ -39,7 +39,10 @@ app_ui <- function() {
                                                menuSubItem("WrightMap",tabName = "IRTwright",icon = shiny::icon("angle-double-right")),
                                                menuSubItem("Item Characteristic Curve",tabName = "IRTicc",icon = shiny::icon("angle-double-right")),
                                                menuSubItem("Item Information Curve",tabName = "IRTiic",icon = shiny::icon("angle-double-right")),
-                                               menuSubItem("Test Information Curve",tabName = "IRTtic",icon = shiny::icon("angle-double-right"))),
+                                               menuSubItem("Test Information Curve",tabName = "IRTtic",icon = shiny::icon("angle-double-right"))
+                                              # ,
+                                              #  menuSubItem("Analysis Report",tabName = "IRTreport_tab",icon = shiny::icon("angle-double-right"))
+                                              ),
 
                                      menuItem("Multidimensional IRT",tabName = "MIRT",icon = icon("cogs"),
                                                menuSubItem("Upload Dimension *",tabName = "MIRTdim_info",icon = icon("table")),
@@ -317,8 +320,10 @@ app_ui <- function() {
                                        br(),
                                        br(),
                                        "Generate data analysis reports based on the relevant settings of each interface
-                                       in unidimensional IRT.",br(),
-                                       downloadButton(outputId = "IRT_report",label = "Download analysis report")))
+                                       in unidimensional IRT.",br()
+                                       ,
+                                       downloadButton(outputId = "IRT_report",label = "Download analysis report")
+                                       ))
                             )),
                           tabItem(
                             tabName = "IRTassum_test",
@@ -468,6 +473,17 @@ app_ui <- function() {
                                            box(title = "Download figure",solidHeader = TRUE,status = "success",width = 12,
                                                downloadButton(outputId = "IRT_TICfile", label = "Download"))))
                           ),
+                          # tabItem(tabName = "IRTreport_tab",
+                          #         fluidRow(
+                          #           column(10,uiOutput(outputId ="IRTreport_html" ,fill = TRUE)),
+                          #           column(2,
+                          #                  box(title = "Download Analysis Report",solidHeader = TRUE,status = "success",width = 12,
+                          #                    "Generate data analysis reports based on the relevant settings of each interface
+                          #                   in unidimensional IRT.",
+                          #                    br(),
+                          #                    br(),
+                          #                    downloadButton(outputId = "IRT_report",label = "Download"))))
+                          # ),
                           #G. MIRT page---------------------------------------------------------------------------------
                           tabItem(
                             tabName = "MIRTdim_info",

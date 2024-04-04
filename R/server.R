@@ -11,6 +11,7 @@
 #' @importFrom stats cor na.omit quantile sd
 #' @importFrom bruceR EFA Alpha CFA Corr Describe Freq import lavaan_summary
 #' @importFrom tidyr pivot_longer
+#' @importFrom latticeExtra mapplot
 
 #' @noRd
 app_server <- function(input, output, session) {
@@ -188,7 +189,7 @@ app_server <- function(input, output, session) {
           shiny::p("2. You need to understand that 'TestAnaAPP' presents various analysis contents in modular forms.
                    When you need to perform a specific analysis using 'TestAnaAPP', you can directly navigate to
                    that interface after uploading the data. "),
-          shiny::p("3. When it involves dimensional information of the test, you need to upload an ELSX file
+          shiny::p("3. When it involves dimensional information of the test, you need to upload an EXCEL file
                    in the interface of uploading dimensional information to illustrate the test structure.
                    Please edit your document following the examples provided in 'TestAnaAPP'. "),
           shiny::p("4. During the operation, please carefully read the textual prompts presented on each interface
@@ -223,6 +224,9 @@ app_server <- function(input, output, session) {
     if(is.null(input$res_data))
       return(NULL)
     Response <- mydata()%>%as.data.frame()
+    if(0==1){
+      ss <- latticeExtra::mapplot()#useless code
+    }
     scores_plot1 <- hist(rowSums(Response), breaks = 100,
                          main = "The distribution for total score", xlab = "Total score", ylab = "Frequency")
     scores_plot1
@@ -879,20 +883,27 @@ app_server <- function(input, output, session) {
       paste0("IRT_results.xlsx")
     },
     content = function(file){
-      sim_theta <-  IRT_person_rea()[,2]%>%as.numeric()#True theta
+      est_theta <-  IRT_person_rea()[,2]%>%as.numeric()#True theta
       IRT_fit  <- IRT_fit_reactive()
       Response <- mydata()%>%as.data.frame()
-      item_info <- testinfo(x = IRT_fit, Theta = sim_theta, individual = T)
+      item_info <- testinfo(x = IRT_fit, Theta = est_theta, individual = T)
       colnames(item_info) <- colnames(Response)
+
+      sim_theta <- seq(-4,4,0.01)
+      prob <- probtrace(x = IRT_fit, Theta = sim_theta)
+
       datalist <- list("Absolute model fit" = IRT_modelfit_rea(),
                        "Relative model fit" = IRT_modelfit_relat_rea(),
                        "Dependence test" = IRT_Q3_rea(),
                        "Item fit" = IRT_itemfit_rea(),
                        "Item parameters" = IRT_itempar_rea(),
                        "Person parameters" = IRT_person_rea(),
-                       "Item information" = data.frame("theta"  = sim_theta,
+                       "Response probability" = data.frame("Theta" = sim_theta,
+                                                           prob),
+                       "Item information" = data.frame("Estimated theta"  = est_theta,
                                                        item_info),
-                       "Test Information" = data.frame("Test Information" = rowSums(item_info),
+                       "Test Information" = data.frame("Estimated theta"  = est_theta,
+                                                       "Test Information" = rowSums(item_info),
                                                        "Messurement Error" = 1/sqrt(rowSums(item_info)))
       )
       openxlsx::write.xlsx(x = datalist, file = file, rowNames = T)
@@ -949,6 +960,59 @@ app_server <- function(input, output, session) {
 
     }
   )
+
+  # output$IRTreport_html <- renderUI({
+  #   #Selections
+  #   model <- input$modelselect
+  #   IRT_est_method <- input$IRT_est_method
+  #   IRT_person_est_method <- input$IRT_person_est_method
+  #   EFA_method <- input$EFA_method
+  #   rotation_method <- input$rotation_method
+  #   IRT_itemfit_method <- input$IRT_itemfit_method
+  #   #Model fit
+  #   IRT_modelfit_relat <- IRT_modelfit_relat_rea()
+  #   IRT_modelfit <- IRT_modelfit_rea()
+  #   #Hypothesis test
+  #   fit <- EFA_fit()
+  #   CTT_EFA_eigenvalues <- data.frame( rownames(fit$eigenvalues),
+  #                                      as.data.frame(fit$eigenvalues)%>%round(digits = 3))
+  #   IRT_select_independent <- independent_method(input$IRT_select_independent)
+  #   IRT_Q3 <- IRT_Q3_rea()
+  #
+  #   #Item fit
+  #   IRT_itemfit <- IRT_itemfit_rea()
+  #   #Item parameters
+  #   IRT_itempar <- IRT_itempar_rea()
+  #   #Figures
+  #   IRT_wright <- IRT_wright_rea()
+  #   IRT_ICC <- IRT_ICC_rea()
+  #   IRT_TIC <- IRT_TIC_rea()
+  #   IRT_IIC <- IRT_IIC_rea()
+  #
+  #   wright_map_height <- input$IRT_wright_map_height
+  #   wrap_height_value <- input$wrap_height
+  #
+  #
+  #   wrap_height_value_iic <- input$wrap_height_iic
+  #
+  #   #Export analysis report
+  #   path_sys <- system.file("rmd", "IRT_Analysis_Report.Rmd", package = "TestAnaAPP")
+  #   src <- normalizePath(path_sys)
+  #   owd <- setwd(tempdir())
+  #   on.exit(setwd(owd))
+  #   file.copy(src,"IRT_Analysis_Report_html.Rmd", overwrite = TRUE)
+  #
+  #
+  #   includeHTML(render("IRT_Analysis_Report_html.Rmd",
+  #                      output_format = html_document(toc = TRUE,
+  #                                                    toc_depth = 3,
+  #                                                    toc_float = TRUE,
+  #                                                    number_sections = TRUE,
+  #                                                    anchor_sections = TRUE)))
+  #
+  # })
+
+
 
   #9. MIRT Analysis-------------------------------------------
   #Read dimension ifnormation
@@ -1115,8 +1179,7 @@ app_server <- function(input, output, session) {
     MIRT_itemfit_rea()
   })
 
-  ##9.5 Item parameters-----------------------
-
+  ##9.5 Item parameters--------------------------------------------------------------
   diff_trans <- function(item_par, F_n, MDISC){
     if(str_count(colnames(item_par),"d0")%>%sum() >= 1){
       item_par <- item_par[,-which(colnames(item_par)=="d0")]
@@ -1159,15 +1222,29 @@ app_server <- function(input, output, session) {
     MIRT_fit <- MIRT_fit_rea()
     dim_data <- dimension()
     mode <- dimension_recode(Qmatrix = dim_data)
-    item_par_raw <- coef(MIRT_fit, simplify = TRUE)$items
-    item_par <- diff_trans(item_par = item_par_raw,
-                           F_n = mode$F_n, MDISC = MDISC(MIRT_fit))
-    colnames(item_par) <- colnames(item_par)%>%
-      str_replace_all(pattern = "a", replacement = "Discrimination")%>%
-      str_replace_all(pattern = "u", replacement = "one-slip") %>%
-      str_replace_all(pattern = "b",replacement = "Difficult")%>%
-      str_replace_all(pattern = "g", replacement = "Guess")
+    if(model_selected(value = input$modelselect1) == "graded"){
+      item_par <- coef(MIRT_fit, IRTparms = TRUE, simplify = TRUE)$items
 
+      item_par_d <- str_which(colnames(item_par),pattern = "d")
+      item_par <- cbind(item_par[,-item_par_d],
+                        -1*item_par[,item_par_d]/MDISC(MIRT_fit))
+
+      colnames(item_par) <- colnames(item_par)%>%
+        str_replace_all(pattern = "a", replacement = "Discrimination")%>%
+        str_replace_all(pattern = "u", replacement = "one-slip") %>%
+        str_replace_all(pattern = "d",replacement = "Difficult")%>%
+        str_replace_all(pattern = "g", replacement = "Guess")
+
+    }else{
+      item_par_raw <- coef(MIRT_fit, simplify = TRUE)$items
+      item_par <- diff_trans(item_par = item_par_raw,
+                             F_n = mode$F_n, MDISC = MDISC(MIRT_fit))
+      colnames(item_par) <- colnames(item_par)%>%
+        str_replace_all(pattern = "a", replacement = "Discrimination")%>%
+        str_replace_all(pattern = "u", replacement = "one-slip") %>%
+        str_replace_all(pattern = "b",replacement = "Difficult")%>%
+        str_replace_all(pattern = "g", replacement = "Guess")
+    }
     as.data.frame(item_par) %>% round(digits = 3)
   })
   output$MIRT_itempar <- DT::renderDataTable({
@@ -1511,15 +1588,20 @@ app_server <- function(input, output, session) {
       dim_data <- dimension() %>% as.data.frame()
       Response <- mydata() %>% as.data.frame()
       mode <- dimension_recode(Qmatrix = dim_data)
-      sim_theta <- MIRT_person_rea()[,2:(ncol(dim_data)+1)]
+      est_theta <- MIRT_person_rea()[,2:(ncol(dim_data)+1)]
       item_info1 <- Item_infor(object = MIRT_fit,
-                               theta = sim_theta,
+                               theta = est_theta,
                                Qmatrix = dim_data,
                                colnames = colnames(Response))
       item_info <- item_info1$Item_information
       colnames(item_info ) <- colnames(Response)
       dim_infor <- item_info1$dim_information
       colnames(dim_infor) <- c(mode$F_names, paste0(mode$F_names, "_Information"))
+
+      sim_theta <- seq(-4,4,0.01)
+      prob <- probtrace(x = MIRT_fit, Theta = matrix(rep(sim_theta,mode$F_n),
+                                                     nrow = length(sim_theta),
+                                                     ncol = mode$F_n))
 
 
 
@@ -1531,6 +1613,8 @@ app_server <- function(input, output, session) {
                          "Item fit" = MIRT_itemfit_rea(),
                          "Item parameters" = MIRT_itempar_rea(),
                          "Person parameters" = MIRT_person_rea(),
+                         "Response probability" = data.frame("Theta" = sim_theta,
+                                                             prob),
                          "Item information" = item_info,
                          "Test information" = dim_infor)
       }else{
@@ -1541,6 +1625,8 @@ app_server <- function(input, output, session) {
                          "Item fit" = MIRT_itemfit_rea(),
                          "Item parameters" = MIRT_itempar_rea(),
                          "Person parameters" = MIRT_person_rea(),
+                         "Response probability" = data.frame("Theta" = sim_theta,
+                                                             prob),
                          "Item information" = item_info)
       }
       openxlsx::write.xlsx(x = datalist, file = file, rowNames = T)
@@ -1859,8 +1945,12 @@ plot_wrap <- function(theta,
     plot_data <- bind_cols("theta" = theta, y_matrix)%>%
       pivot_longer(cols = -1, names_to = "Item", values_to = "y")
 
-    plot_data <- data.frame(plot_data,
-                            "Item" = factor(plot_data$Item, levels = main_vector))
+    # plot_data <- data.frame(plot_data,
+    #                         "Item" = factor(plot_data$Item, levels = main_vector))
+    #
+    plot_data <- plot_data %>%
+      mutate("Item" = factor(Item, levels = main_vector))
+
 
 
     #plot

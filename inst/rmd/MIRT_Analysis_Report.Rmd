@@ -243,6 +243,8 @@ fmt_tra_other(ft = MIRT_modelfit)
 
 # Hypothesis Testing
 
+<!---BLOCK_LANDSCAPE_START--->
+
 ## Independence Test
 
 'TestAnaAPP' provides the Q3 and LD-X2 statistics for independent testing in IRT. Larger absolute values indicate stronger dependencies between the two items. Due to the lack of uniform standards across different studies, cutoff values for Q3 and LD-X2 are not provided. Readers are advised to refer to professional books or papers for data interpretation.
