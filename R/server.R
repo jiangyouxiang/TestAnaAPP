@@ -1983,7 +1983,7 @@ plot_wrap <- function(theta,
   }else if(lines == "ICC"){
 
     di_items <- which(grade_vector == 1)
-    varname <- colnames(y_matrix)%>%str_split(pattern = ".P.",simplify = T) %>%
+    varname <- colnames(y_matrix)%>%str_split(pattern = "\\.P\\.",simplify = T) %>%
       .[,1]%>%unique()
     if(sum(varname != main_vector) >= 1){
       colnames_y_matrix <- vector(mode = "character")
@@ -1998,14 +1998,14 @@ plot_wrap <- function(theta,
         }
         for (j in low_grade:max_grade) {
           colnames_y_matrix <- c(colnames_y_matrix, paste0(main_vector[i],
-                                                           ".P.",j))
+                                                           "\\.P\\.",j))
         }
       }
       colnames(y_matrix) <- colnames_y_matrix
     }
     plot_data1 <- bind_cols("theta" = theta, y_matrix) %>%
       pivot_longer(cols = -1, names_to = c("Item","score"),values_to = "y",
-                   names_sep = ".P.") %>%
+                   names_sep = "\\.P\\.") %>%
       mutate(
         "Score" = factor(str_sub(score,start = 1,end = 1),
                          levels = 0:max(score)),
