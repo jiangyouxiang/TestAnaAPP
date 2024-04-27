@@ -10,7 +10,7 @@
 
 app_ui <- function() {
   dashboardPage(skin = "blue",
-                dashboardHeader(title = "TEST ANALYSIS APPLICATION",titleWidth = 700),#The name of this platform
+                dashboardHeader(title = "Test Analysis Application",titleWidth = 700),#The name of this platform
                       #Pages----------------------------------------------------------------------------------
                       dashboardSidebar(
                         sidebarMenu(id="sidebarmenu",
@@ -39,10 +39,8 @@ app_ui <- function() {
                                                menuSubItem("WrightMap",tabName = "IRTwright",icon = shiny::icon("angle-double-right")),
                                                menuSubItem("Item Characteristic Curve",tabName = "IRTicc",icon = shiny::icon("angle-double-right")),
                                                menuSubItem("Item Information Curve",tabName = "IRTiic",icon = shiny::icon("angle-double-right")),
-                                               menuSubItem("Test Information Curve",tabName = "IRTtic",icon = shiny::icon("angle-double-right"))
-                                              # ,
-                                              #  menuSubItem("Analysis Report",tabName = "IRTreport_tab",icon = shiny::icon("angle-double-right"))
-                                              ),
+                                               menuSubItem("Test Information Curve",tabName = "IRTtic",icon = shiny::icon("angle-double-right")),
+                                               menuSubItem("Analysis Report",tabName = "IRTreport_tab",icon = shiny::icon("angle-double-right"))),
 
                                      menuItem("Multidimensional IRT",tabName = "MIRT",icon = icon("cogs"),
                                                menuSubItem("Upload Dimension *",tabName = "MIRTdim_info",icon = icon("table")),
@@ -54,13 +52,17 @@ app_ui <- function() {
                                                menuSubItem("Wright Map",tabName = "MIRTwright",icon = shiny::icon("angle-double-right")),
                                                menuSubItem("Item Characteristic Curve",tabName = "MIRTicc",icon = shiny::icon("angle-double-right")),
                                                menuSubItem("Item Information Curve",tabName = "MIRTiic",icon = shiny::icon("angle-double-right")),
-                                               menuSubItem("Test Information Curve",tabName = "MIRTtic",icon = shiny::icon("angle-double-right"))),
+                                               menuSubItem("Test Information Curve",tabName = "MIRTtic",icon = shiny::icon("angle-double-right")),
+                                               menuSubItem("Analysis Report",tabName = "MIRTreport_tab",icon = shiny::icon("angle-double-right"))),
                                      menuItem("Continuous Response Model", tabName = "CRM_model", icon = icon("cogs"),
                                                menuSubItem("Upload extreme data",tabName = "CRM_maxmin_print",icon = icon("table")),
                                                menuSubItem("Item Fit",tabName = "CRM_itemfit",icon = shiny::icon("angle-double-right")),
                                                menuSubItem("Item Parameters",tabName = "CRM_itempara",icon = shiny::icon("angle-double-right")),
                                                menuSubItem("Person Parameter",tabName = "CRM_personpar",icon = shiny::icon("angle-double-right")),
-                                               menuSubItem("Item Category Response Curves",tabName = "CRM_ICC",icon =  shiny::icon("angle-double-right")))
+                                               menuSubItem("Item Category Response Curves",tabName = "CRM_ICC",icon =  shiny::icon("angle-double-right"))),
+                                     menuItem("Differential Item Function",tabName = "DIF",icon = icon("cogs"),
+                                               menuSubItem("Upload Group Information",tabName = "DIF_group",icon = icon("table")),
+                                               menuSubItem("DIF Analysis",tabName = "DIF_analysis",icon = shiny::icon("angle-double-right")))
                         )),
                       dashboardBody(
                         #A. Introduction page---------------------------------------------------------------------------
@@ -313,17 +315,7 @@ app_ui <- function() {
                                        standard EM algorithm.",
                                        br(),br(),
 
-                                       submitButton( "Updata results")),
-                                   box(title = "Download results",solidHeader = TRUE,status = "success",width = 12,
-                                       "Download all the analysis results for unidimensional IRT in the 'TestAnaAPP'.",br(),
-                                       downloadButton(outputId = "IRT_resultfile", label = "Download results"),
-                                       br(),
-                                       br(),
-                                       "Generate data analysis reports based on the relevant settings of each interface
-                                       in unidimensional IRT.",br()
-                                       ,
-                                       downloadButton(outputId = "IRT_report",label = "Download analysis report")
-                                       ))
+                                       submitButton( "Updata results")))
                             )),
                           tabItem(
                             tabName = "IRTassum_test",
@@ -362,7 +354,11 @@ app_ui <- function() {
                           tabItem(
                             tabName = "IRTitempar",
                             fluidPage(column(8,
-                                             box(title="Item parameters",DT::dataTableOutput("IRT_itempar")%>%
+                                             box(title="Item parameters",
+                                                 tags$b("Note: "),"For detailed formulas for the model and interpretations of parameters,
+                                                 please download the analysis report from the Analysis Report section.",
+                                                 br(),
+                                                 DT::dataTableOutput("IRT_itempar")%>%
                                                    box_show_theme(),
                                                  solidHeader = TRUE,
                                                  status = "info",width = 12)))
@@ -498,17 +494,39 @@ app_ui <- function() {
                                            box(title = "Download figure",solidHeader = TRUE,status = "success",width = 12,
                                                downloadButton(outputId = "IRT_TICfile", label = "Download"))))
                           ),
-                          # tabItem(tabName = "IRTreport_tab",
-                          #         fluidRow(
-                          #           column(10,uiOutput(outputId ="IRTreport_html" ,fill = TRUE)),
-                          #           column(2,
-                          #                  box(title = "Download Analysis Report",solidHeader = TRUE,status = "success",width = 12,
-                          #                    "Generate data analysis reports based on the relevant settings of each interface
-                          #                   in unidimensional IRT.",
-                          #                    br(),
-                          #                    br(),
-                          #                    downloadButton(outputId = "IRT_report",label = "Download"))))
-                          # ),
+                          tabItem(tabName = "IRTreport_tab",
+                                  fluidRow(
+
+                                    column(8,
+                                           box(title = "Download results",solidHeader = TRUE,status = "success",width = 12,
+                                               "Download all the analysis results of unidimensional IRT in the 'TestAnaAPP'.",br(),
+                                               br(),
+                                               downloadButton(outputId = "IRT_resultfile", label = "Download results"),
+                                               br(),
+                                               br()),
+                                           box(title = "Generate data analysis reports",solidHeader = TRUE,status = "success",width = 12,
+                                               "TestAnaAPP will generate a data analysis report based on the following settings:",
+                                               br(),
+                                               br(),
+                                               sliderInput(inputId = "IRTreport_Q3_h",label = "Highlight the values where the absolute value of the
+                                                           local dependency indicator is greater than?",
+                                                           min = 0, max = 1,value = 0.22,step = 0.01),
+                                               br(),
+                                               sliderInput(inputId = "IRTreport_alpha_h", label = "Highlight the values where the discrimination
+                                                           is lower than?", min = 0, max = 2,value = 0.5,step = 0.1),
+                                               br(),
+                                               sliderInput(inputId = "IRTreport_wrap_height", label = "Select the height (inch) of the facet plot
+                                                           (item characteristic curve and item information curve)",
+                                                           min = 3, max = 30,value = 10,step = 0.2),
+                                               tags$b("Note: "),"the column number of the facet plot can be set in the above specific section.",
+                                               br(),br(),
+                                               sliderInput(inputId = "IRTreport_wright_height", label = "Select the height (inch) of the wright map",
+                                                           min = 3, max = 10,value = 5,step = 0.2),
+                                               br(),
+                                               submitButton("Updata Settings"),
+                                               br(),
+                                               downloadButton(outputId = "IRT_report",label = "Download analysis report"))))
+                          ),
                           #G. MIRT page---------------------------------------------------------------------------------
                           tabItem(
                             tabName = "MIRTdim_info",
@@ -583,17 +601,7 @@ app_ui <- function() {
                                                  it is necessary to estimate the covariance in multidimensional models.",
                                                  br(),br(),
 
-                                                 submitButton( "Updata results")),
-
-                                             box(title = "Download results",solidHeader = TRUE,status = "success",width = 12,
-                                                 "Download all the analysis results for multidimensional IRT in the 'TestAnaAPP'.",br(),
-                                                 downloadButton(outputId = "MIRT_resultfile", label = "Download"),
-                                                 br(),
-                                                 br(),
-                                                 "Generate data analysis reports based on the relevant settings of each interface
-                                                 in multidimensional IRT.",br(),
-                                                 downloadButton(outputId = "MIRT_report",label = "Download analysis report")
-                                             )))
+                                                 submitButton( "Updata results"))))
 
                           ),
                           tabItem(
@@ -632,7 +640,11 @@ app_ui <- function() {
                           tabItem(
                             tabName = "MIRTitempar",
                             fluidPage(column(8,
-                                             box(title="Item parameters",DT::dataTableOutput("MIRT_itempar")%>%
+                                             box(title="Item parameters",
+                                                 tags$b("Note: "),"For detailed formulas for the model and interpretations of parameters,
+                                                 please download the analysis report from the Analysis Report section.",
+                                                 br(),
+                                                 DT::dataTableOutput("MIRT_itempar")%>%
                                                    box_show_theme(),
                                                  solidHeader = TRUE,
                                                  status = "info",width = 12),
@@ -781,6 +793,40 @@ app_ui <- function() {
                                                  submitButton( "Updata plot"))
                                       ))
                           ),
+                          tabItem(
+                            tabName = "MIRTreport_tab",
+                            fluidPage(column(8,
+                                             box(title = "Download results",solidHeader = TRUE,status = "success",width = 12,
+                                                 "Download all the analysis results of multidimensional IRT in the 'TestAnaAPP'.",br(),
+                                                 br(),
+                                                 downloadButton(outputId = "MIRT_resultfile", label = "Download results"),
+                                                 br(),
+                                                 br()),
+                                             box(title = "Generate data analysis reports",solidHeader = TRUE,status = "success",width = 12,
+                                                 "TestAnaAPP will generate a data analysis report based on the following settings:",
+                                                 br(),
+                                                 br(),
+                                                 sliderInput(inputId = "MIRTreport_Q3_h",label = "Highlight the values where the absolute value of the
+                                                           local dependency indicator is greater than?",
+                                                             min = 0, max = 1,value = 0.22,step = 0.01),
+                                                 br(),
+                                                 sliderInput(inputId = "MIRTreport_alpha_h", label = "Highlight the values where the discrimination
+                                                           is lower than?", min = 0, max = 2,value = 0.5,step = 0.1),
+                                                 br(),
+                                                 sliderInput(inputId = "MIRTreport_wrap_height", label = "Select the height (inch) of the facet plot
+                                                             (item characteristic curve and item information curve)",
+                                                             min = 3, max = 30,value = 11,step = 0.2),
+                                                 tags$b("Note: "),"the column number of the facet plot can be set in the above specific section.",
+                                                 br(),br(),
+                                                 sliderInput(inputId = "MIRTreport_wright_height", label = "Select the height (inch) of the wright map",
+                                                             min = 3, max = 10,value = 5,step = 0.2),
+                                                 br(),
+                                                 submitButton("Updata Settings"),
+                                                 br(),
+                                                 downloadButton(outputId = "MIRT_report",label = "Download analysis report"))))
+
+
+                          ),
                           #H Continuous response model--------------------------------------------------------------
                           tabItem(
                             tabName = "CRM_maxmin_print",
@@ -892,8 +938,60 @@ app_ui <- function() {
                                                        status = "warning",
                                                        uiOutput(outputId = "CRM_item_selection"),
 
-                                                       submitButton( "Updata plot")))),
-                                  )
+                                                       submitButton( "Updata plot"))))),
+                          # I. DIF-----------------------------------------------------------------------------------------
+                          tabItem(tabName = "DIF_group",
+                                  fluidPage(column(8,
+                                            box(title = "Group variables of the subjects",solidHeader = TRUE, status = "warning",width = 12,
+                                                "The following data is the group variables of the subjects you uploaded to be analyzed for DIF analysis.",
+                                                br(),br(),
+                                                DT::dataTableOutput(outputId = "DIF_group_variable")%>%
+                                                  box_show_theme())),
+                                            column(4,
+                                                   box(title = "Upload group variables",solidHeader = TRUE, status = "warning",width = 12,
+                                                       "Please upload the group variables of the subjects you want to analyze for DIF.",
+                                                       br(),br(),
+                                                       fileInput(inputId = "DIF_group_file",
+                                                                 "Please upload this data according to the example on the right.",
+                                                                 placeholder="File",buttonLabel = "Browse",
+                                                                 accept = c("xlsx","xls","csv","txt")))))
+                                  ),
+                          tabItem(tabName = "DIF_analysis",
+                                  fluidPage(column(8,
+                                                   box(title = "Analysis results of DIF",solidHeader = TRUE, status = "info",width = 12,
+                                                       DT::dataTableOutput( "DIF_results")%>%
+                                                         box_show_theme())),
+                                            column(4,
+                                                   box(title = "Settings for DIF",solidHeader = TRUE, status = "warning",width = 12,
+                                                       "TestAnaAPP provides several methods for DIF analysis. You can choose the method
+                                                       you want to use.",
+                                                       br(),br(),
+                                                       selectInput(inputId = "DIF_method",
+                                                                   label = "Select the method for DIF analysis",
+                                                                   choices = c("Mantel Haenszel","Logistic Regression","SIBTEST"),
+                                                                   selected = "Mantel Haenszel"),
+                                                       br(),br(),
+                                                       selectInput(inputId = "sig_level",
+                                                                   label = "Significance level",
+                                                                   choices = c("0.01","0.05","0.1"),
+                                                                   selected = "0.05"),
+                                                       br(),br(),
+                                                       "In addition, you can choose a variable (uploaded in the previous step) to analyze DIF.",
+                                                       br(),br(),
+                                                       uiOutput(outputId = "DIF_variable_selection"),
+                                                       br(),br(),
+                                                       submitButton( "Confirm"),
+                                                       br(),
+                                                       uiOutput(outputId = "focal_name"),
+                                                       br(),br(),
+                                                       submitButton( "Updata results")),
+                                                   box(title = "Download results",solidHeader = TRUE,status = "success",width = 12,
+                                                       "Download all the analysis results for DIF in the 'TestAnaAPP'.",br(),
+                                                       downloadButton(outputId = "DIF_download",label = "Download")))))
+
+
+
+
 
                         )))
 

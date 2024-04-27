@@ -75,7 +75,7 @@ bold_print <- function(text){
   fp <- officer::fp_par(text.align = "center")
   return(officer::fpar(officer::ftext(text, prop = text_format), fp_p = fp))
 }
-plot_width <- 6.299
+plot_width <- 6.5
 
 ```
 
@@ -240,10 +240,9 @@ fmt_tra_other(ft = MIRT_modelfit)
 
 ```
 
+<!---BLOCK_LANDSCAPE_START--->
 
 # Hypothesis Testing
-
-<!---BLOCK_LANDSCAPE_START--->
 
 ## Independence Test
 
@@ -251,9 +250,21 @@ fmt_tra_other(ft = MIRT_modelfit)
 
 For the independence test in this analysis, `r MIRT_select_independent` was chosen as the selected statistic.
 
-```{r , echo=FALSE,tab.cap=sprintf("Independence test（%s）",MIRT_select_independent),tab.id = "dependent_test", tab.cap.style = "Table Caption"}
-fmt_tra_other(MIRT_Q3,  reset_width = FALSE)
+```{r , echo=FALSE,tab.cap=sprintf("Independence test (%s) ",MIRT_select_independent),tab.id = "dependent_test", tab.cap.style = "Table Caption",}
+Q3_color <- function(x, value = MIRTreport_Q3_highlight){
+  out <- rep("black", length(x))
+  out[abs(x) > value] <- "red"
+  out[abs(x) == 1] <- "black"
+  out
+}
+
+MIRT_Q3_print <- cbind("Item" = colnames(MIRT_Q3), MIRT_Q3) %>% as.data.frame()
+
+fmt_tra_other(MIRT_Q3_print,  reset_width = FALSE) %>% 
+  flextable::color(j = 2:ncol(MIRT_Q3_print),
+                       color = Q3_color)
 ```
+*Note*: The red color indicates that the absolute value of the Q3 statistic exceeds the threshold value you set on TestAnaAPP.
 
 <!---BLOCK_LANDSCAPE_STOP--->
 
@@ -287,9 +298,18 @@ In this analysis, the `r model` model was selected. The `r MIRT_est_method` was 
 The item parameters are as follows:
 
 ```{r, echo=FALSE,tab.cap=sprintf("The item parameters of the %s",model),tab.id = "item_par", tab.cap.style = "Table Caption"}
-
-fmt_tra_other(MIRT_itempar)
+disc_color <- function(x, value = MIRTreport_alpha_highlight){
+  out <- rep("black", length(x))
+  out[x < value] <- "red"
+  out
+}
+MIRT_itempar_print <- cbind("Item" = rownames(MIRT_itemfit),MIRT_itempar)
+fmt_tra_other(MIRT_itempar_print) %>% 
+  flextable::color(j = colnames(MIRT_itempar_print) %>%
+                     str_which(pattern = "Discrimination"),
+                   color = disc_color) 
 ```
+*Note*: The red color indicates that the item discrimination value is below the threshold value you set on TestAnaAPP.
 
 # Wright Map
 
@@ -299,7 +319,7 @@ It is important to note that the test can effectively differentiate the subjects
 
 For multidimensional IRT models, the 'TestAnaAPP' displays the Wright map for each dimension on the interactive interface. You can download the selected Wright map, out of `r mode$F_n` Wright maps, from the interactive interface of 'TestAnaAPP'.
 
-```{r ,echo=FALSE,fig.cap=sprintf("The Wright map for the %s model",model), fig.id = "wright",fig.cap.style = "Image Caption",,fig.height=wright_map_height/142,fig.width=plot_width}
+```{r ,echo=FALSE,fig.cap=sprintf("The Wright map for the %s model",model), fig.id = "wright",fig.cap.style = "Image Caption",,fig.height=wright_map_height,fig.width=plot_width}
 print(MIRT_wright) 
 
 ```
@@ -316,10 +336,7 @@ Specialized books offer guidance on interpreting the ICC curve, enabling readers
 
 The 'TestAnaAPP' utilizes a specific latent trait for each item to construct the ICC figures for the between-item test, which is considered acceptable.
 
-```{r, echo=FALSE,fig.cap=sprintf("The item characteristic curve of this test"), fig.id = "ICC",fig.cap.style = "Image Caption",fig.height=wrap_height_value/142,fig.width=plot_width}
-#1cm=28px
-#1inch=2.54cm
-#1inch=71px
+```{r, echo=FALSE,fig.cap=sprintf("The item characteristic curve of this test"), fig.id = "ICC",fig.cap.style = "Image Caption",fig.height=wrap_height_value,fig.width=plot_width}
 print(MIRT_ICC)
 ```
 
@@ -331,7 +348,7 @@ Professional books can provide guidance on interpreting the IIC curve for those 
 
 In the between-item test, which is considered acceptable according to 'TestAnaAPP', the IIC figures are based on a single latent trait that corresponds to each item.
 
-```{r, echo=FALSE,fig.cap=sprintf("The item information curve of this test"), fig.id = "IIC",fig.cap.style = "Image Caption",fig.height=wrap_height_value_iic/142,fig.width=plot_width}
+```{r, echo=FALSE,fig.cap=sprintf("The item information curve of this test"), fig.id = "IIC",fig.cap.style = "Image Caption",fig.height=wrap_height_value_iic,fig.width=plot_width}
 print(MIRT_IIC)
 ```
 

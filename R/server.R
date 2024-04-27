@@ -12,6 +12,7 @@
 #' @importFrom bruceR EFA Alpha CFA Corr Describe Freq import lavaan_summary
 #' @importFrom tidyr pivot_longer
 #' @importFrom latticeExtra mapplot
+#' @importFrom difR difMH difLogistic difSIBTEST
 
 #' @noRd
 app_server <- function(input, output, session) {
@@ -167,17 +168,17 @@ app_server <- function(input, output, session) {
   #Introduction of this platform-----------------------------------
   output$info <- renderText({
     paste(shiny::p(strong('Package: '), "TestAnaAPP"),
-          shiny::p(strong('Dependence: '), "config, ggplot2, mirt, shinydashboard, EstCRM"),
-          shiny::p(strong('Description: '), "This application enables exploratory factor analysis,
-    confirmatory factor analysis, classical measurement theory analysis,
-    unidimensional item response theory, multidimensional item response theory, and continuous item response
-    model analysis, through the 'shiny' interactive interface. It also facilitates the visualization
-    of the results. Users can easily download the analysis results from the
-    interactive interface. Additionally, users can download a concise report
-    about items and test quailty throught the interactive interface."),
-          shiny::p(strong('Anthor: '), "Youxiang Jiang"),
+          shiny::p(strong('Version: '), "1.0.1"),
+          shiny::p(strong('Dependence: '), "config, ggplot2, mirt, shinydashboard, EstCRM, etc."),
+          shiny::p(strong('Description: '), "This application provides exploratory and confirmatory factor analysis,
+                   classical test theory, unidimensional and multidimensional item response theory,
+                   and continuous item response model analysis, through the 'shiny' interactive interface.
+                   In addition,  it offers rich functionalities for visualizing and downloading results.
+                   Users can download figures, tables, and analysis reports via the interactive interface. "),
+          shiny::p(strong('Anthors: '), "Youxiang Jiang, Qin Zeng, and Hongbo Wen."),
           shiny::p(strong('Email: '), tags$a(href="mailto:jiangyouxiang34@163.com", "jiangyouxiang34@163.com")),
-          shiny::p(strong('Contributor: '), "Hongbo Wen"),
+          shiny::p(strong('Github: '), tags$a(href="https://github.com/jiangyouxiang/TestAnaAPP",
+                                              "https://github.com/jiangyouxiang/TestAnaAPP")),
 
 
           br(),br(),br(),
@@ -193,8 +194,10 @@ app_server <- function(input, output, session) {
                    in the interface of uploading dimensional information to illustrate the test structure.
                    Please edit your document following the examples provided in 'TestAnaAPP'. "),
           shiny::p("4. During the operation, please carefully read the textual prompts presented on each interface
-                   to ensure that the program can execute your intentions correctly. ")
-
+                   to ensure that the program can execute your intentions correctly. "),
+          br(),br(),
+          shiny::p(strong("If you have any questions or suggestions, please contact us.")),
+          br(),br()
     )
   })
   #1. Descriptive statistics--------------------------------------------
@@ -949,11 +952,13 @@ app_server <- function(input, output, session) {
       IRT_TIC <- IRT_TIC_rea()
       IRT_IIC <- IRT_IIC_rea()
 
-      wright_map_height <- input$IRT_wright_map_height
-      wrap_height_value <- input$wrap_height
+      wright_map_height <- input$IRTreport_wright_height
+      wrap_height_value <- input$IRTreport_wrap_height
+      wrap_height_value_iic <- input$IRTreport_wrap_height
 
-
-      wrap_height_value_iic <- input$wrap_height_iic
+      # highlight the significant results
+      IRTreport_Q3_highlight <- input$IRTreport_Q3_h
+      IRTreport_alpha_highlight <- input$IRTreport_alpha_h
 
       #Export analysis report
       path_sys <- system.file("rmd", "IRT_Analysis_Report.Rmd", package = "TestAnaAPP")
@@ -1696,9 +1701,14 @@ app_server <- function(input, output, session) {
                                Qmatrix = dimension, colnames = colnames(Response))$dim_information
       colnames(item_info1) <- c(mode$F_names, paste0(mode$F_names,"infor"))
 
-      wright_map_height <- input$MIRT_wright_map_height
-      wrap_height_value <- input$MIRT_wrap_height
-      wrap_height_value_iic <- input$MIRT_wrap_height_iic
+      wright_map_height <- input$MIRTreport_wright_height
+      wrap_height_value <- input$MIRTreport_wrap_height
+      wrap_height_value_iic <- input$MIRTreport_wrap_height
+
+      #highlight some values
+      MIRTreport_Q3_highlight <- input$MIRTreport_Q3_h
+      MIRTreport_alpha_highlight <- input$MIRTreport_alpha_h
+
       #Export analysis report
       path_sys <- system.file("rmd", "MIRT_Analysis_Report.Rmd", package = "TestAnaAPP")
       src <- normalizePath(path_sys)
@@ -1876,8 +1886,92 @@ app_server <- function(input, output, session) {
     }
   )
 
+  ## 11. DIF---------------------------------------------------------------------------------------
+  DIF_file <- reactive({
+    if(is.null(input$DIF_group_file))
+      return(NULL)
+    bruceR::import(input$DIF_group_file$datapath) %>% as.data.frame()
+  })
 
+  output$DIF_group_variable <- DT::renderDataTable({
+    DIF_file() %>% DT_dataTable_Show()
+  })
 
+  output$DIF_variable_selection <- renderUI({
+    dif_var <- DIF_file() %>% as.data.frame() %>% colnames()
+    selectInput(inputId = "DIF_variable",label = "Please select a variable to be analyzed.",
+                choices = dif_var, selected = dif_var[1], selectize = TRUE)
+  })
+  output$focal_name <- renderUI({
+
+    choices <- DIF_file()
+    choices <- choices[,input$DIF_variable] %>% table() %>% names()
+
+    selectInput(inputId = "focal_name1",label = "Please select the focal group.",
+                choices = choices , selected = choices[1], selectize = TRUE)
+  })
+
+  DIF_ana_rea <- reactive({
+    if(is.null(input$DIF_group_file))
+      return(NULL)
+    if(is.null(input$res_data))
+      return(NULL)
+    if(is.null(input$focal_name1))
+      return(NULL)
+    Response <- mydata() %>% as.data.frame()
+    DIF_var <- DIF_file()
+    DIF_var <- DIF_var[,sprintf("%s",input$DIF_variable)] %>% as.character()
+    alpha <- as.numeric(input$sig_level)
+
+    if(input$DIF_method == "Mantel Haenszel"){
+      fit <- difMH(Data = Response, group = DIF_var, alpha = alpha,
+                   focal.name = input$focal_name1)
+      result <- data.frame(
+        Chi_square = fit$MH,
+        P.value = fit$p.value
+      )
+
+    }
+    if(input$DIF_method == "Logistic Regression"){
+      fit <- difLogistic(Data=Response, group = DIF_var, alpha = alpha,
+                         focal.name = input$focal_name1)
+      result <- data.frame(
+        LR_stats = fit$Logistik,
+        P.value = fit$p.value,
+        delta_R2 = fit$deltaR2
+      )
+    }
+    if(input$DIF_method == "SIBTEST"){
+      fit <-difSIBTEST(Data=Response, group = DIF_var, alpha = alpha,
+                       focal.name = input$focal_name1)
+      result <- data.frame(
+        Beta = fit$Beta,
+        SE = fit$SE,
+        Chi_square = fit$X2,
+        P.value = fit$p.value
+      )
+    }
+    result <- cbind(round(result, digits = 3) , "DIF" = ifelse(result$P.value < alpha, "Yes", "No"))
+    rownames(result) <- colnames(Response)
+    return(result)
+  })
+
+  output$DIF_results <- DT::renderDataTable({
+    if(is.null(input$DIF_group_file))
+      return(NULL)
+    if(is.null(input$res_data))
+      return(NULL)
+    DIF_ana_rea() %>% DT_dataTable_Show()
+
+  })
+  output$DIF_download <- downloadHandler(
+    filename = function(){
+      paste0("DIF_results.xlsx")
+    },
+    content = function(file){
+      DIF_ana_rea() %>% openxlsx::write.xlsx(file = file, rowNames = T)
+    }
+  )
 }
 
 #Functions-----------------------------------------------------
@@ -1962,13 +2056,18 @@ plot_wrap <- function(theta,
                       title_size = 15,
                       xy_size = 12,
                       Item_label_size = 10){
+  y <- NULL
+  score <- NULL
+  Item <- NULL
+  Score <- NULL
 
   #A single curve
   if(lines == "IIC"){
     colnames(y_matrix) <- main_vector
-    plot_data <- bind_cols("theta" = theta, y_matrix)%>%
+    plot_data <- bind_cols("theta" = theta, y_matrix) %>%
       pivot_longer(cols = -1, names_to = "Item", values_to = "y") %>%
       mutate("Item" = factor(Item, levels = main_vector))
+    colnames(plot_data) <- c("theta","Item","y")
 
     #plot
     gra <- ggplot(plot_data, mapping = aes(x = theta, y = y))+
@@ -1983,8 +2082,8 @@ plot_wrap <- function(theta,
   }else if(lines == "ICC"){
 
     di_items <- which(grade_vector == 1)
-    varname <- colnames(y_matrix)%>%str_split(pattern = "\\.P\\.",simplify = T) %>%
-      .[,1]%>%unique()
+    varname <- colnames(y_matrix)%>%str_split(pattern = "\\.P\\.",simplify = T)
+    varname <- varname[,1] %>% unique()
     if(sum(varname != main_vector) >= 1){
       colnames_y_matrix <- vector(mode = "character")
       low_grade <- ifelse(test = is.include.zore, yes = 0, no = 1)
@@ -2011,6 +2110,7 @@ plot_wrap <- function(theta,
                          levels = 0:max(score)),
         "Item" = factor(Item, levels = main_vector)
       )
+    colnames(plot_data1) <- c("theta","Item","Score","y")
 
     if(is.include.zore == F){
       plot_data <- plot_data1[which(plot_data1$Score != 0), ]
