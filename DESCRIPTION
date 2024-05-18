@@ -6,7 +6,7 @@ Authors@R:
     email = "jiangyouxiang34@163.com", 
     role = c("cre", "aut","ths"),
     comment = "0000-0003-4557-5038"),
-    person(given = "Qin", family = "Zeng",
+    person(given = "Qing", family = "Zeng",
     email = "805604156@qq.com",
     role = c("aut","ths")),
     person(given = "Hongbo", family = "Wen", 

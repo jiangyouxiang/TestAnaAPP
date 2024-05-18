@@ -9,6 +9,7 @@
 
 
 app_ui <- function() {
+  options(shiny.legacy.datatable = TRUE)
   dashboardPage(skin = "blue",
                 dashboardHeader(title = "Test Analysis Application",titleWidth = 700),#The name of this platform
                       #Pages----------------------------------------------------------------------------------
@@ -108,7 +109,7 @@ app_ui <- function() {
                             ),
                             column(4,
                                    box(title = "Method",status = "warning", solidHeader = TRUE,width = 12,
-                                       selectInput(inputId = "EFA_method",label = "Parameter estimation methods",selectize = TRUE,
+                                       selectInput(inputId = "EFA_method",label = "Extraction method",selectize = TRUE,
                                                    choices = list("Principal Component Analysis",
                                                                   "Principal Axis Factor Analysis",
                                                                   "Maximum Likelihood Factor Analysis",
@@ -127,7 +128,7 @@ app_ui <- function() {
                                                                   "Quartimax",
                                                                   "Equamax"),
                                                    selected = "Varimax"),
-                                       submitButton( "Updata results")),
+                                       submitButton( "Update results")),
                                    box(title = "Download results", status = "success",solidHeader = TRUE,
                                        downloadButton(outputId = "EFA_result", label = "Download"),
                                        width = 12)))
@@ -186,7 +187,7 @@ app_ui <- function() {
                                                 sliderInput(inputId = "CFA_plot_height",label = "Adjust height",
                                                             min = 300,max = 1800,step = 30,value = 800),
                                                 br(),
-                                                submitButton( "Updata plot"),
+                                                submitButton( "Update plot"),
                                                 br(),
                                                 downloadButton("CFA_plot_file",label = "Download"))))
                           ),
@@ -315,7 +316,7 @@ app_ui <- function() {
                                        standard EM algorithm.",
                                        br(),br(),
 
-                                       submitButton( "Updata results")))
+                                       submitButton( "Update results")))
                             )),
                           tabItem(
                             tabName = "IRTassum_test",
@@ -331,7 +332,7 @@ app_ui <- function() {
                                                              choices = list("LD-X2 (Chen & Thissen, 1997)",
                                                                             "Q3 (Yen, 1984)"),
                                                              selected = "Q3 (Yen, 1984)",selectize = TRUE),
-                                                 submitButton("Updata results"))))
+                                                 submitButton("Update results"))))
                           ),
                           tabItem(
                             tabName = "IRTitemfit",
@@ -349,7 +350,7 @@ app_ui <- function() {
                                                                             "G2 statistic (McKinley & Mills, 1985)"),
                                                              selected = "chi-squared test (Kang & Chen, 2007)",
                                                              selectize = TRUE),
-                                                 submitButton( "Updata results"))))
+                                                 submitButton( "Update results"))))
                           ),
                           tabItem(
                             tabName = "IRTitempar",
@@ -382,7 +383,7 @@ app_ui <- function() {
                                                                             "maximum likelihood (ML)",
                                                                             "weighted likelihood estimation (WLE)"),
                                                              selected = "expected a-posteriori (EAP)",selectize = TRUE),
-                                                 submitButton( "Updata plot"))))
+                                                 submitButton( "Update plot"))))
                           ),
                           tabItem(
                             tabName = "IRTwright",
@@ -394,7 +395,7 @@ app_ui <- function() {
                                                    box_show_theme(),
                                                  width = 12)),
                                       column(4,
-                                             box(title = "Adjust plot",width = 12,solidHeader = TRUE,
+                                             box(title = "Customize Drawing",width = 12,solidHeader = TRUE,
                                                  status = "warning",
                                                  sliderInput(inputId = "IRT_wright_map_height",label = "The height of WrightMap.",
                                                              min = 300,max = 1800,step = 30,value = 400),
@@ -409,7 +410,7 @@ app_ui <- function() {
                                                  br(),
                                                  sliderInput(inputId = "IRT_wright_p_width",label = "The width of right plot.",
                                                              min = 1, max = 5, value = 1.618, step = 0.25),
-                                                 submitButton( "Updata plot")),
+                                                 submitButton( "Update plot")),
                                              box(title = "Download figure",solidHeader = TRUE,status = "success",width = 12,
                                                  downloadButton(outputId = "IRT_wrightfile", label = "Download"))))
                           ),
@@ -421,7 +422,7 @@ app_ui <- function() {
                                                    box_show_theme(),
                                                  width = 12)),
                                       column(4,
-                                             box(title = "Adjust the figures (ICC and IIC)",width = 12,solidHeader = TRUE,
+                                             box(title = "Customize Drawing (ICC)",width = 12,solidHeader = TRUE,
                                                  status = "warning",
                                                  sliderInput(inputId = "wrap_height", label = "Select height",
                                                              min = 300, max = 1800,value = 400,step = 30),
@@ -442,7 +443,7 @@ app_ui <- function() {
                                                              label = "Select column number",
                                                              choices = list("2","3","4","5","6","7"),
                                                              selected = "4"),
-                                                 submitButton( "Updata results")),
+                                                 submitButton( "Update results")),
                                              box(title = "Download figure",solidHeader = TRUE,status = "success",width = 12,
                                                  downloadButton(outputId = "IRT_ICCfile", label = "Download"))))
                           ),
@@ -454,7 +455,7 @@ app_ui <- function() {
                                                    box_show_theme(),
                                                  width = 12)),
                                       column(4,
-                                             box(title = "Adjust plot", solidHeader = TRUE,status = "warning",width = 12,
+                                             box(title = "Customize Drawing (IIC)", solidHeader = TRUE,status = "warning",width = 12,
                                                  selectInput(inputId = "IRTiic_scale",label = "Free or fixed y axis",
                                                              choices = list("Free","Fixed"),selected = "Free"),
                                                  br(),
@@ -479,7 +480,7 @@ app_ui <- function() {
                                                              choices = list("2","3","4","5","6","7"),
                                                              selected = "4"),
 
-                                                 submitButton( "Updata results")),
+                                                 submitButton( "Update results")),
                                              box(title = "Download figure",solidHeader = TRUE,status = "success",width = 12,
                                                  downloadButton(outputId = "IRT_IICfile", label = "Download"))))
                           ),
@@ -523,7 +524,7 @@ app_ui <- function() {
                                                sliderInput(inputId = "IRTreport_wright_height", label = "Select the height (inch) of the wright map",
                                                            min = 3, max = 10,value = 5,step = 0.2),
                                                br(),
-                                               submitButton("Updata Settings"),
+                                               submitButton("Update Settings"),
                                                br(),
                                                downloadButton(outputId = "IRT_report",label = "Download analysis report"))))
                           ),
@@ -601,7 +602,7 @@ app_ui <- function() {
                                                  it is necessary to estimate the covariance in multidimensional models.",
                                                  br(),br(),
 
-                                                 submitButton( "Updata results"))))
+                                                 submitButton( "Update results"))))
 
                           ),
                           tabItem(
@@ -619,7 +620,7 @@ app_ui <- function() {
                                                              choices = list("LD-X2 (Chen & Thissen, 1997)",
                                                                             "Q3 (Yen, 1984)"),
                                                              selected = "Q3 (Yen, 1984)",selectize = TRUE),
-                                                 submitButton("Updata results"))))
+                                                 submitButton("Update results"))))
                           ),
                           tabItem(
                             tabName = "MIRTitemfit",
@@ -635,7 +636,7 @@ app_ui <- function() {
                                                              choices = list("chi-squared test (Kang & Chen, 2007)"),
                                                              selected = "chi-squared test (Kang & Chen, 2007)",
                                                              selectize = TRUE),
-                                                 submitButton( "Updata results"))))
+                                                 submitButton( "Update results"))))
                           ),
                           tabItem(
                             tabName = "MIRTitempar",
@@ -672,7 +673,7 @@ app_ui <- function() {
                                                                             "maximum likelihood (ML)",
                                                                             "weighted likelihood estimation (WLE)"),
                                                              selected = "expected a-posteriori (EAP)",selectize = TRUE),
-                                                 submitButton( "Updata plot"))))
+                                                 submitButton( "Update plot"))))
                           ),
                           tabItem(
                             tabName = "MIRTwright",
@@ -684,7 +685,7 @@ app_ui <- function() {
                                                  uiOutput("MIRT_wright1")%>%
                                                    box_show_theme() )),
                                       column(4,
-                                             box(title = "Adjust plot",width = 12,solidHeader = TRUE,
+                                             box(title = "Customize Drawing",width = 12,solidHeader = TRUE,
                                                  status = "warning",
                                                  sliderInput(inputId = "MIRT_wright_map_height",label = "The height of WrightMap.",
                                                              min = 300,max = 1800,step = 30,value = 400),
@@ -700,7 +701,7 @@ app_ui <- function() {
                                                  sliderInput(inputId = "MIRT_wright_p_width",label = "The width of right plot.",
                                                              min = 1, max = 5, value = 1.618, step = 0.25),
                                                  uiOutput("MIRT_wright_dim_select"),
-                                                 submitButton( "Updata plot")),
+                                                 submitButton( "Update plot")),
                                              box(title = "Download figure",solidHeader = TRUE,status = "success",width = 12,
                                                  downloadButton(outputId = "MIRT_wrightfile", label = "Download"))))
                           ),
@@ -715,7 +716,7 @@ app_ui <- function() {
                                                  width = 12)),
                                       column(4,
 
-                                             box(title = "Adjust the figures (ICC and IIC)",width = 12,solidHeader = TRUE,
+                                             box(title = "Customize Drawing (ICC)",width = 12,solidHeader = TRUE,
                                                  status = "warning",
                                                  sliderInput(inputId = "MIRT_wrap_height", label = "Select height",
                                                              min = 300,max = 1800,step = 30,value = 400),
@@ -736,7 +737,7 @@ app_ui <- function() {
                                                              label = "Select column number",
                                                              choices = list("2","3","4","5","6","7"),
                                                              selected = "4"),
-                                                 submitButton( "Updata results")),
+                                                 submitButton( "Update results")),
                                              box(title = "Download figure",solidHeader = TRUE,status = "success",width = 12,
                                                  downloadButton(outputId = "MIRT_ICCfile", label = "Download"))))
                           ),
@@ -750,7 +751,7 @@ app_ui <- function() {
                                                    box_show_theme(),
                                                  width = 12)),
                                       column(4,
-                                             box(title = "Adjust plot", solidHeader = TRUE,status = "warning",width = 12,
+                                             box(title = "Customize Drawing (IIC)", solidHeader = TRUE,status = "warning",width = 12,
                                                  selectInput(inputId = "MIRTiic_scale",label = "Free or fixed y axis",
                                                              choices = list("Free","Fixed"),selected = "Free"),
                                                  br(),
@@ -774,7 +775,7 @@ app_ui <- function() {
                                                              choices = list("2","3","4","5","6","7"),
                                                              selected = "4"),
 
-                                                 submitButton( "Updata results")),
+                                                 submitButton( "Update results")),
                                              box(title = "Download figure",solidHeader = TRUE,status = "success",width = 12,
                                                  downloadButton(outputId = "MIRT_IICfile", label = "Download"))))
                           ),
@@ -790,7 +791,7 @@ app_ui <- function() {
                                              box(title = "Selection of dimension",width = 12,solidHeader = TRUE,
                                                  status = "warning",
                                                  uiOutput("MIRT_TIC_dim_select"),
-                                                 submitButton( "Updata plot"))
+                                                 submitButton( "Update plot"))
                                       ))
                           ),
                           tabItem(
@@ -821,7 +822,7 @@ app_ui <- function() {
                                                  sliderInput(inputId = "MIRTreport_wright_height", label = "Select the height (inch) of the wright map",
                                                              min = 3, max = 10,value = 5,step = 0.2),
                                                  br(),
-                                                 submitButton("Updata Settings"),
+                                                 submitButton("Update Settings"),
                                                  br(),
                                                  downloadButton(outputId = "MIRT_report",label = "Download analysis report"))))
 
@@ -903,7 +904,7 @@ app_ui <- function() {
                                                  "Ferrando, P.J.(2002). Theoretical and Empirical Comparison between Two Models for
                                                  Continuous Item Responses. Multivariate Behavioral Research, 37(4), 521-542.",
                                                  br(),br(),
-                                                 submitButton( "Updata results")),
+                                                 submitButton( "Update results")),
                                              box(title = "Download results",solidHeader = TRUE,status = "success",width = 12,
                                                  "Download all the analysis results for continuous response model in the 'TestAnaAPP'.",br(),
                                                  downloadButton(outputId = "CRM_results",label = "Download"))))
@@ -938,7 +939,7 @@ app_ui <- function() {
                                                        status = "warning",
                                                        uiOutput(outputId = "CRM_item_selection"),
 
-                                                       submitButton( "Updata plot"))))),
+                                                       submitButton( "Update plot"))))),
                           # I. DIF-----------------------------------------------------------------------------------------
                           tabItem(tabName = "DIF_group",
                                   fluidPage(column(8,
@@ -984,7 +985,7 @@ app_ui <- function() {
                                                        br(),
                                                        uiOutput(outputId = "focal_name"),
                                                        br(),br(),
-                                                       submitButton( "Updata results")),
+                                                       submitButton( "Update results")),
                                                    box(title = "Download results",solidHeader = TRUE,status = "success",width = 12,
                                                        "Download all the analysis results for DIF in the 'TestAnaAPP'.",br(),
                                                        downloadButton(outputId = "DIF_download",label = "Download")))))

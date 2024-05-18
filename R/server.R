@@ -152,7 +152,12 @@ app_server <- function(input, output, session) {
     inFile <- input$res_data
     dataset <- bruceR::import(inFile$datapath)
     data <- as.data.frame(dataset)
-    if(length(which(is.character(data))) >=1){
+
+    data <- dataset %>% unlist() %>% as.numeric() %>%
+      matrix(ncol = ncol(dataset)) %>% as.data.frame()
+    colnames(data) <- colnames(dataset)
+
+    if(length(which(is.character(data %>% unlist()))) >=1){
       return("Data can not contain any string data.")
     }
     data
@@ -175,7 +180,8 @@ app_server <- function(input, output, session) {
                    and continuous item response model analysis, through the 'shiny' interactive interface.
                    In addition,  it offers rich functionalities for visualizing and downloading results.
                    Users can download figures, tables, and analysis reports via the interactive interface. "),
-          shiny::p(strong('Anthors: '), "Youxiang Jiang, Qin Zeng, and Hongbo Wen."),
+          shiny::p(strong('License: '), "GPL-3"),
+          shiny::p(strong('Anthors: '), "Youxiang Jiang, Qing Zeng, and Hongbo Wen."),
           shiny::p(strong('Email: '), tags$a(href="mailto:jiangyouxiang34@163.com", "jiangyouxiang34@163.com")),
           shiny::p(strong('Github: '), tags$a(href="https://github.com/jiangyouxiang/TestAnaAPP",
                                               "https://github.com/jiangyouxiang/TestAnaAPP")),
@@ -215,7 +221,7 @@ app_server <- function(input, output, session) {
                        "Minimum value" = desc$Min,
                        "Maximum value" = desc$Max,
                        "Skewness" = round(desc$Skewness,digits = 3),
-                       "Kurtisis" = round(desc$Kurtosis,  digits = 3))
+                       "Kurtosis" = round(desc$Kurtosis,  digits = 3))
     desc
   })
   output$CTT_summary <- DT::renderDataTable({
@@ -1736,13 +1742,17 @@ app_server <- function(input, output, session) {
     dataset <- bruceR::import(inFile$datapath)[,-1] %>% unlist() %>% as.numeric() %>% matrix(ncol = 2)
     data <- as.data.frame(dataset)
     Response <- mydata() %>% as.data.frame()
-    if(max(data) < max(Response) | min(data) > min(Response))
+    if(max(as.numeric(data %>% unlist())) < max(as.numeric(Response %>% unlist())) |
+       min(as.numeric(data %>% unlist())) > min(as.numeric(Response %>% unlist())))
       stop("The range of uploaded data is smaller than the range of score data.")
 
     colnames(data) <- c("max.item", "min.item")
     rownames(data) <- bruceR::import(inFile$datapath)[,1]
 
-    data
+    data <- data.frame(
+      "max.item" = data$max.item %>% as.numeric(),
+      "min.item" = data$min.item %>% as.numeric()
+    )
   })
 
   output$max_min_real <- DT::renderDataTable({
