@@ -53,13 +53,13 @@ fmt_tra_other <- function(ft, reset_width = TRUE){#Convert matrix to table.
   ft <- flextable::fontsize(ft, size = 10, part = "all")
   ft <- flextable::font(ft, fontname = "Times New Roman")
   ft <- flextable::align_nottext_col(ft, align = "center")
-  #合并单元，调整格式
+  # merge header
   ft <- flextable::merge_h(ft, part = "header")%>%
     flextable::merge_v(part = "header")%>%
     flextable::theme_booktabs()%>%
     flextable::bold( part = "header")%>% # Bold
     flextable::bold(j=1, part = "body")%>%
-    #居中
+    #center
     flextable::align_text_col(align = "center")%>%
     flextable::valign(valign = "center")%>%
     flextable::padding(padding = 2)
@@ -79,6 +79,26 @@ bold_print <- function(text){
 }
 
 plot_width <- 6.5
+
+```
+
+
+```{r eval=FALSE, include=FALSE}
+# Variables available in this document
+Response # Response data
+model # Selected IRT model
+IRT_est_method # Model parameter estimation method
+IRT_person_est_method # Person parameter estimation method
+EFA_method # EFA estimation method
+rotation_method # EFA factor rotation method
+IRT_select_independent # Selected indicator for independence tests
+IRT_itemfit_method # Selected indicator for item fit tests
+IRT_modelfit_relat # Relative fit indices
+IRT_modelfit # Absolute fit indices
+CTT_EFA_eigenvalues # EFA eigenvalues
+IRT_Q3 # Independence test results
+IRT_itemfit # Item fit results
+IRT_itempar # Item parameters
 
 ```
 
@@ -122,7 +142,7 @@ The 'TestAnaAPP' program supports the following specific IRT models for dichotom
 
 
 
-### Rasch Model (1PL)
+### Rasch model (1PL)
 
 
 The Rasch model, also known as the simple Rasch model, is employed for items that are scored dichotomously. The item response function (IRF) of the Rasch model was originally defined by Georg Rasch in 1960. The formula for the IRF is as follows:
@@ -130,7 +150,7 @@ The Rasch model, also known as the simple Rasch model, is employed for items tha
 $$P(X_{ij}=1 | \theta_{j}) = \frac{1}{1+e^{(-(\theta_j-\beta_i))}}\tag{1}$$
 The Rasch model (1PL) assumes that the probability $P_{ij}$ of test taker $j$ answering item $i$ correctly (represented by $X_{ij}=1$) is determined by the relative difficulty of item $i$ for test taker $j$, denoted as $\theta_j-\beta_i$.
 
-### Two parameters logistic model (2PL)
+### Two-parameter logistic model (2PL)
 
 The 2PL model, originally proposed by Birnbaum in 1957, characterizes the psychometric features of items through the parameters of item difficulty ($\beta_i$) and item discrimination ($\alpha_i$). Item discrimination reflects the item's capacity to distinguish between subjects with varying levels of latent traits, and is a crucial measure of item quality. The item response function (IRF) of the 2PL model is illustrated below.
 
@@ -138,14 +158,14 @@ The 2PL model, originally proposed by Birnbaum in 1957, characterizes the psycho
 
 $$P(X_{ij}=1 | \theta_{j}) = \frac{1}{1+e^{(-\alpha_i(\theta_j-\beta_i))}}\tag{2}$$
 
-### Three parameters logistic model (3PL)
+### Three-parameter logistic model (3PL)
 
 Birnbaum (1968) expanded upon the 2PL model by introducing the item guessing parameter, denoted as $c_i$, and proposing the 3PL model. The item guessing parameter, $c_i$, signifies the likelihood of a subject correctly guessing item $i$. In the 3PL model, the probability $P_{ij}$ that subject $j$ answers item $i$ correctly, defined as $X_{ij}=1$, is influenced by the relative difficulty of item $i$ for subject $j$ ($\theta_j-\beta_i$), the item discrimination level ($\alpha_i$), and the guessing parameter ($c_i$). The item response function (IRF) of the 3PL model is displayed below.
 
 
 $$P(X_{ij}=1 | \theta_{j}) = c_i+(1-c_i)\frac{1}{1+e^{(-\alpha_i(\theta_j-\beta_i))}}\tag{3}$$
 
-### Four parameters logistic model (4PL)
+### Four-parameter logistic model (4PL)
 
 The 3PL model addresses the guessing behavior of subjects with very low ability on items, while the 4PL model expands on this by also accounting for slip made by highly capable subjects. In addition to the components of the 3PL model, the 4PL model introduces an extra item slip parameter, denoted as $1-u_i$, to represent the probability of high-ability subjects making mistakes on item $i$. The formula for the item response function (IRF) of the 4PL model is displayed below.
 
@@ -162,7 +182,7 @@ Let $X_{ikj}$ denote the response of subject $j$ (where $j=1,2,3,...,J$) to item
 
 ### Partial credit model (PCM)
 
-The Partial Credit Model (PCM) is a variant of the Rasch model (Masters, 1982) specifically designed to analyze response data with more than two categories. In the PCM model, the item parameters solely consist of difficulty parameters $\beta_{ih}$. Here, $\beta_{ih}$ represents the threshold parameter (difficulty) for category $k$ on item $i$.
+The partial credit model (PCM) is a variant of the Rasch model (Masters, 1982) specifically designed to analyze response data with more than two categories. In the PCM model, the item parameters solely consist of difficulty parameters $\beta_{ih}$. Here, $\beta_{ih}$ represents the threshold parameter (difficulty) for category $k$ on item $i$.
 
 The item response function (IRF) for the PCM is represented by the following equation:
 
@@ -174,13 +194,13 @@ $$P(X_{ikj}=k | \theta_{j}) = \frac{e^{\sum_{h=0}^{k}(\theta_j-\beta_{ih})}}{\su
 
 where $P(X_{ikj}=k | \theta_{j})$ represents the probability that subject $j$ responds to item $i$ with category $k$.
 
-### Generalized Partial Credit Model (GPCM)
+### Generalized partial credit model (GPCM)
 
-The Generalized Partial Credit Model (GPCM) is a modification of the PCM proposed by Muraki in 1992. The GPCM enables the estimation of item discrimination parameters, denoted as $\alpha_i$. The Item Response Function (IRF) for the GPCM model can be described as:
+The generalized partial credit model (GPCM) is a modification of the PCM proposed by Muraki in 1992. The GPCM enables the estimation of item discrimination parameters, denoted as $\alpha_i$. The Item Response Function (IRF) for the GPCM model can be described as:
 
 $$P(X_{ikj}=k | \theta_{j}) = \frac{e^{\sum_{h=0}^{k}[\alpha_i(\theta_j-\beta_{ih})]}}{\sum_{c=0}^{m_i}e^{\sum_{h=0}^{c}[\alpha_i(\theta_j-\beta_{ih})]}}\tag{6}$$
 
-### Graded Response Model (GRM)
+### Graded response model (GRM)
 
 Both the PCM and GPCM models are founded on the modeling of the probability of response categories $k$ for item $i$. In contrast, the GRM model estimates the cumulative probability of response categories $k$ or higher. The cumulative response probability function for the GRM model can be expressed as:   
 
@@ -307,7 +327,7 @@ disc_color <- function(x, value = IRTreport_alpha_highlight){
 #   out[abs(x) > 4 ] <- "yellow"
 #   out
 # }
-IRT_itempar_print <- cbind("Item" = rownames(IRT_itemfit), IRT_itempar)
+IRT_itempar_print <- cbind("Item" = IRT_itemfit[,1], IRT_itempar)
 
 fmt_tra_other(IRT_itempar_print) %>% 
   flextable::color(j = colnames(IRT_itempar_print)%>%

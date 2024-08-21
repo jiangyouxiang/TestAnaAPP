@@ -79,6 +79,25 @@ plot_width <- 6.5
 
 ```
 
+```{r eval=FALSE, include=FALSE}
+# Variables available in this document
+Response # The data uploaded by the user
+dimension # The dimension of the test
+model # The IRT model selected by the user
+MIRT_est_method # The estimation method selected by the user
+MIRT_person_est_method # The person estimation method selected by the user
+MIRT_select_independent # The indicator selected for independence tests
+MIRT_itemfit_method # The indicator selected for item fit tests
+MIRT_modelfit_relat # The relative fit indices of the IRT model
+MIRT_modelfit # The absolute fit indices of the IRT model
+MIRT_Q3 # The Q3 statistics for the independence test
+MIRT_itemfit # The results of the item fit test
+MIRT_itempar # The item parameters
+item_info1 # The item information
+```
+
+
+
 `r bold_print("Table of Contents")`
 <!---BLOCK_TOC--->
 
@@ -110,7 +129,7 @@ Let $X_{ij}$ denote the response of test taker $j$ ($j = 1,2,3,...,J$) to item $
 
 The 'TestAnaAPP' supports specific MIRT models for analyzing dichotomous scoring data.
 
-### Multidimensional Rasch Model (M1PL)
+### Multidimensional Rasch model (M1PL)
 
 The Multidimensional Rasch model is commonly used for items scored dichotomously. The item response function (IRF) for the Multidimensional Rasch model can be expressed as follows:
 
@@ -119,7 +138,7 @@ $$P(X_{ij} = 1 | \theta_{jq}) = \frac{1}{1+e^{(-(\theta_{jq} - \beta_i))}}\tag{1
 The Multidimensional Rasch model (M1PL) makes a clear assumption that the probability $P_{ij}$ of subject $j$ correctly answering item $i$, indicated as $X_{ij}=1$, is influenced by the relative difficulty of item $i$ for subject $j$, denoted as $\theta_{jq}-\beta_i$.
 
 
-### Multidimensional Two parameters logistic model (M2PL)
+### Multidimensional two-parameter logistic model (M2PL)
 
 In contrast to the M1PL model, the M2PL model incorporates the parameter $d_i$, which is associated with the item difficult parameter $\beta_i$ and item discrimination $\alpha_{iq}$, to describe the psychometric properties of items. The item discrimination $\alpha_{iq}$ represents the discrimination of the $i$th item for the $q$th dimension. In 'TestAnaAPP', for the between-item test, each item is considered to be an indicator for a single dimension, resulting in item slopes ($\alpha_{iq}$) of 0 for all other dimensions except the $q$th dimension. The item response function (IRF) of the M2PL model is displayed as follows:
 
@@ -128,22 +147,21 @@ It is important to note that the parameter $d_i$ cannot represent item difficult
 
 $$MDISC_i = \sqrt{\sum_{q=1}^Q(\alpha_{iq})^2}$$
 
-$$\beta_i = \frac{MDISC_{i}}{-d_i}$$
+$$\beta_i = \frac{-d_i}{MDISC_{i}}$$
 
 
 
-### Multidimensional Three parameters logistic model (M3PL)
+### Multidimensional three-parameter logistic model (M3PL)
 
 In the M3PL model, the item guessing parameter $c_i$ represents the subject's probability of guessing item $i$ correctly. The probability $P_{ij}$ of subject $j$ answering item $i$ correctly, denoted as $X_{ij}=1$, is determined by the combination of $(\alpha_{iq}\theta_{jq} + d_i)$. The Item Response Function (IRF) of the M3PL model is shown below:
 
 
-$$P(X_{ij}=1 | \theta_{jq}) = c_i+(1-c_i)\frac{1}{1 + e^{(-(\alpha_{iq}\theta_{jq}
- + d_i))}}\tag{3}$$
+$$P(X_{ij}=1 | \theta_{jq}) = c_i+(1-c_i)\frac{1}{1 + e^{(-(\alpha_{iq}\theta_{jq} + d_i))}}\tag{3}$$
 
 Similarly, the item discrimination ($MDISC_i$) and difficulty ($\beta_i$) parameters can also be calculated using the aforementioned formula.
 
 
-### Multidimensional Four parameters logistic model (M4PL)
+### Multidimensional four-parameter logistic model (M4PL)
 
 The M4PL model introduces an additional item error parameter, $1-u_i$, to account for the possibility of high-ability subjects making errors on item $i$. The formula for the Item Response Function (IRF) of the M4PL model is represented as follows:
 
@@ -154,7 +172,7 @@ $$P(X_{ij}=1 | \theta_{jq}) = c_i+(u_i-c_i)\frac{1}{1+e^{(-(\alpha_{iq}\theta_{j
 
 Let $X_{ikj}$ denote the response of subject $j$ $(j = 1,2,3,...,J)$ to item $i$ $(i = 1,2,3,...,I)$ in the context of polytomous data. If $X_{ikj}$ is equal to $k$, then $k{\in}{(0,1,2,...,m_i)}$. In the polytomous IRT model, the item difficulty parameters are represented by $\beta_{ih}$, where $h{\in}{(1,2,...,m_i)}$. The latent trait parameter for the subject is denoted by $\theta_{jq}$.
 
-### Multidimensional Partial credit model (MPCM)
+### Multidimensional partial credit model (MPCM)
 
 The item parameters of the MPCM model consist solely of difficulty parameters, denoted as $\beta_{ih}$. Here, $\beta_{ih}$ represents the difficulty for category $k$ on item $i$.
 
@@ -167,15 +185,15 @@ $$P(X_{ikj}=k | \theta_{jq}) = \frac{e^{\sum_{h=0}^{k}(\theta_{jq}-\beta_{ih})}}
 where $P(X_{ikj}=k | \theta_{jq})$ represents the probability that subject $j$ responds to item $i$ with category $k$.
 
 
-### Multidimensional Generalized Partial Credit Model (MGPCM)
+### Multidimensional generalized partial credit model (MGPCM)
 
-The Generalized Partial Credit Model (GPCM) enables the measurement of discrimination parameters $\alpha_{iq}$ for each item. In the case of the Multi-Dimensional Generalized Partial Credit Model (MGPCM), the Item Response Function (IRF) can be described as follows:
+The Generalized Partial Credit Model (GPCM) enables the measurement of discrimination parameters $\alpha_{iq}$ for each item. In the case of the multidimensional generalized partial credit model (MGPCM), the item response function (IRF) can be described as follows:
 
 $$P(X_{ikj}=k | \theta_{jq}) = \frac{e^{\sum_{h=0}^{k}[(\alpha_{iq}\theta_{jq}+d_{ih})]}}{\sum_{c=0}^{m_i}e^{\sum_{h=0}^{c}[(\alpha_{iq}\theta_{jq}+d_{ih})]}}\tag{6}$$
 
 In the given formula, $d_i$ denotes the item threshold parameter and can be transformed into the item difficulty parameter by utilizing $MDISC_i$ (as explained in the formula mentioned above).
 
-### Multidimensional Graded Response Model (MGRM)
+### Multidimensional graded response model (MGRM)
 
 The MPCM and MGPCM models are both built on the premise of modeling the probability of response categories $k$ for a given item $i$. In contrast, the MGRM model focuses on modeling the cumulative probability of response categories $k$ or higher. The MGRM model employs the following function to represent the cumulative response probability:
 
@@ -293,7 +311,7 @@ Item parameters serve as crucial indicators for assessing item quality. Provided
 | Very high    | >1.70 | 2.00 |
 | Perfect      | $+\infty$ | $+\infty$ |
 
-In this analysis, the `r model` model was selected. The `r MIRT_est_method` was used for parameter estimation. Generally, the discrimination and difficulty are assessed using $MDISC_i$ and $\beta_i$. Therefore, the 'TestAnaAPP' transformed the $\alpha_{iq}$ and $d_i$ parameters into $MDISC_i$ and $\beta_i$ respectively. In a between-item test, $MDISC_i$ equals the absolute value of $\alpha_{iq}$ since each item only has one $\alpha_{i.}$. To obtain the $d_i$ parameter in the above formula, users can calculate $d_i$ using $\beta_i$ as follows: $d_i = \frac{MDISC_{i}}{-\beta_i}$.
+In this analysis, the `r model` model was selected. The `r MIRT_est_method` was used for parameter estimation. Generally, the discrimination and difficulty are assessed using $MDISC_i$ and $\beta_i$. Therefore, the 'TestAnaAPP' transformed the $\alpha_{iq}$ and $d_i$ parameters into $MDISC_i$ and $\beta_i$ respectively. In a between-item test, $MDISC_i$ equals the absolute value of $\alpha_{iq}$ since each item only has one $\alpha_{i.}$. To obtain the $d_i$ parameter in the above formula, users can calculate $d_i$ using $\beta_i$ as follows: $d_i = -\beta_i*MDISC_{i}$.
 
 The item parameters are as follows:
 
@@ -303,7 +321,7 @@ disc_color <- function(x, value = MIRTreport_alpha_highlight){
   out[x < value] <- "red"
   out
 }
-MIRT_itempar_print <- cbind("Item" = rownames(MIRT_itemfit),MIRT_itempar)
+MIRT_itempar_print <- cbind("Item" = MIRT_itemfit[,1],MIRT_itempar)
 fmt_tra_other(MIRT_itempar_print) %>% 
   flextable::color(j = colnames(MIRT_itempar_print) %>%
                      str_which(pattern = "Discrimination"),
