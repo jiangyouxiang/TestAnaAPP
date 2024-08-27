@@ -372,7 +372,7 @@ MIRT_module <- function(input, output, session) {
 
 
     thresholds <- item_par_dim[,c(str_which(colnames(item_par) %>% str_to_lower(),
-                                            pattern = "difficult"))]
+                                            pattern = "difficult"))]  %>% as.data.frame()
 
     if(is.null(dim(thresholds))){
       thresholds <- matrix(thresholds , ncol = 1)
@@ -431,7 +431,7 @@ MIRT_module <- function(input, output, session) {
     plot_items <- which(colnames(Response) %in% selected_items)
     sele_cols <- which((sub(pattern = "\\.[^\\.]*$", replacement = ".", x = colnames(prob))) %in%
                          paste0(selected_items,".P.")) # detect the columns
-    prob_plot <- prob[,sele_cols] # residual matrix
+    prob_plot <- prob[,sele_cols]  %>% as.data.frame()# residual matrix
 
     plot_wrap(theta = sim_theta,
               y_matrix = prob_plot,
@@ -520,7 +520,7 @@ MIRT_module <- function(input, output, session) {
     req(input$MIRT_IIC_item_sele) #require the input
     selected_items <- input$MIRT_IIC_item_sele
     plot_items <- which(colnames(Response) %in% selected_items)
-    item_info <- item_info[,plot_items]
+    item_info <- item_info[,plot_items] %>% as.data.frame()
 
     plot_wrap(theta = sim_theta,
               y_matrix = item_info,

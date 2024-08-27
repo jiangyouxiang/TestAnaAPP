@@ -174,7 +174,7 @@ UIRT_module <- function(input, output, session) {
     IRT_person <- IRT_person_rea()
 
     thresholds <- item_par[,str_which(colnames(item_par) %>% str_to_lower(),
-                                      pattern = "difficult")]
+                                      pattern = "difficult")] %>% as.data.frame()
 
     if(is.null(dim(thresholds))){
       thresholds <- matrix(thresholds , ncol = 1)
@@ -229,7 +229,7 @@ UIRT_module <- function(input, output, session) {
     plot_items <- which(colnames(Response) %in% selected_items)
     sele_cols <- which(( sub(pattern = "\\.[^\\.]*$", replacement = ".", x = colnames(prob))) %in%
                           paste0(selected_items,".P.")) # detect the columns
-    prob_plot <- prob[,sele_cols] # residual matrix
+    prob_plot <- prob[,sele_cols] %>% as.data.frame()# residual matrix
     plot_wrap(theta = sim_theta,
               y_matrix = prob_plot,
               lines = "ICC",
@@ -287,7 +287,7 @@ UIRT_module <- function(input, output, session) {
       selected_items <- input$IRT_IIC_item_sele
     }
     plot_items <- which(colnames(Response) %in% selected_items)
-    item_info <- item_info[,plot_items]
+    item_info <- item_info[,plot_items]  %>% as.data.frame()
 
     plot_wrap(theta = sim_theta,
               y_matrix = item_info,

@@ -4,6 +4,8 @@ This application enables exploratory factor analysis, confirmatory factor analys
 
 If you want to use this application to analysis data, you should install TestAnaAPP package in R.
 
+## Installation
+
 ```
 # install packages
 install.packages("devtools")
@@ -12,3 +14,18 @@ library(TestAnaAPP)
 TestAnaAPP::run_app() #run this application in R
 ```
 
+## Functionality
+
+The application has the following functionalities:
+
+![](inst/app/www/Functionality.png)
+
+<p align="center"><strong>Figure 1. The framework of functionality of TestAnaAPP</strong></p>
+
+## Home Page
+
+The home page of the application is shown below:
+
+![](inst/app/www/HomePage.png)
+
+<p align="center"><strong>Figure 2. The homepage of TestAnaAPP</strong></p>
