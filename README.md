@@ -7,7 +7,8 @@ If you want to use this application to analysis data, you should install TestAna
 ```
 # install packages
 install.packages("devtools")
-devtools::install_github("jiangyouxaing/TestAnaAPP") 
+devtools::install_github("jiangyouxiang/TestAnaAPP") 
 library(TestAnaAPP)
 TestAnaAPP::run_app() #run this application in R
 ```
+

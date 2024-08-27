@@ -21,7 +21,8 @@ app_server <- function(input, output, session) {
   options(shiny.maxRequestSize = 1024^4)
   #Introduction of this platform-----------------------------------
   output$info <- renderText({
-    paste(shiny::p(strong('Package: '), "TestAnaAPP"),
+    paste(shiny::h3(strong("Package Information")),
+          shiny::p(strong('Package: '), "TestAnaAPP"),
           shiny::p(strong('Version: '), "1.1.1"),
           shiny::p(strong('Dependence: '), "config, ggplot2, mirt, shinydashboard, EstCRM, etc."),
           shiny::p(strong('Description: '), "This application provides exploratory and confirmatory factor analysis,
@@ -35,8 +36,32 @@ app_server <- function(input, output, session) {
           shiny::p(strong('Github: '), tags$a(href="https://github.com/jiangyouxiang/TestAnaAPP",
                                               "https://github.com/jiangyouxiang/TestAnaAPP")),
 
-          br(),br(),br(),
-          shiny::p(strong("How to use this application for data analysis?")),
+          shiny::h3(strong("Software Feature Overview")),
+          shiny::p(strong("1. Factor Analysis (EFA & CFA)")),
+          shiny::p("This module combines exploratory and confirmatory factor analysis tools. Users can identify
+                   underlying factor structures with EFA and validate hypothesized factor models with CFA. This
+                   module is essential for understanding the relationships among observed variables and testing
+                   model fit."),
+          shiny::p(strong("2. Classical Test Theory (CTT)")),
+          shiny::p("This module provides a comprehensive set of tools for analyzing the reliability and validity
+                   of test scores. Users can evaluate the internal consistency of test items, calculate item
+                   discrimination and difficulty, and assess the correlation between test items."),
+          shiny::p(strong("3. Item Response Theory (IRT)")),
+          shiny::p("This module offers a range of tools for analyzing item response theory. Users can estimate
+                   item parameters, evaluate test reliability, and assess the fit of the model. This module is
+                   essential for understanding the relationship between test items and test takers."),
+          shiny::p(strong("4. Multidimensional IRT (MIRT)")),
+          shiny::p("Specifically designed for multidimensional data, the MIRT module allows users to analyze
+                   test data across multiple dimensions, revealing the multifaceted abilities of examinees."),
+          shiny::p(strong("5. Continuous Response Model (CRM)")),
+          shiny::p("The CRM module handles modeling and analysis of continuous response data, suitable
+                   for tests or questionnaires with continuous scoring."),
+          shiny::p(strong("6. Differential Item Functioning (DIF)")),
+          shiny::p("This module detects differential item functioning across different groups, helping identify
+                   potential biases in the test to ensure fairness and validity."),
+
+
+          shiny::h3(strong("How to use this application for data analysis?")),
           shiny::p("1. When you see this interface, it indicates that you have successfully installed this program,
                    which is the first step to using 'TestAnaAPP'."),
           shiny::p("2. You need to understand that 'TestAnaAPP' presents various analysis contents in modular forms.
@@ -47,8 +72,8 @@ app_server <- function(input, output, session) {
                    Please edit your document following the examples provided in 'TestAnaAPP'. "),
           shiny::p("4. During the operation, please carefully read the textual prompts presented on each interface
                    to ensure that the program can execute your intentions correctly. "),
-          br(),br(),
-          shiny::p(strong("If you have any questions or suggestions, please contact us.")),
+
+          shiny::h3(strong("If you have any questions or suggestions, please contact us.")),
           br(),br()
     )
   })
@@ -282,7 +307,7 @@ item_ana<- function(data){#Difficult, discrimination and CV
 
     #CV
     item_analysis[i,3]<- (sd(data[,i])/mean(data[,i]))*100
-    item_analysis[i,4] <- cor(x = data[,i], y = rowSums(data))
+    item_analysis[i,4] <- point_biserial(binary_item = data[,i], total_score = rowSums(data))
   }
 
   for (j in cat_m) {
@@ -298,6 +323,31 @@ item_ana<- function(data){#Difficult, discrimination and CV
 
   return(item_analysis)
 }
+# Function to calculate point-biserial correlation
+point_biserial <- function(binary_item, total_score) {
+  # Calculate the means and standard deviation
+  mean_total <- mean(total_score)
+  sd_total <- sd(total_score)
+  # Calculate the means of total scores for the two groups
+  if(max(binary_item) >= 1){#
+    binary_item[which(binary_item == max(binary_item))] <- 1
+    binary_item[which(binary_item == min(binary_item))] <- 0
+  }
+  mean_1 <- mean(total_score[binary_item == max(binary_item)])
+  mean_0 <- mean(total_score[binary_item == min(binary_item)])
+
+  # Calculate the proportion of 1s (p) and 0s (q)
+  p <- mean(binary_item)
+  q <- 1 - p
+
+  # Calculate the point-biserial correlation
+  r_pb <- ((mean_1 - mean_0)* sqrt(p * q) / sd_total)
+  if(length(table(binary_item))==1){
+    r_pb <- NA
+  }
+
+  return(r_pb)
+}
 plot_wrap <- function(theta,
                       y_matrix,
                       lines = "ICC",  #or IIC
@@ -312,6 +362,9 @@ plot_wrap <- function(theta,
                       title_size = 15,
                       xy_size = 12,
                       Item_label_size = 10){
+  if(length(theta) == 0 | ncol(y_matrix) == 0){
+    stop("The length of theta or y_matrix is 0.")
+  }
   y <- NULL
   score <- NULL
   Item <- NULL
@@ -392,8 +445,13 @@ plot_wrap <- function(theta,
 
   return(gra)
 }
+utils::globalVariables(c("xxx"))
 #WrightMap
 wrightMap_new <- function(person, thresholds, point_label, points_size,p_width){
+  #empty thresholds
+  if(nrow(thresholds) == 0){
+    stop("The length of thresholds is 0.")
+  }
   if(point_label == "Numeric"){
     names1 <- 1:nrow(thresholds)
 
@@ -403,9 +461,9 @@ wrightMap_new <- function(person, thresholds, point_label, points_size,p_width){
 
 
   #histogram for person parameters
-  person <- data.frame("x" = person)
-  histogram <- ggplot(person, aes(x = person$x)) +
-    geom_histogram(fill = "gray", color = "black",
+  person <- data.frame("xxx" = person)
+  histogram <- ggplot(person, aes(x = xxx)) +
+    geom_histogram(fill = "gray", color = "black",na.rm = T,
                    bins = 50) +
     labs(x="Latent trait",y = "Frequency")+
     scale_x_continuous(limits = c(-4,4),breaks = -4:4)+
@@ -445,7 +503,7 @@ wrightMap_new <- function(person, thresholds, point_label, points_size,p_width){
     labs(x = "Item",y = "Thresholds")+
     annotate(geom = "text",
              x = data$labels,
-             y = data$y,
+             y = data$y,na.rm = T,
              hjust = 0,
              label = data$labels,
              size = points_size)+
@@ -462,4 +520,10 @@ wrightMap_new <- function(person, thresholds, point_label, points_size,p_width){
                                       rel_widths = c(1, p_width), align = "h")
   return(combined_plot)
 }
+DT_dataTable_Show <- function(x){
+  DT::datatable(as.data.frame(x),
+                filter =list(position = 'top', clear = TRUE, plain = TRUE),
+                options = list(scrollX = TRUE))
 
+
+}

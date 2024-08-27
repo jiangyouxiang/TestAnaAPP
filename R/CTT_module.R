@@ -65,6 +65,22 @@ CTT_module <- function(input, output, session){
   })
 
   #4. CTT ------------------------------------------------
+  # item type
+  output$item_type <- renderText({
+    if(is.null(input$CTT_res))
+      return(NULL)
+    Response <- mydata()
+    binary_item <- which(apply(Response, MARGIN = 2, FUN = cat_number) == 2)
+    ordinal_item <- which(apply(Response, MARGIN = 2, FUN = cat_number) > 2)
+
+
+    paste(shiny::p(strong("Items with binary response (dichotomous scoring):")),
+          shiny::p(strong(paste0(colnames(Response)[binary_item], collapse = ", "),style = "color:red")),
+          shiny::p(strong("Items with ordinal response (polytomous scoring):")),
+          shiny::p(strong(paste0(colnames(Response)[ordinal_item], collapse = ", "),style = "color:red"))
+          )
+
+  })
   #Item parameters
   output$CTT_itempar <- DT::renderDataTable({
     if(is.null(input$CTT_res))

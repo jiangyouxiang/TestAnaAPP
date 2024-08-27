@@ -39,4 +39,6 @@ Imports: DT (>= 0.29),
          difR (>= 5.1),
          latticeExtra (>= 0.6-30),
          semPlot (>= 1.1.6)
-URL: https://github.com/jiangyouxiang/TestAnaAPP         
+Suggests: 
+         testthat (>= 3.2.1.1)
+URL: https://github.com/jiangyouxiang/TestAnaAPP

@@ -123,10 +123,11 @@ CFA_module <- function(input, output, session) {
     if(is.null(input$dimensionfile_cfa))
       return(NULL)
     CFA_fit_plot_rea()
-  },height =  exprToFunction(input$CFA_plot_height))
+  },height =  exprToFunction(input$CFA_plot_height),width = exprToFunction(input$CFA_plot_width))
 
   output$CFA_fit_plot1 <- renderUI({
-    plotOutput(outputId = "CFA_fit_plot", height = paste0(input$CFA_plot_height,"px"))
+    plotOutput(outputId = "CFA_fit_plot", height = paste0(input$CFA_plot_height,"px"),
+               width = paste0(input$CFA_plot_width,"px"))
   })
 
   #CFA results

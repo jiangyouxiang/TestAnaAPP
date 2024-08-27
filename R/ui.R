@@ -222,8 +222,10 @@ app_ui <- function() {
                                                             selected = "tree"),
                                                 br(),br(),
                                                 sliderInput(inputId = "CFA_plot_height",label = "Adjust height",
-                                                            min = 300,max = 1800,step = 30,value = 800),
+                                                            min = 300,max = 2000,step = 10,value = 800),
                                                 br(),
+                                                sliderInput(inputId = "CFA_plot_width",label = "Adjust width",
+                                                            min = 300,max = 3000,step = 10,value = 1200),
                                                 submitButton( "Update plot"))))
                           ),
 
@@ -254,7 +256,9 @@ app_ui <- function() {
                                                               using purely numerical column names.",
                                                           placeholder="File",buttonLabel = "Browse",
                                                           accept = c("xlsx","xls","csv","sav","txt")
-                                                ),width = 12),
+                                                ),br(),
+                                                htmlOutput("item_type"),
+                                                ,width = 12),
                                             box(title = "Download Results",status = "success",solidHeader = TRUE,  width = 12,
                                                 downloadButton(outputId = "summary_result", label = "Download")))
                             )),
@@ -262,27 +266,30 @@ app_ui <- function() {
                             tabName = "CTT_par",
                             fluidRow(column(8,
                                             box(title = "Note", solidHeader = TRUE,status = "warning",width = 12,
-                                                "1. For binary scoring items (items with only two type of scores), 'TestAnaAPP'
-                                                categorizes the participants into a high-score group and a low-score group based on their
-                                                total scores being above or equal to the 73rd percentile and below or equal to the 27th percentile,
-                                                respectively. Then the pass rate of each item in the high-score and low-score groups is calculated,
-                                                and the average pass rate of each item is taken as its difficulty level.",
-                                                br(),
-                                                "2. For multiple scoring items (items with more than two type of scores), 'TestAnaAPP' calculates the
-                                                difficulty of each item by dividing the average score on the item by the maximum score possible on the item.",
-                                                br(),
-                                                "Regardless of the number of scoring categories for an item, 'TestAnaAPP' calculates the difference between
-                                                the mean scores of the high-score and low-score groups on the item and divides it by the maximum possible
-                                                score on the item to obtain the item discrimination index.",
-                                                br(),
-                                                "3. Coefficient of variation is obtained by multiplying the ratio of standard deviation to
-                                                mean on the item by 100%.",
-                                                br(),
-                                                "4. The correlation coefficient is the Pearson correlation coefficient between item scores and
-                                                the total score.",
-                                                br(),
-                                                "5. If the score data includes missing values, 'TestAnaAPP' will delete any case that inludes missing data.",
-                                                br(),
+                                                h4(strong("Dichotomous Scoring Items")),
+                                                shiny::p("Items with only two types of scores."),
+                                                shiny::p(strong("Difficulty:"), "Calculated as the average pass rate of the item, with participants
+                                                  categorized into a high-score group (total scores above or equal to the 73rd percentile) and
+                                                  a low-score group (total scores below or equal to the 27th percentile)."),
+                                                shiny::p(strong("Discrimination:"), "The difference between the mean scores of the high-score and
+                                                         low-score groups on the item, divided by the maximum possible score."),
+                                                p(strong("Correlation with Total Score:"), "Calculated using the point-biserial correlation, which measures
+                                                  the relationship between the binary item score and the total test score."),
+
+                                                h4(strong("Polytomous Scoring Items")),
+                                                shiny::p( "Items with more than two types of scores."),
+                                                shiny::p(strong("Difficulty:"), "Calculated by dividing the average score on the item by the
+                                                  maximum score possible on the item."),
+                                                shiny::p(strong("Discrimination:"), "The difference between the mean scores of the high-score
+                                                  and low-score groups on the item, divided by the maximum possible score."),
+                                                shiny::p(strong("Correlation with Total Score:"), "Calculated using the Pearson correlation coefficient,
+                                                  which measures the linear relationship between the item score and the total test score."),
+
+                                                h4(strong("Coefficient of Variation")),
+                                                shiny::p("Obtained by multiplying the ratio of the standard deviation to the mean on the item by 100%."),
+
+                                                h4(strong("Missing Data Handling Reminder")),
+                                                shiny::p("Cases with missing data will be deleted.")
 
                                                 ),
                                             box(title="Item parameters", DT::dataTableOutput("CTT_itempar")%>%
@@ -636,6 +643,11 @@ app_ui <- function() {
                                                  value of 0 signifies that the item does not assess the trait.",
                                                  downloadButton("dimension_download",label = "Download template"),
                                                  br(),br(),
+                                                 fileInput(inputId = "dimensionfile",
+                                                           "Kindly upload an Excel file with example data to demonstrate
+                                                           the relationship between each question and dimension.",
+                                                           placeholder="File",buttonLabel = "Browse",
+                                                           accept = c("xlsx","xls","csv")),
                                                  DT::dataTableOutput(outputId = "dimension_example")%>%
                                                    box_show_theme()),
                                              box(title = "Dimension and Item",solidHeader = TRUE,width = 12,
@@ -650,13 +662,7 @@ app_ui <- function() {
                                                               using purely numerical column names.",
                                                            placeholder="File",buttonLabel = "Browse",
                                                            accept = c("xlsx","xls","csv","sav","txt")
-                                                 ),width = 12),
-                                             box(title = "Upload Dimension Information",solidHeader = TRUE,status = "warning",width = 12,
-                                                 fileInput(inputId = "dimensionfile",
-                                                           "Kindly upload an Excel file with example data on the left side to demonstrate
-                                                           the relationship between each question and dimension.",
-                                                           placeholder="File",buttonLabel = "Browse",
-                                                           accept = c("xlsx","xls","csv")))))
+                                                 ),width = 12)))
                           ),
                           tabItem(
                             tabName = "MIRTmodelfit",
@@ -709,10 +715,10 @@ app_ui <- function() {
                                                              selectize = TRUE,
                                                              choices = list("Yes",
                                                                             "No"),
-                                                             selected = "No"),
+                                                             selected = "Yes"),
                                                  tags$b("Note: "), "Estimating the covariance matrix can be time-consuming and may encounter
                                                  errors in some cases, depending on the parameter estimation method. However,
-                                                 it is necessary to estimate the covariance in multidimensional models.",
+                                                 it is recommended to estimate the covariance in multidimensional models.",
                                                  br(),br(),
 
                                                  submitButton( "Update results"))))
@@ -1144,8 +1150,4 @@ app_ui <- function() {
 box_show_theme <- function(value){
   return(shinycssloaders::withSpinner(ui_element = value,color="#0dc5c1",type=6,size = 1.5 ))
 }
-DT_dataTable_Show <- function(x){
-  DT::datatable(x,
-                filter =list(position = 'top', clear = TRUE, plain = TRUE),
-                options = list(scrollX = TRUE))
-}
+
