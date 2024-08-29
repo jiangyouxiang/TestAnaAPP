@@ -44,6 +44,8 @@ DIF_module <- function(input, output, session) {
   output$focal_name <- renderUI({
     if(is.null(input$DIF_variable))
       return(NULL)
+    if(input$DIF_method == "Logistic Regression")
+      return(NULL)
     choices <- mydata()
     choices <- choices[,input$DIF_variable] %>% table() %>% names()
     selectInput(inputId = "focal_name1",label = "Please select the focal group.",
@@ -71,18 +73,16 @@ DIF_module <- function(input, output, session) {
                    focal.name = input$focal_name1)
       result <- data.frame(
         Chi_square = fit$MH,
-        P.value = fit$p.value
+        P.value = fit$p.value,
+        alphaMH = fit$alphaMH,
+        delta_alphaMH = -2.35*log(fit$alphaMH)
       )
 
     }
     if(input$DIF_method == "Logistic Regression"){
-      fit <- difLogistic(Data=Response_new, group = DIF_var, alpha = alpha,
-                         focal.name = input$focal_name1)
-      result <- data.frame(
-        LR_stats = fit$Logistik,
-        P.value = fit$p.value,
-        delta_R2 = fit$deltaR2
-      )
+      fit <- lordif::lordif(resp.data = Response_new, criterion = "R2",
+                            group =DIF_var, pseudo.R2 = "McFadden")
+      result <- fit$stats %>% as.data.frame()
     }
     if(input$DIF_method == "SIBTEST"){
       fit <-difSIBTEST(Data=Response_new, group = DIF_var, alpha = alpha,
@@ -94,11 +94,20 @@ DIF_module <- function(input, output, session) {
         P.value = fit$p.value
       )
     }
-    result <- cbind(round(result, digits = 3) ,
-                    "DIF" = ifelse(result$P.value < alpha, "Yes", "No"))
+    result <- cbind(round(result, digits = 3))
     rownames(result) <- colnames(Response_new)
 
     result %>% as.data.frame()
+  })
+
+  DIF_info_rea <- reactive({
+    if(is.null(input$DIF_method))
+      return(NULL)
+
+    generateDIFInfo(method = input$DIF_method)
+  })
+  output$DIF_info <- renderUI({
+    DIF_info_rea()
   })
 
   output$DIF_results <- DT::renderDataTable({
@@ -106,6 +115,17 @@ DIF_module <- function(input, output, session) {
       return(NULL)
     if(is.null(input$focal_name1))
       return(NULL)
+    Response <- mydata() %>% as.data.frame()
+    DIF_var <- Response[,sprintf("%s",input$DIF_variable)] %>% as.character()
+    alpha <- as.numeric(input$sig_level)
+
+    Response_new <- Response[,!colnames(Response) %in% input$DIF_all_variable]
+    cat_nu <- apply(Response_new, MARGIN = 2, FUN = cat_number)
+
+    if(any(cat_nu > 2) & input$DIF_method %in% c("SIBTEST","Mantel Haenszel")){
+      stop("SIBTEST and Mantel-Haenszel methods are not suitable for polytomous response.")
+    }
+
     DIF_ana_rea() %>% DT_dataTable_Show()
 
   })

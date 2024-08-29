@@ -1114,6 +1114,7 @@ app_ui <- function() {
                           tabItem(tabName = "DIF_analysis",
                                   fluidPage(column(8,
                                                    box(title = "Analysis Results of DIF",solidHeader = TRUE, status = "info",width = 12,
+                                                       uiOutput("DIF_info"),br(),
                                                        DT::dataTableOutput( "DIF_results")%>%
                                                          box_show_theme())),
                                             column(4,

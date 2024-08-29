@@ -296,7 +296,7 @@ fmt_tra_other(MIRT_itemfit)
 
 # Item Parameters
 
-Item parameters serve as crucial indicators for assessing item quality. Provided below are the criteria, derived from "**THE BASICS OF Item Response Theory in R**", that can be utilized to evaluate item discrimination values. Readers can employ these criteria for evaluating the extent of item discrimination in the test under analysis.
+Item parameters serve as crucial indicators for assessing item quality. Provided below are the criteria, derived from "**The Basics of Item Response Theory Using R**", that can be utilized to evaluate item discrimination values. Readers can employ these criteria for evaluating the extent of item discrimination in the test under analysis.
 
 
 `r bold_print("Table: Labels for Item Discrimination Values")``
