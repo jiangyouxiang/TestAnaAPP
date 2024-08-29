@@ -182,35 +182,35 @@ generateDIFInfo <- function(method){
     info <- withMathJax(
       helpText("The Mantel-Haenszel (MH) proposed by Holland and Thayer (1988) as a method for detecting differential item functioning (DIF) in dichotomous items."),
       helpText("Based on the analysis of contingency tables, the MH procedure compares the item performance of two groups (generically known as reference and focal groups) who were previously matched on the ability scale. The detailed steps of the MH procedure can be found in Holland and Thayer (1988)."),
-      helpText("The following rules have been developed for use by ETS testing programs to identify items with DIF (Hidalgo & LÓPez-Pina, 2004; Zwick & Ercikan, 1989):"),
-      helpText("Type A items—negligible DIF: items with \\(|∆_{\\alpha{MH}}| < 1\\)."),
-      helpText("Type B items—moderate DIF: items with \\(1 ≤ |∆_{\\alpha{MH}}| ≤ 1.5\\), and MH test is  statistically significant."),
-      helpText("Type C items—large DIF: items with \\(|∆_{\\alpha{MH}}| > 1.5\\), and MH test is statistically significant."),
+      helpText("The following rules have been developed for use by ETS testing programs to identify items with DIF (Hidalgo & LOPez-Pina, 2004; Zwick & Ercikan, 1989):"),
+      helpText("Type A items (negligible DIF): items with \\(\\left|\\triangle_{\\alpha{MH}}\\right| < 1\\)."),
+      helpText("Type B items (moderate DIF): items with \\(1\\leq\\left|\\triangle_{\\alpha{MH}}\\right| \\leq 1.5\\), and MH test is  statistically significant."),
+      helpText("Type C items (large DIF): items with \\(\\left|\\triangle_{\\alpha{MH}}\\right| > 1.5\\), and MH test is statistically significant."),
       helpText("         "),
       helpText("         "),
       helpText("Reference:"),
       helpText("Holland, P. W., & Thayer, D. T. (1988). Differential item performance and Mantel-Haenszel procedure. In H. Wainer & H. I. Braun (Eds.), Test validity (pp. 129-145). Hillsdale, NJ: Lawrence Erlbaum."),
-      helpText("Hidalgo, M. D., & LÓPez-Pina, J. A. (2004). Differential Item Functioning Detection and Effect Size: A Comparison between Logistic Regression and Mantel-Haenszel Procedures. Educational and Psychological Measurement, 64(6), 903–915. https://doi.org/10.1177/0013164403261769"),
-      helpText("Zwick, R., & Ercikan, K. (1989). Analysis of Differential Item Functioning in the NAEP History Assessment. Journal of Educational Measurement, 26(1), 55–66. https://doi.org/10.1111/j.1745-3984.1989.tb00318.x")
+      helpText("Hidalgo, M. D., & LOPez-Pina, J. A. (2004). Differential Item Functioning Detection and Effect Size: A Comparison between Logistic Regression and Mantel-Haenszel Procedures. Educational and Psychological Measurement, 64(6), 903-915. https://doi.org/10.1177/0013164403261769"),
+      helpText("Zwick, R., & Ercikan, K. (1989). Analysis of Differential Item Functioning in the NAEP History Assessment. Journal of Educational Measurement, 26(1), 55-66. https://doi.org/10.1111/j.1745-3984.1989.tb00318.x")
     )
   }else if(method == "Logistic Regression"){
     info <- withMathJax(
       helpText("Swaminathan and Rogers (1990) proposed the use of logistic regression in DIF detection for dichotomous items. It has been extended for polytomous items by other researchers (see Choi et al., 2011)."),
       helpText("The detailed steps of the logistic regression procedure can be found in Swaminathan & Rogers (1990) and Choi et al. (2011)."),
       helpText("Zumbo (1999) suggested several pseudo \\(R^2\\) statistics as magnitude measures and guidelines for classifying DIF as negligible (< 0.13), moderate (between 0.13 and 0.26), and large (> 0.26)."),
-      helpText("Based on lordif package, three pseudo \\(R^2\\) measures – Cox & Snell (Cox and Snell 1989), Nagelkerke (Nagelkerke 1991), and McFadden (Menard 2000) - are provided."),
+      helpText("Based on lordif package, three pseudo \\(R^2\\) measures -  Cox & Snell (Cox and Snell 1989), Nagelkerke (Nagelkerke 1991), and McFadden (Menard 2000) - are provided."),
       helpText("In the following table, the '12' in the variable name represents the comparison between Model 1 and Model 2 in
                the logistic regression method, which means the test of uniform DIF; '23' represents the comparison between Model 2
                and Model 3, which means the test of non-uniform DIF; '13' represents the comparison between Model 1 and Model 3, which
-               means an overall test of “total DIF effect”."),
+               means an overall test of 'total DIF effect'."),
       helpText("         "),
       helpText("Reference:"),
       helpText("Choi, S. W., Gibbons, L. E., & Crane, P. K. (2011). lordif: An R Package for Detecting Differential Item Functioning Using Iterative Hybrid Ordinal Logistic Regression/Item Response Theory and Monte Carlo Simulations. Journal of Statistical Software, 39(8). https://doi.org/10.18637/jss.v039.i08"),
       helpText("Cox DR, Snell EJ (1989). The Analysis of Binary Data. 2nd edition. Chapman and Hall, London."),
-      helpText("Menard S (2000). “Coeﬃcients of Determination for Multiple Logistic Regression Analysis.” The American Statistician, 54, 17–24."),
-      helpText("Nagelkerke NJD (1991). “A Note on a General Deﬁnition of the Coeﬃcient of Determination.” Biometrika, 78, 691–692."),
-      helpText("Swaminathan, H., & Rogers, H. J. (1990). Detecting Differential Item Functioning Using Logistic Regression Procedures. Journal of Educational Measurement, 27(4), 361–370. https://doi.org/10.1111/j.1745-3984.1990.tb00754.x"),
-      helpText("Zumbo BD (1999). A Handbook on the Theory and Methods of Diﬀerential Item Functioning (DIF): Logistic Regression Modeling as a Unitary Framework for Binary and Likert-Type (Ordinal) Item Scores. Directorate of Human Resources Research and Evaluation, Department of National Defense, Ottawa, ON.")
+      helpText("Menard S (2000). 'Coefficients of Determination for Multiple Logistic Regression Analysis.' The American Statistician, 54, 17-24."),
+      helpText("Nagelkerke NJD (1991). 'A Note on a General Definition of the Coefficient of Determination.' Biometrika, 78, 691-692."),
+      helpText("Swaminathan, H., & Rogers, H. J. (1990). Detecting Differential Item Functioning Using Logistic Regression Procedures. Journal of Educational Measurement, 27(4), 361-370. https://doi.org/10.1111/j.1745-3984.1990.tb00754.x"),
+      helpText("Zumbo BD (1999). A Handbook on the Theory and Methods of Diffierential Item Functioning (DIF): Logistic Regression Modeling as a Unitary Framework for Binary and Likert-Type (Ordinal) Item Scores. Directorate of Human Resources Research and Evaluation, Department of National Defense, Ottawa, ON.")
 
     )
 
@@ -219,17 +219,16 @@ generateDIFInfo <- function(method){
       helpText("The SIBTEST method was proposed by Shealy and Stout (1993) as a method for detecting uniform differential item functioning (DIF) in dichotomous items."),
       helpText("The detailed steps of the SIBTEST procedure can be found in Shealy and Stout (1993). "),
       helpText("The following rules have been developed by Roussos & Stout (1996) to identify items with DIF (see also Magis et al. (2010)):"),
-      helpText("Type A items—negligible DIF: items with \\(|{\\beta}| < 0.059\\)."),
-      helpText("Type B items—moderate DIF: items with \\(0.059 ≤ |{\\beta}| ≤ 0.088\\)."),
-      helpText("Type C items—large DIF: items with \\(|{\\beta}| > 0.088\\)."),
+      helpText("Type A items (negligible DIF): items with \\(|{\\beta}| < 0.059\\)."),
+      helpText("Type B items (moderate DIF): items with \\(0.059 \\leq \\left|{\\beta}\\right| \\leq 0.088\\)."),
+      helpText("Type C items (large DIF): items with \\(|{\\beta}| > 0.088\\)."),
       helpText("Since the significance test results are greatly affected by the sample size, please make a judgment based on the \\(\\beta\\) and significance test results."),
       helpText("         "),
       helpText("         "),
       helpText("Reference:"),
-      helpText("Magis, D., Béland, S., Tuerlinckx, F., & De Boeck, P. (2010). A general framework and an R package for the detection of dichotomous differential item functioning. Behavior Research Methods, 42(3), 847–862. https://doi.org/10.3758/BRM.42.3.847"),
-      helpText("Roussos, L. A., & Stout, W. F. (1996). Simulation Studies of the Effects of Small Sample Size and Studied Item Parameters on SIBTEST and Mantel-Haenszel Type I Error Performance. Journal of Educational Measurement, 33(2), 215–230. https://doi.org/10.1111/j.1745-3984.1996.tb00490.x"),
-      helpText("Shealy, R., & Stout, W. (1993). A model-based standardization approach that separates true bias/DIF from group ability differences and detects test bias/DTF as well as item bias/DIF. Psychometrika, 58(2), 159–194. https://doi.org/10.1007/BF02294572")
+      helpText("Magis, D., Beland, S., Tuerlinckx, F., & De Boeck, P. (2010). A general framework and an R package for the detection of dichotomous differential item functioning. Behavior Research Methods, 42(3), 847-862. https://doi.org/10.3758/BRM.42.3.847"),
+      helpText("Roussos, L. A., & Stout, W. F. (1996). Simulation Studies of the Effects of Small Sample Size and Studied Item Parameters on SIBTEST and Mantel-Haenszel Type I Error Performance. Journal of Educational Measurement, 33(2), 215-230. https://doi.org/10.1111/j.1745-3984.1996.tb00490.x"),
+      helpText("Shealy, R., & Stout, W. (1993). A model-based standardization approach that separates true bias/DIF from group ability differences and detects test bias/DTF as well as item bias/DIF. Psychometrika, 58(2), 159-194. https://doi.org/10.1007/BF02294572")
     )
-
   }
 }

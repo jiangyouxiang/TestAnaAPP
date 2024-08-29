@@ -13,7 +13,8 @@
 #' @importFrom semPlot semPaths
 #' @importFrom tidyr pivot_longer
 #' @importFrom latticeExtra mapplot
-#' @importFrom difR difMH difLogistic difSIBTEST
+#' @importFrom difR difMH difSIBTEST
+#' @importFrom lordif lordif
 #' @importFrom DT datatable DTOutput renderDT
 
 #' @noRd
