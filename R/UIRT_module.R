@@ -17,7 +17,17 @@ UIRT_module <- function(input, output, session) {
     }
     data
   })
-
+  output$IRT_data_type <- renderText({
+    if(is.null(input$IRT_res))
+      return(NULL)
+    cat_all <- apply(mydata()%>%as.data.frame(), MARGIN = 2, FUN = cat_number)
+    if(any(cat_all >= 10)){
+      return(paste0(
+        br(),
+        shiny::tags$strong("Warning: Continuous response data perhaps is suitable for continuous response model analysis.",style = "color:red")
+      ))
+    }
+  })
   #Export the response data-------------------------------------------------
   output$IRT_Response <- DT::renderDataTable({
     Response <- mydata()%>%as.data.frame()

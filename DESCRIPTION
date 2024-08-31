@@ -43,3 +43,4 @@ Imports: DT (>= 0.29),
 Suggests: 
          testthat (>= 3.2.1.1)
 URL: https://github.com/jiangyouxiang/TestAnaAPP
+BugReports: https://github.com/jiangyouxiang/TestAnaAPP/issues

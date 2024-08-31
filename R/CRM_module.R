@@ -17,6 +17,17 @@ CRM_module <- function(input, output, session) {
     }
     data
   })
+  output$CRM_data_type <- renderText({
+    if(is.null(input$CRM_res))
+      return(NULL)
+    cat_all <- apply(mydata()%>%as.data.frame(), MARGIN = 2, FUN = cat_number)
+    if(any(cat_all <= 10)){
+      return(paste0(
+        br(),
+        shiny::tags$strong("Warning: Categorical response data may not be suitable for continuous response model analysis.",style = "color:red")
+      ))
+    }
+  })
   # model formula
   output$CRM_info <- renderUI({
     generateCRMInfo()

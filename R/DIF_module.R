@@ -17,6 +17,7 @@ DIF_module <- function(input, output, session) {
     }
     data
   })
+
   ## 11. DIF---------------------------------------------------------------------------------------
   DIF_file <- reactive({
     if(is.null(input$DIF_group_file))

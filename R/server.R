@@ -36,6 +36,8 @@ app_server <- function(input, output, session) {
           shiny::p(strong('Email: '), tags$a(href="mailto:jiangyouxiang34@163.com", "jiangyouxiang34@163.com")),
           shiny::p(strong('Github: '), tags$a(href="https://github.com/jiangyouxiang/TestAnaAPP",
                                               "https://github.com/jiangyouxiang/TestAnaAPP")),
+          shiny::p(strong("Feedback: "), tags$a(href="https://github.com/jiangyouxiang/TestAnaAPP/issues",
+                                                   "https://github.com/jiangyouxiang/TestAnaAPP/issues")),
 
           shiny::h3(strong("Software Feature Overview")),
           shiny::p(strong("1. Factor Analysis (EFA & CFA)")),

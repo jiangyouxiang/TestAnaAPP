@@ -343,7 +343,8 @@ app_ui <- function() {
                                                 tags$b("Please do not upload total score data for quizzes or dimensions."),
                                                 br(),br(),br(),
                                                 DT::dataTableOutput("IRT_Response")%>%
-                                                  box_show_theme()),
+                                                  box_show_theme(),
+                                                htmlOutput("IRT_data_type")),
                                             box(title = "Relative fit indices",solidHeader = TRUE,
                                                 status = "info",width = 12,
                                                 DT::dataTableOutput("IRT_modelfit_relat")%>%
@@ -633,7 +634,8 @@ app_ui <- function() {
                                                  tags$b("Please do not upload total score data for quizzes or dimensions."),
                                                  br(),br(),br(),
                                                  DT::dataTableOutput("MIRT_Response")%>%
-                                                   box_show_theme()),
+                                                   box_show_theme(),
+                                                 htmlOutput("MIRT_data_type")),
                                              box(title = "Test dimension", solidHeader = TRUE,width = 12,
                                                  status = "warning",
                                                  tags$b("Note: "),"The Q-matrix is a numerical matrix utilized to delineate which items
@@ -996,7 +998,8 @@ app_ui <- function() {
                                                  tags$b("Please do not upload total score data for quizzes or dimensions."),
                                                  br(),br(),br(),
                                                  DT::dataTableOutput("CRM_Response")%>%
-                                                   box_show_theme()),
+                                                   box_show_theme(),
+                                                 htmlOutput("CRM_data_type")),
                                              box(title = "Theoretical maximum and minimum (editable)",solidHeader = TRUE,
                                                  status = "warning",width = 12,
                                                  tags$b("Note: "),"The maximum and minimum scores are theoretical values that are used to
