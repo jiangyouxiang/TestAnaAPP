@@ -16,7 +16,7 @@
 #' @importFrom difR difMH difSIBTEST
 #' @importFrom lordif lordif
 #' @importFrom DT datatable DTOutput renderDT
-
+#' @importFrom stats pchisq
 #' @noRd
 app_server <- function(input, output, session) {
   options(shiny.maxRequestSize = 1024^4)
@@ -291,7 +291,7 @@ item_ana<- function(data){#Difficult, discrimination and CV
 
   item_analysis<- matrix(NA, nrow = ncol(data), ncol = 4)
   rownames(item_analysis)<- colnames(data)
-  colnames(item_analysis)<- c("Difficult","Discrimination","Coefficient of variation", "Item-total correlation")
+  colnames(item_analysis)<- c("Difficulty","Discrimination","Coefficient of variation", "Item-total correlation")
 
   data1<- cbind(data,rowSums(data))
   data1<- data1[order(data1[,ncol(data1)],decreasing = F),]
@@ -450,7 +450,15 @@ plot_wrap <- function(theta,
 }
 utils::globalVariables(c("xxx"))
 #WrightMap
-wrightMap_new <- function(person, thresholds, point_label, points_size,p_width){
+wrightMap_new <- function(person,
+                          thresholds,
+                          binwidth = 0.5,
+                          point_label,
+                          points_size,
+                          p_width) {
+  if (missing(person)) {
+    stop("'theta' needs to be specified", call. = FALSE)
+  }
   #empty thresholds
   if(nrow(thresholds) == 0){
     stop("The length of thresholds is 0.")
@@ -461,25 +469,6 @@ wrightMap_new <- function(person, thresholds, point_label, points_size,p_width){
   }else if(point_label == "Column names"){
     names1 <- rownames(thresholds)
   }
-
-
-  #histogram for person parameters
-  person <- data.frame("xxx" = person)
-  histogram <- ggplot(person, aes(x = xxx)) +
-    geom_histogram(fill = "gray", color = "black",na.rm = T,
-                   bins = 50) +
-    labs(x="Latent trait",y = "Frequency")+
-    scale_x_continuous(limits = c(-4,4),breaks = -4:4)+
-    scale_y_continuous(position = "right")+scale_y_reverse()+
-    theme_minimal()+
-    theme(axis.ticks.x = element_blank(),
-          #axis.text.x = element_blank(),
-          axis.ticks.y = element_blank(),
-          plot.margin=unit(c(0,0,0,0),'cm'),
-          panel.grid.major.x =element_blank(),
-          panel.grid.minor.x=element_blank())+
-    coord_flip()
-
   #points plot for item parameters
   if(ncol(thresholds) >1 ){
 
@@ -497,32 +486,86 @@ wrightMap_new <- function(person, thresholds, point_label, points_size,p_width){
                   paste0(names1,
                          "_",colnames(thresholds)[i]))
     }
-    data <- data.frame("y" = y, "labels" = labels)
+    b <- y
+    ITEM.NAMES <- labels
   }else{
-    data <- data.frame("y" = as.numeric(thresholds),
-                       "labels" = names1)
+    if(is.data.frame(thresholds)){
+      thresholds <- as.matrix(thresholds)
+    }
+    b <- as.numeric(thresholds)
+    ITEM.NAMES <- names1
   }
-  points_plot <- ggplot() +
-    labs(x = "Item",y = "Thresholds")+
-    annotate(geom = "text",
-             x = data$labels,
-             y = data$y,na.rm = T,
-             hjust = 0,
-             label = data$labels,
-             size = points_size)+
+
+  df.person <- data.frame(person = person)
+
+  person.cut.points <- seq(
+    min(c(person, b), na.rm = TRUE) - binwidth / 2,
+    max(c(person, b), na.rm = TRUE) + binwidth / 2, binwidth / 2
+  )
+  b.cut.points <- cut(b, person.cut.points, include.lowest = TRUE)
+  levels(b.cut.points) <- person.cut.points[-length(person.cut.points)] + diff(person.cut.points) / 2
+  b.cut.points <- as.numeric(paste(b.cut.points))
+
+  df.b <- data.frame(item = as.character(ITEM.NAMES), b = b, y = b.cut.points)
+  df.b$x <- 0
+  for (i in unique(df.b$y)) {
+    n <- nrow(df.b[df.b$y == i, ])
+    df.b[df.b$y == i, "x"] <- 1:n
+  }
+
+  df.b$item <- as.character(df.b$item)
+  maxn <- max(nchar(df.b$item))
+
+  if (point_label == "Numeric") {
+    while (any(nchar(df.b$item) < maxn)) {
+      df.b$item <- ifelse(nchar(df.b$item) < maxn, paste0("0", df.b$item), df.b$item)
+    }
+  } else {
+    df.b$item <- as.character(df.b$item)
+    while (any(nchar(df.b$item) < maxn)) {
+      df.b$item <- ifelse(nchar(df.b$item) < maxn, paste0(df.b$item, " "), df.b$item)
+    }
+  }
+
+  df.b$item[df.b$x > 1] <- paste("|", df.b$item[df.b$x > 1])
+
+  lim.x.min <- min(c(person, b), na.rm = TRUE) - binwidth
+  lim.x.max <- max(c(person, b), na.rm = TRUE) + binwidth
+
+  #histogram for person parameters
+  df.person <- data.frame("xxx" = person)
+  histogram <- ggplot(df.person, aes(x = xxx)) +
+    geom_histogram(fill = "gray", color = "black",na.rm = T,
+                   binwidth = binwidth) +
+    labs(x="Latent trait",y = "Frequency")+
+    scale_x_continuous(limits = c(lim.x.min, lim.x.max))+
+    scale_y_continuous(position = "right")+scale_y_reverse()+
     theme_minimal()+
+    theme(axis.ticks.x = element_blank(),
+          #axis.text.x = element_blank(),
+          axis.ticks.y = element_blank(),
+          plot.margin=unit(c(0,0,0,0),'cm'),
+          panel.grid.major.x =element_blank(),
+          panel.grid.minor.x=element_blank())+
+    coord_flip()
+
+  points_plot <- ggplot(df.b, aes(x = .data$x, y = .data$y, label = .data$item)) +
+    geom_text(hjust = 0, size = points_size, vjust = 0.5, na.rm = TRUE) +
+    scale_y_continuous(position = "right",limits = c(lim.x.min, lim.x.max)) +
+    scale_x_continuous(limits = c(min(df.b$x), max(df.b$x) + 0.75)) +
+    labs(x = "Item",y = "Thresholds")+
+    theme_minimal() +
     theme(axis.ticks.x = element_blank(),
           axis.text.x = element_blank(),
           plot.margin=unit(c(0,0,0,0.1),'cm'),
           panel.grid.major.x  = element_blank(),
-          panel.grid.minor.x = element_blank())+
-    scale_y_continuous(position = "right",
-                       limits = c(-4,4),breaks = -4:4)
+          panel.grid.minor.x = element_blank())
 
   combined_plot <- cowplot::plot_grid(histogram, points_plot,labels = NULL,
                                       rel_widths = c(1, p_width), align = "h")
   return(combined_plot)
 }
+
 DT_dataTable_Show <- function(x){
   DT::datatable(as.data.frame(x),
                 filter =list(position = 'top', clear = TRUE, plain = TRUE),

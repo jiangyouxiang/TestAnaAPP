@@ -112,7 +112,7 @@ CRM_module <- function(input, output, session) {
                       max.EMCycle = 2000, converge = 0.001)
     par <- CRM$param  %>% round(digits = 3)
     rownames(par) <- colnames(Response)
-    colnames(par) <- c("Discrimination", "Difficult", "Scaling parameter")
+    colnames(par) <- c("Discrimination", "Difficulty", "Scaling parameter")
     par
   })
 

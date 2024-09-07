@@ -83,6 +83,9 @@ app_ui <- function() {
                                                 br(),br(),br(),
                                                 DT::dataTableOutput("EFA_Response")%>%
                                                   box_show_theme()),
+                                            box(title = "Bartlett Test", DT::dataTableOutput("EFA_bartlett")%>%
+                                                  box_show_theme(),
+                                                solidHeader = TRUE, status = "info",width = 12),
 
                                             box(title="Eigenvalues", DT::dataTableOutput("CTT_EFA_eigenvalues")%>%
                                                   box_show_theme(),
@@ -485,6 +488,9 @@ app_ui <- function() {
                                       column(4,
                                              box(title = "Customize Drawing",width = 12,solidHeader = TRUE,
                                                  status = "warning",
+                                                 sliderInput(inputId = "IRT_wright_binwidth",label = "The width of the bin.",
+                                                             min = 0.1,max = 1,step = 0.01,value = 0.5),
+                                                 br(),
                                                  sliderInput(inputId = "IRT_wright_map_height",label = "The height of WrightMap.",
                                                              min = 300,max = 1800,step = 30,value = 400),
                                                  br(),
@@ -618,7 +624,8 @@ app_ui <- function() {
                                                br(),
                                                submitButton("Update Settings"),
                                                br(),
-                                               tags$b("Please first set the drawing parameters in the Item Characteristic Curve and Item Information Curve modules."),
+                                               tags$b("Please first set the drawing parameters in the Item Characteristic Curve and Item Information Curve modules.",
+                                                      style = "color:red"),
                                                br(),
                                                downloadButton(outputId = "IRT_report",label = "Download analysis report")
                                                )))
@@ -814,6 +821,9 @@ app_ui <- function() {
                                       column(4,
                                              box(title = "Customize Drawing",width = 12,solidHeader = TRUE,
                                                  status = "warning",
+                                                 sliderInput(inputId = "MIRT_wright_binwidth",label = "The width of the bin.",
+                                                             min = 0.1,max = 1,step = 0.01,value = 0.5),
+                                                 br(),
                                                  sliderInput(inputId = "MIRT_wright_map_height",label = "The height of WrightMap.",
                                                              min = 300,max = 1800,step = 30,value = 400),
                                                  br(),
@@ -955,7 +965,8 @@ app_ui <- function() {
                                                  br(),
                                                  submitButton("Update Settings"),
                                                  br(),
-                                                 tags$b("Please first set the drawing parameters in the Item Characteristic Curve and Item Information Curve modules."),
+                                                 tags$b("Please first set the drawing parameters in the Item Characteristic Curve and Item Information Curve modules.",
+                                                        style = "color:red"),
                                                  br(),
                                                  downloadButton(outputId = "MIRT_report",label = "Download analysis report"))))
 
@@ -1130,11 +1141,7 @@ app_ui <- function() {
                                                                    choices = c("Mantel Haenszel","Logistic Regression","SIBTEST"),
                                                                    selected = "Mantel Haenszel"),
                                                        br(),br(),
-                                                       selectInput(inputId = "sig_level",
-                                                                   label = "Significance level",
-                                                                   choices = c("0.01","0.05","0.1"),
-                                                                   selected = "0.05"),
-                                                       br(),br(),
+
                                                        "In addition, you can choose a variable (uploaded in the previous step) to analyze DIF.",
                                                        br(),br(),
                                                        uiOutput(outputId = "DIF_variable_selection"),
@@ -1142,6 +1149,7 @@ app_ui <- function() {
                                                        submitButton( "Confirm"),
                                                        br(),
                                                        uiOutput(outputId = "focal_name"),
+                                                       uiOutput(outputId = "LR_model"),
                                                        br(),br(),
                                                        submitButton( "Update results")),
                                                    box(title = "Download Results",solidHeader = TRUE,status = "success",width = 12,

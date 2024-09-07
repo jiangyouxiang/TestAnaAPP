@@ -156,7 +156,7 @@ MIRT_module <- function(input, output, session) {
     Response <- mydata()%>%as.data.frame()
     cat_all <- apply(Response, MARGIN = 2, FUN = cat_number)
     if(length(which(cat_all > 2)) >=1 ){
-      fit_index <- M2(obj = MIRT_fit, type = "M2*",na.rm = T)%>%round(digits = 3)#M2*
+      fit_index <- M2(obj = MIRT_fit, type = "C2",na.rm = T)%>%round(digits = 3)#M2*
     }else{
       fit_index <- M2(obj = MIRT_fit,na.rm = T)%>%round(digits = 3)
     }
@@ -218,13 +218,13 @@ MIRT_module <- function(input, output, session) {
     di_diff <- which(str_detect(colnames(item_par), pattern = "d"))#how many difficulty
     if(length(di_diff)==1){
       colnames_new <- colnames(item_par)
-      colnames_new[di_diff] <- "DIFFICULT"
+      colnames_new[di_diff] <- "DIFFICULTY"
       colnames(item_par) <- colnames_new
     }
     grade<- str_count(colnames(item_par), "d")%>%sum()
     dis <- MDISC#
     if(grade == 0){
-      item_par[, "DIFFICULT"] <- -item_par[, "DIFFICULT"]/dis
+      item_par[, "DIFFICULTY"] <- -item_par[, "DIFFICULTY"]/dis
       item_par <- cbind("MDISC" = dis, item_par)
     }else{
       diff <- item_par[,paste0("d",1:grade)]#
@@ -235,7 +235,7 @@ MIRT_module <- function(input, output, session) {
       }
       colnames(diff) <- paste0("b", 1:grade)
       if(length(di_diff)==1){
-        item_par <- cbind("MDISC" = dis,"DIFFICULT" = item_par[, "DIFFICULT"],
+        item_par <- cbind("MDISC" = dis,"DIFFICULTY" = item_par[, "DIFFICULTY"],
                           item_par[,1:F_n], diff)
       }else{
         item_par <- cbind("MDISC" = dis,item_par[,1:F_n], diff)
@@ -261,7 +261,7 @@ MIRT_module <- function(input, output, session) {
       colnames(item_par) <- colnames(item_par)%>%
         str_replace_all(pattern = "a", replacement = "Discrimination")%>%
         str_replace_all(pattern = "u", replacement = "Upper asymptote") %>%
-        str_replace_all(pattern = "d",replacement = "Difficult")%>%
+        str_replace_all(pattern = "d",replacement = "Difficulty")%>%
         str_replace_all(pattern = "g", replacement = "Guessing")
 
     }else{
@@ -271,7 +271,7 @@ MIRT_module <- function(input, output, session) {
       colnames(item_par) <- colnames(item_par)%>%
         str_replace_all(pattern = "a", replacement = "Discrimination")%>%
         str_replace_all(pattern = "u", replacement = "Upper asymptote") %>%
-        str_replace_all(pattern = "b",replacement = "Difficult")%>%
+        str_replace_all(pattern = "b",replacement = "Difficulty")%>%
         str_replace_all(pattern = "g", replacement = "Guessing")
     }
     as.data.frame(item_par) %>% round(digits = 3)
@@ -383,18 +383,19 @@ MIRT_module <- function(input, output, session) {
 
 
     thresholds <- item_par_dim[,c(str_which(colnames(item_par) %>% str_to_lower(),
-                                            pattern = "difficult"))]  %>% as.data.frame()
+                                            pattern = "difficulty"))]  %>% as.data.frame()
 
     if(is.null(dim(thresholds))){
       thresholds <- matrix(thresholds , ncol = 1)
       rownames(thresholds ) <- rownames(item_par_dim)
-      colnames(thresholds) <- "difficult"
+      colnames(thresholds) <- "difficulty"
     }
 
-    wrightMap_new(person = MIRT_person[,wright_dim],
-                  thresholds = thresholds ,
+    wrightMap_new(person = MIRT_person[,wright_dim] %>% as.numeric(),
+                  thresholds = thresholds %>% as.matrix(),
                   point_label = input$MIRT_point_label,
                   points_size = input$MIRT_wright_map_p_size,
+                  binwidth = input$MIRT_wright_binwidth,
                   p_width = input$MIRT_wright_p_width)
   })
   output$MIRT_wright <- renderPlot({

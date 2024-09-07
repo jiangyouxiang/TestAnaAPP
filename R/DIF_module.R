@@ -52,6 +52,15 @@ DIF_module <- function(input, output, session) {
     selectInput(inputId = "focal_name1",label = "Please select the focal group.",
                 choices = choices , selected = choices[1], selectize = TRUE)
   })
+  output$LR_model <- renderUI({
+    if(is.null(input$DIF_variable))
+      return(NULL)
+    if(input$DIF_method != "Logistic Regression")
+      return(NULL)
+    selectInput(inputId = "LR_model",
+                label = "Please select the model for trait estimation.",
+                choices = c("GRM","GPCM"), selected = "GRM", selectize = TRUE)
+  })
   #Export the response data-------------------------------------------------
   output$DIF_Response <- DT::renderDataTable({
     Response <- mydata()%>%as.data.frame()
@@ -62,15 +71,16 @@ DIF_module <- function(input, output, session) {
   DIF_ana_rea <- reactive({
     if(is.null(input$DIF_res))
       return(NULL)
-    if(is.null(input$focal_name1))
+    if(is.null(input$DIF_method))
       return(NULL)
     Response <- mydata() %>% as.data.frame()
     DIF_var <- Response[,sprintf("%s",input$DIF_variable)] %>% as.character()
-    alpha <- as.numeric(input$sig_level)
 
     Response_new <- Response[,!colnames(Response) %in% input$DIF_all_variable]
     if(input$DIF_method == "Mantel Haenszel"){
-      fit <- difMH(Data = Response_new, group = DIF_var, alpha = alpha,
+      if(is.null(input$focal_name1))
+        return(NULL)
+      fit <- difMH(Data = Response_new, group = DIF_var,
                    focal.name = input$focal_name1)
       result <- data.frame(
         Chi_square = fit$MH,
@@ -81,12 +91,30 @@ DIF_module <- function(input, output, session) {
 
     }
     if(input$DIF_method == "Logistic Regression"){
-      fit <- lordif::lordif(resp.data = Response_new, criterion = "R2",
-                            group =DIF_var, pseudo.R2 = "McFadden")
-      result <- fit$stats %>% as.data.frame()
+      if(is.null(input$LR_model))
+        return(NULL)
+      fit <- lordif::lordif(resp.data = Response_new, model = input$LR_model,
+                            group =DIF_var)
+      result <- data.frame(
+        "Item" = fit$stats$item,
+        "n_cat" = fit$stats$ncat,
+        "Chisq_12" = fit$stats$chi12,
+        "df_12" = fit$stats$df12,
+        "p_value_12" = stats::pchisq(q = fit$stats$chi12, df = fit$stats$df12),
+        "Chisq_13" = fit$stats$chi13,
+        "df_13" = fit$stats$df13,
+        "p_value_13" = stats::pchisq(q = fit$stats$chi13, df = fit$stats$df13),
+        "Chisq_23" = fit$stats$chi23,
+        "df_23" = fit$stats$df23,
+        "p_value_23" = stats::pchisq(q = fit$stats$chi23, df = fit$stats$df23),
+        "Beta_12" =fit$stats$beta12,
+        fit$stats[,7:15]
+      )
     }
     if(input$DIF_method == "SIBTEST"){
-      fit <-difSIBTEST(Data=Response_new, group = DIF_var, alpha = alpha,
+      if(is.null(input$focal_name1))
+        return(NULL)
+      fit <-difSIBTEST(Data=Response_new, group = DIF_var,
                        focal.name = input$focal_name1)
       result <- data.frame(
         Beta = fit$Beta,
@@ -114,11 +142,10 @@ DIF_module <- function(input, output, session) {
   output$DIF_results <- DT::renderDataTable({
     if(is.null(input$DIF_res))
       return(NULL)
-    if(is.null(input$focal_name1))
+    if(is.null(input$DIF_method) )
       return(NULL)
     Response <- mydata() %>% as.data.frame()
     DIF_var <- Response[,sprintf("%s",input$DIF_variable)] %>% as.character()
-    alpha <- as.numeric(input$sig_level)
 
     Response_new <- Response[,!colnames(Response) %in% input$DIF_all_variable]
     cat_nu <- apply(Response_new, MARGIN = 2, FUN = cat_number)

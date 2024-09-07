@@ -27,6 +27,29 @@ EFA_module <- function(input, output, session) {
 
 
   #2. EFA-----------------------
+  EFA_bartlett <- reactive({
+    if(is.null(input$EFA_res))
+      return(NULL)
+    Response <- mydata()%>%as.matrix()
+    n <- nrow(Response)
+    p <- ncol(Response)
+    R <- cor(Response)
+    det_R <- det(R)
+    df <- p * (p - 1) / 2
+    chisq_stat <- -(n - 1 - (2 * p + 5) / 6) * log(det_R)
+    data.frame(
+      "Sample size" = n,
+      "Number of items" = p,
+      "chisq_stat" = chisq_stat,
+      "df" = df,
+      "p_value" = pchisq(chisq_stat, df = df, lower.tail = FALSE)
+    )
+  })
+  output$EFA_bartlett <- DT::renderDataTable({
+    if(is.null(input$EFA_res))
+      return(NULL)
+    EFA_bartlett() %>%round(digits = 3) %>% DT_dataTable_Show()
+  })
   EFA_fit <- reactive({
     if(is.null(input$EFA_res))
       return(NULL)

@@ -188,7 +188,7 @@ generateDIFInfo <- function(method){
       helpText("Type C items (large DIF): items with \\(\\left|\\triangle_{\\alpha{MH}}\\right| > 1.5\\), and MH test is statistically significant."),
       helpText("         "),
       helpText("         "),
-      helpText("Reference:"),
+      helpText("Reference:", style = "font-weight: bold;"),
       helpText("Holland, P. W., & Thayer, D. T. (1988). Differential item performance and Mantel-Haenszel procedure. In H. Wainer & H. I. Braun (Eds.), Test validity (pp. 129-145). Hillsdale, NJ: Lawrence Erlbaum."),
       helpText("Hidalgo, M. D., & LOPez-Pina, J. A. (2004). Differential Item Functioning Detection and Effect Size: A Comparison between Logistic Regression and Mantel-Haenszel Procedures. Educational and Psychological Measurement, 64(6), 903-915. https://doi.org/10.1177/0013164403261769"),
       helpText("Zwick, R., & Ercikan, K. (1989). Analysis of Differential Item Functioning in the NAEP History Assessment. Journal of Educational Measurement, 26(1), 55-66. https://doi.org/10.1111/j.1745-3984.1989.tb00318.x")
@@ -203,8 +203,10 @@ generateDIFInfo <- function(method){
                the logistic regression method, which means the test of uniform DIF; '23' represents the comparison between Model 2
                and Model 3, which means the test of non-uniform DIF; '13' represents the comparison between Model 1 and Model 3, which
                means an overall test of 'total DIF effect'."),
+      helpText("The chi-square statistic of the likelihood ratio test may be greatly affected by the sample size. It is recommended to combine the P value of the chi-square test and the pseudo \\(R^2\\) statistic to comprehensively judge whether DIF exists.",style = "font-weight: bold;"),
       helpText("         "),
-      helpText("Reference:"),
+      helpText("         "),
+      helpText("Reference:", style = "font-weight: bold;"),
       helpText("Choi, S. W., Gibbons, L. E., & Crane, P. K. (2011). lordif: An R Package for Detecting Differential Item Functioning Using Iterative Hybrid Ordinal Logistic Regression/Item Response Theory and Monte Carlo Simulations. Journal of Statistical Software, 39(8). https://doi.org/10.18637/jss.v039.i08"),
       helpText("Cox DR, Snell EJ (1989). The Analysis of Binary Data. 2nd edition. Chapman and Hall, London."),
       helpText("Menard S (2000). 'Coefficients of Determination for Multiple Logistic Regression Analysis.' The American Statistician, 54, 17-24."),
@@ -222,10 +224,10 @@ generateDIFInfo <- function(method){
       helpText("Type A items (negligible DIF): items with \\(|{\\beta}| < 0.059\\)."),
       helpText("Type B items (moderate DIF): items with \\(0.059 \\leq \\left|{\\beta}\\right| \\leq 0.088\\)."),
       helpText("Type C items (large DIF): items with \\(|{\\beta}| > 0.088\\)."),
-      helpText("Since the significance test results are greatly affected by the sample size, please make a judgment based on the \\(\\beta\\) and significance test results."),
+      helpText("Since the significance test results are greatly affected by the sample size, please make a judgment based on the \\(\\beta\\) and significance test results.", style = "font-weight: bold;"),
       helpText("         "),
       helpText("         "),
-      helpText("Reference:"),
+      helpText("Reference:", style = "font-weight: bold;"),
       helpText("Magis, D., Beland, S., Tuerlinckx, F., & De Boeck, P. (2010). A general framework and an R package for the detection of dichotomous differential item functioning. Behavior Research Methods, 42(3), 847-862. https://doi.org/10.3758/BRM.42.3.847"),
       helpText("Roussos, L. A., & Stout, W. F. (1996). Simulation Studies of the Effects of Small Sample Size and Studied Item Parameters on SIBTEST and Mantel-Haenszel Type I Error Performance. Journal of Educational Measurement, 33(2), 215-230. https://doi.org/10.1111/j.1745-3984.1996.tb00490.x"),
       helpText("Shealy, R., & Stout, W. (1993). A model-based standardization approach that separates true bias/DIF from group ability differences and detects test bias/DTF as well as item bias/DIF. Psychometrika, 58(2), 159-194. https://doi.org/10.1007/BF02294572")

@@ -8,13 +8,13 @@ test_that("Basic Functionality - Binary Items", {
   result <- item_ana(data)
 
   # Expected values for "Difficult" column (simple check)
-  testthat::expect_equal(round(result["Item1", "Difficult"], 2), 0.5)
-  testthat::expect_equal(round(result["Item2", "Difficult"], 2), 0.5)
+  testthat::expect_equal(round(result["Item1", "Difficulty"], 2), 0.5)
+  testthat::expect_equal(round(result["Item2", "Difficulty"], 2), 0.5)
 
   # Expected structure
   testthat::expect_equal(ncol(result), 4)
   testthat::expect_equal(nrow(result), 3)
-  testthat::expect_equal(colnames(result), c("Difficult","Discrimination","Coefficient of variation", "Item-total correlation"))
+  testthat::expect_equal(colnames(result), c("Difficulty","Discrimination","Coefficient of variation", "Item-total correlation"))
 })
 
 test_that("Handling Missing Data (NA values)", {
@@ -53,6 +53,6 @@ test_that("Multi-Level Scoring Items", {
   result <- item_ana(data)
 
   # Check if the calculation for multi-level items is done correctly
-  testthat::expect_true(all(result[, "Difficult"] <= 1))
-  testthat::expect_true(all(result[, "Difficult"] >= 0))
+  testthat::expect_true(all(result[, "Difficulty"] <= 1))
+  testthat::expect_true(all(result[, "Difficulty"] >= 0))
 })
