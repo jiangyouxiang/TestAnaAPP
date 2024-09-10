@@ -125,7 +125,7 @@ In the field of psychological and educational measurement, two commonly used mea
 | (4) Others.
 
 
-The 'TestAnaAPP' is an interactive program developed in the R language for test analysis. It addresses the high computational cost and complexity of IRT models and provides practitioners of test quality analysis with a comprehensive set of evaluation indicators for items. Additionally, it offers professional visualization for the results.
+The 'TestAnaAPP' is an interactive program developed in the R language for test analysis. It addresses the high computational cost and complexity of IRT models and provides practitioners of test quality analysis with a comprehensive set of evaluation indicators for items. Additionally, it offers professional visualization of the results.
 
 
 # Introduction to IRT Models
@@ -152,7 +152,7 @@ The Rasch model (1PL) assumes that the probability $P_{ij}$ of test taker $j$ an
 
 ### Two-parameter logistic model (2PL)
 
-The 2PL model, originally proposed by Birnbaum in 1957, characterizes the psychometric features of items through the parameters of item difficulty ($\beta_i$) and item discrimination ($\alpha_i$). Item discrimination reflects the item's capacity to distinguish between subjects with varying levels of latent traits, and is a crucial measure of item quality. The item response function (IRF) of the 2PL model is illustrated below.
+The 2PL model, originally proposed by Birnbaum in 1957, characterizes the psychometric features of items through the parameters of item difficulty ($\beta_i$) and item discrimination ($\alpha_i$). Item discrimination reflects the item's capacity to distinguish between subjects with varying levels of latent traits and is a crucial measure of item quality. The item response function (IRF) of the 2PL model is illustrated below.
 
 
 
@@ -167,7 +167,7 @@ $$P(X_{ij}=1 | \theta_{j}) = c_i+(1-c_i)\frac{1}{1+e^{(-\alpha_i(\theta_j-\beta_
 
 ### Four-parameter logistic model (4PL)
 
-The 3PL model addresses the guessing behavior of subjects with very low ability on items, while the 4PL model expands on this by also accounting for slip made by highly capable subjects. In addition to the components of the 3PL model, the 4PL model introduces an extra item slip parameter, denoted as $1-u_i$, to represent the probability of high-ability subjects making mistakes on item $i$. The formula for the item response function (IRF) of the 4PL model is displayed below.
+The 3PL model addresses the guessing behavior of subjects with very low ability on items, while the 4PL model expands on this by also accounting for slips made by highly capable subjects. In addition to the components of the 3PL model, the 4PL model introduces an extra item slip parameter, denoted as $1-u_i$, to represent the probability of high-ability subjects making mistakes on item $i$. The formula for the item response function (IRF) of the 4PL model is displayed below.
 
 
 $$P(X_{ij}=1 | \theta_{j}) = c_i+(u_i-c_i)\frac{1}{1+e^{(-\alpha_i(\theta_j-\beta_i))}}\tag{4}$$
@@ -239,10 +239,10 @@ fmt_tra_other(ft = IRT_modelfit_relat)
 
 'TestAnaAPP' generates absolute fit indices, including M2, RMSEA, SRMSR, TLI, and CFI.
 
-* M2: If the corresponding p-value is less than 0.05 (α<0.05), the null hypothesis is rejected, suggesting inadequate fit of the model to the data.
+* M2: If the corresponding p-value is less than 0.05 (α<0.05), the null hypothesis is rejected, suggesting an inadequate fit of the model to the data.
 * RMSEA: Browne and Cudeck (1993) provided a well-regarded guide to interpreting RMSEA. A value below 0.05 indicates a very good fit (close fit), 0.05 to 0.08 suggests a relatively good fit (fair fit), 0.08 to 0.10 implies a mediocre fit, and a value above 0.10 indicates a poor fit.
-* SRMSR: A value of SRMSR≤0.05 indicates acceptable fit between the model and the data.
-TLI and CFI values greater than 0.9 suggest satisfactory fit of the model to the data.
+* SRMSR: A value of SRMSR≤0.05 indicates an acceptable fit between the model and the data.
+TLI and CFI values greater than 0.9 suggest a satisfactory fit of the model to the data.
 
 
 
@@ -300,7 +300,7 @@ fmt_tra_other(IRT_itemfit)
 
 # Item Parameters
 
-Item parameters serve as crucial indicators for assessing item quality. Provided below are the criteria, derived from "**The Basics of Item Response Theory Using R**", that can be utilized to evaluate item discrimination values. Readers can employ these criteria for evaluating the extent of item discrimination in the test under analysis.
+Item parameters serve as crucial indicators for assessing item quality. Provided below are the criteria, derived from "**The Basics of Item Response Theory Using R**", that can be utilized to evaluate item discrimination values. Readers can employ these criteria to evaluate the extent of item discrimination in the test under analysis.
 
 `r bold_print("Table: Labels for Item Discrimination Values")``
 
@@ -340,7 +340,7 @@ fmt_tra_other(IRT_itempar_print) %>%
 
 # Wright Map
 
-IRT assess item difficulty and participant latent traits on the same scale, enabling comparability. This provides a significant advantage compared to CTT. The Wright map serves as a visual tool for comparing the distribution of item difficulty and latent traits. Through comparing the scatterplot distribution of item difficulty with latent trait values, the relative difficulty or ease of the test for the subjects, as well as the difficulty level of test, can be determined. Additionally, it enables the identification of harder and easier items. 
+IRT assesses item difficulty and participant latent traits on the same scale, enabling comparability. This provides a significant advantage compared to CTT. The Wright map serves as a visual tool for comparing the distribution of item difficulty and latent traits. By comparing the scatterplot distribution of item difficulty with latent trait values, the relative difficulty or ease of the test for the subjects, as well as the difficulty level of the test, can be determined. Additionally, it enables the identification of harder and easier items. 
 
 It is important to note that the test can effectively differentiate the subjects' latent trait levels only when it possesses appropriate difficulty. Otherwise, ceiling or floor effects may arise, whereby the measurement tool inaccurately assesses the subjects' true abilities, resulting in all subjects receiving either high or low scores.
 
@@ -388,7 +388,7 @@ print(IRT_TIC)
 
 It is important to note that users can download the item information and test information from the user interface. This allows them to create custom figures using the downloaded files. 
 
-**Statement:** 'TestAnaAPP' is mainly designed to provide convenient item and test analysis programs for practitioners in the field of psychological and educational measurement. The purpose of providing this report is to present the analysis results in a complete and clear manner, and to provide universal and optimal result interpretation is not the primary objective of 'TestAnaAPP'. **Therefore, while we hope users can benefit from the user-friendly nature of this program, we also encourage maintaining a cautious attitude towards the interpretation of results in order to avoid potential biases. Additionally, if users discover any errors in this program, we would greatly appreciate your contact with us (<jiangyouxiang34@163.com>).**
+**Statement:** 'TestAnaAPP' is mainly designed to provide convenient item and test analysis programs for practitioners in psychological and educational measurement. The purpose of providing this report is to present the analysis results completely and clearly, and to provide universal and optimal result interpretation is not the primary objective of 'TestAnaAPP'. **Therefore, while we hope users can benefit from the user-friendly nature of this program, we also encourage maintaining a cautious attitude toward the interpretation of results to avoid potential biases. Additionally, if users discover any errors in this program, we would greatly appreciate your contact with us (<jiangyouxiang34@163.com>).**
 
 
 \newpage
