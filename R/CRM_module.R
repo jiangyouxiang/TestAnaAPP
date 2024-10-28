@@ -4,23 +4,25 @@ CRM_module <- function(input, output, session) {
 
     if(is.null(input$CRM_res))
       return("Please upload the score data.")
-    inFile <- input$CRM_res
-    dataset <- bruceR::import(inFile$datapath)
-    data <- as.data.frame(dataset)
-
-    data <- dataset %>% unlist() %>% as.numeric() %>%
-      matrix(ncol = ncol(dataset)) %>% as.data.frame()
-    colnames(data) <- colnames(dataset)
-
-    if(length(which(is.character(data %>% unlist()))) >=1){
-      return("Data can not contain any string data.")
-    }
-    data
+    data.f <- read_file(input$CRM_res)
+    data.f
   })
+  #variable selection
+  output$CRM_var_select <- renderUI({
+    vars <- mydata() %>% as.data.frame() %>% colnames()
+    checkboxGroupInput(inputId = "CRM_all_variable",inline = T,
+                       label = "Please select variables for CRM analysis.",
+                       choices = vars,selected = vars)
+  })
+
   output$CRM_data_type <- renderText({
     if(is.null(input$CRM_res))
       return(NULL)
-    cat_all <- apply(mydata()%>%as.data.frame(), MARGIN = 2, FUN = cat_number)
+    if(is.null(input$CRM_all_variable))
+      return(NULL)
+    cat_all <- apply(mydata()%>%as.data.frame() %>%
+                       select(input$CRM_all_variable),
+                     MARGIN = 2, FUN = cat_number)
     if(any(cat_all <= 10)){
       return(paste0(
         br(),
@@ -41,7 +43,9 @@ CRM_module <- function(input, output, session) {
   min_max_detect <- reactive({
     if(is.null(input$CRM_res))
       return(NULL)
-    res <- mydata() %>% as.data.frame()
+    if(is.null(input$CRM_all_variable))
+      return(NULL)
+    res <- mydata() %>% as.data.frame() %>% select(input$CRM_all_variable)
     max_min_data <- data.frame(
       "max.item" = sapply(res, function(x) max(x, na.rm = TRUE)),
       "min.item" = sapply(res, function(x) min(x, na.rm = TRUE))
@@ -100,12 +104,15 @@ CRM_module <- function(input, output, session) {
   CRM_item_par_rea <- reactive({
     req(input$save)#The button is clicked
     data <- isolate(v$data)
-    Response <- mydata() %>% as.data.frame()
+
+    if(is.null(input$CRM_all_variable))
+      return(NULL)
+    Response <- mydata() %>% as.data.frame() %>% select(input$CRM_all_variable)
     if(max(as.numeric(data %>% unlist())) < max(as.numeric(Response %>% unlist())) |
        min(as.numeric(data %>% unlist())) > min(as.numeric(Response %>% unlist())))
       stop("The range of uploaded data is smaller than the range of score data.")
 
-    Response <- mydata() %>% as.data.frame()
+
     max_min_value <- v$data
     CRM <- EstCRMitem(Response, max_min_value$max.item,
                       max_min_value$min.item,
@@ -121,7 +128,9 @@ CRM_module <- function(input, output, session) {
       return(NULL)
     req(input$save)
 
-    Response <- mydata() %>% as.data.frame()
+    if(is.null(input$CRM_all_variable))
+      return(NULL)
+    Response <- mydata() %>% as.data.frame() %>% select(input$CRM_all_variable)
     if(any(is.na(Response)))
       return(data.frame("Any missing values are not allowed."))
 
@@ -130,7 +139,9 @@ CRM_module <- function(input, output, session) {
 
   ##10.2 Person parameters--------------------------------------------------------
   CRM_theta_rea <- reactive({
-    Response <- mydata() %>% as.data.frame()
+    if(is.null(input$CRM_all_variable))
+      return(NULL)
+    Response <- mydata() %>% as.data.frame() %>% select(input$CRM_all_variable)
     req(input$save)
     max_min_value <-  v$data
     par <- CRM_item_par_rea()
@@ -146,7 +157,9 @@ CRM_module <- function(input, output, session) {
     if(is.null(input$CRM_res))
       return(NULL)
     req(input$save)
-    Response <- mydata() %>% as.data.frame()
+    if(is.null(input$CRM_all_variable))
+      return(NULL)
+    Response <- mydata() %>% as.data.frame() %>% select(input$CRM_all_variable)
     if(any(is.na(Response)))
       return(data.frame("Any missing values are not allowed."))
     CRMthetas <- CRM_theta_rea()
@@ -158,7 +171,9 @@ CRM_module <- function(input, output, session) {
     if(is.null(input$CRM_res))
       return(NULL)
     req(input$save)
-    Response <- mydata() %>% as.data.frame()
+    if(is.null(input$CRM_all_variable))
+      return(NULL)
+    Response <- mydata() %>% as.data.frame() %>% select(input$CRM_all_variable)
     max_min_value <-  v$data
     par <- CRM_item_par_rea()
     CRMthetas <- CRM_theta_rea()
@@ -176,7 +191,9 @@ CRM_module <- function(input, output, session) {
     if(is.null(input$CRM_res))
       return(NULL)
     req(input$save)
-    Response <- mydata() %>% as.data.frame()
+    if(is.null(input$CRM_all_variable))
+      return(NULL)
+    Response <- mydata() %>% as.data.frame() %>% select(input$CRM_all_variable)
     if(any(is.na(Response)))
       stop("Any missing values are not allowed.")
     CRM_item_fit_rea() %>% DT_dataTable_Show()
@@ -189,7 +206,9 @@ CRM_module <- function(input, output, session) {
       return(NULL)
     req(input$save)
 
-    Response <- mydata() %>% as.data.frame()
+    if(is.null(input$CRM_all_variable))
+      return(NULL)
+    Response <- mydata() %>% as.data.frame() %>% select(input$CRM_all_variable)
     max_min_value <-  v$data
     par <- CRM_item_par_rea()
 
@@ -206,7 +225,9 @@ CRM_module <- function(input, output, session) {
     if(is.null(input$CRM_res))
       return(NULL)
     req(input$save)
-    Response <- mydata() %>% as.data.frame()
+    if(is.null(input$CRM_all_variable))
+      return(NULL)
+    Response <- mydata() %>% as.data.frame() %>% select(input$CRM_all_variable)
     if(any(is.na(Response)))
       stop("Any missing values are not allowed.")
     CRM_plot_ICC() %>% print()
@@ -214,7 +235,9 @@ CRM_module <- function(input, output, session) {
 
 
   output$CRM_item_selection <- renderUI({
-    data <- mydata() %>% as.data.frame()
+    if(is.null(input$CRM_all_variable))
+      return(NULL)
+    data <- mydata() %>% as.data.frame()%>% select(input$CRM_all_variable)
     N <- colnames(data)
 
     selectInput(inputId = "CRM_ICC_item",label = "Please select the item to be plotted.",

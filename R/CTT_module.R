@@ -4,18 +4,8 @@ CTT_module <- function(input, output, session){
 
     if(is.null(input$CTT_res))
       return("Please upload the score data.")
-    inFile <- input$CTT_res
-    dataset <- bruceR::import(inFile$datapath)
-    data <- as.data.frame(dataset)
+    data.f <- read_file(input$CTT_res)
 
-    data <- dataset %>% unlist() %>% as.numeric() %>%
-      matrix(ncol = ncol(dataset)) %>% as.data.frame()
-    colnames(data) <- colnames(dataset)
-
-    if(length(which(is.character(data %>% unlist()))) >=1){
-      return("Data can not contain any string data.")
-    }
-    data
   })
 
   #Export the response data-------------------------------------------------
@@ -24,12 +14,22 @@ CTT_module <- function(input, output, session){
     # Response
     Response %>% DT_dataTable_Show()
   })
+  #variable selection
+  output$CTT_var_select <- renderUI({
+    vars <- mydata() %>% as.data.frame() %>% colnames()
+    checkboxGroupInput(inputId = "CTT_all_variable",inline = T,
+                       label = "Please select variables for CTT analysis.",
+                       choices = vars,selected = vars)
+  })
 
   #1. Descriptive statistics--------------------------------------------
   desc_rea <- reactive({
     if(is.null(input$CTT_res))
       return(NULL)
+    if(is.null(input$CTT_all_variable))
+      return(NULL)
     Response <- mydata()%>%as.data.frame()
+    Response <- Response[,input$CTT_all_variable]
     desc <- Describe(Response,digits = 3)$desc%>%as.data.frame()
 
     desc <- data.frame("Item" = colnames(Response),
@@ -51,11 +51,14 @@ CTT_module <- function(input, output, session){
   scores_plot_rea <- reactive({
     if(is.null(input$CTT_res))
       return(NULL)
+    if(is.null(input$CTT_all_variable))
+      return(NULL)
     Response <- mydata()%>%as.data.frame()
+    Response <- Response[,input$CTT_all_variable]
     if(0==1){
       ss <- latticeExtra::mapplot()#useless code
     }
-    scores_plot1 <- hist(rowSums(Response), breaks = 100,
+    scores_plot1 <- hist(rowSums(Response,na.rm = T), breaks = 100,
                          main = "The distribution for total score", xlab = "Total score", ylab = "Frequency")
     scores_plot1
   })
@@ -69,7 +72,10 @@ CTT_module <- function(input, output, session){
   output$item_type <- renderText({
     if(is.null(input$CTT_res))
       return(NULL)
+    if(is.null(input$CTT_all_variable))
+      return(NULL)
     Response <- mydata()
+    Response <- Response[,input$CTT_all_variable]
     binary_item <- which(apply(Response, MARGIN = 2, FUN = cat_number) == 2)
     ordinal_item <- which(apply(Response, MARGIN = 2, FUN = cat_number) > 2)
 
@@ -85,7 +91,10 @@ CTT_module <- function(input, output, session){
   output$CTT_itempar <- DT::renderDataTable({
     if(is.null(input$CTT_res))
       return(NULL)
+    if(is.null(input$CTT_all_variable))
+      return(NULL)
     Response <- mydata()
+    Response <- Response[,input$CTT_all_variable]
     cat_all <- apply(Response, MARGIN = 2, FUN = cat_number)#The number of categories.
     item_par <- item_ana(data = Response)%>%round(digits = 3)#The max score
 
@@ -95,7 +104,12 @@ CTT_module <- function(input, output, session){
   })
   ###4.1 CTT reliability----------------------------------------------
   CTT_relibility_rea <- reactive({
+    if(is.null(input$CTT_res))
+      return(NULL)
+    if(is.null(input$CTT_all_variable))
+      return(NULL)
     Response <- mydata()
+    Response <- Response[,input$CTT_all_variable]
     reli <- Alpha(data = Response,vars = colnames(Response))
     data.frame(reli$alpha[[1]],
                "omega" = reli$omega[[1]])%>%round(digits = 3)
@@ -107,7 +121,13 @@ CTT_module <- function(input, output, session){
   })
 
   CTT_item_alpha_rea <- reactive({
+    if(is.null(input$CTT_res))
+      return(NULL)
+    if(is.null(input$CTT_all_variable))
+      return(NULL)
+
     Response <- mydata()
+    Response <- Response[,input$CTT_all_variable]
     reli <- Alpha(data = Response,vars = colnames(Response))
     as.data.frame(reli$alpha[[2]])%>%round(digits = 3)
   })
@@ -130,7 +150,12 @@ CTT_module <- function(input, output, session){
 
   ###4.3 Correlation matrix---------------------------------
   CTT_relate_eff_rea <- reactive({
+    if(is.null(input$CTT_res))
+      return(NULL)
+    if(is.null(input$CTT_all_variable))
+      return(NULL)
     Response <- mydata()
+    Response <- Response[,input$CTT_all_variable]
     rea <- bruceR::Corr(data = Response,method = "pearson",plot = FALSE)
     as.data.frame(rea$corr$r)%>%round(digits = 3)
 
@@ -142,7 +167,12 @@ CTT_module <- function(input, output, session){
 
   })
   CTT_relate_p_rea <- reactive({
+    if(is.null(input$CTT_res))
+      return(NULL)
+    if(is.null(input$CTT_all_variable))
+      return(NULL)
     Response <- mydata()
+    Response <- Response[,input$CTT_all_variable]
     rea <- bruceR::Corr(data = Response,method = "pearson",plot = FALSE)
     as.data.frame(rea$corr$p)%>%round(digits = 3)
 
@@ -182,7 +212,12 @@ CTT_module <- function(input, output, session){
       paste0("CTT_results.xlsx")
     },
     content = function(file) {
-      Response <- mydata() %>% as.data.frame()
+      if(is.null(input$CTT_res))
+        return(NULL)
+      if(is.null(input$CTT_all_variable))
+        return(NULL)
+      Response <- mydata()
+      Response <- Response[,input$CTT_all_variable]
       item_par <- item_ana(data = Response)%>%round(digits = 3)
       cat_all <- apply(Response, MARGIN = 2, FUN = cat_number)#The number of categories.
       datalist <- list("CTT_parameters" = data.frame(row.names = colnames(Response),
@@ -199,7 +234,11 @@ CTT_module <- function(input, output, session){
       jpeg(file, width = 1200, height = 800)
       if(is.null(input$CTT_res))
         return(NULL)
-      Response <- mydata()%>%as.data.frame()
+      if(is.null(input$CTT_all_variable))
+        return(NULL)
+      Response <- mydata()
+      Response <- Response[,input$CTT_all_variable]
+
       scores_plot1 <- hist(rowSums(Response), breaks = 100,
                            main = "Total score distribution", xlab = "Total score", ylab = "Frequency")
 

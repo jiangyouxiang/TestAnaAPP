@@ -4,18 +4,9 @@ DIF_module <- function(input, output, session) {
 
     if(is.null(input$DIF_res))
       return("Please upload the score data.")
-    inFile <- input$DIF_res
-    dataset <- bruceR::import(inFile$datapath)
-    data <- as.data.frame(dataset)
+    data.f <- read_file(input$DIF_res)
 
-    data <- dataset %>% unlist() %>% as.numeric() %>%
-      matrix(ncol = ncol(dataset)) %>% as.data.frame()
-    colnames(data) <- colnames(dataset)
-
-    if(length(which(is.character(data %>% unlist()))) >=1){
-      return("Data can not contain any string data.")
-    }
-    data
+    data.f
   })
 
   ## 11. DIF---------------------------------------------------------------------------------------

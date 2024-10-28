@@ -3,7 +3,7 @@
 #' @param input,output,session Internal parameters for {shiny}.
 #'     DO NOT REMOVE.
 #' @import shiny dplyr stringr mirt ggplot2 golem EstCRM rmarkdown officer officedown flextable
-#' @importFrom openxlsx write.xlsx
+#' @importFrom openxlsx write.xlsx read.xlsx
 #' @importFrom plotrix twoord.plot
 #' @importFrom cowplot plot_grid
 #' @importFrom grDevices jpeg dev.off
@@ -17,6 +17,7 @@
 #' @importFrom lordif lordif
 #' @importFrom DT datatable DTOutput renderDT
 #' @importFrom stats pchisq
+#' @importFrom utils read.csv
 #' @noRd
 app_server <- function(input, output, session) {
   options(shiny.maxRequestSize = 1024^4)
@@ -70,7 +71,7 @@ app_server <- function(input, output, session) {
           shiny::p("2. You need to understand that 'TestAnaAPP' presents various analysis contents in modular forms.
                    When you need to perform a specific analysis using 'TestAnaAPP', you can directly navigate to
                    that interface after uploading the data. "),
-          shiny::p("3. When it involves dimensional information of the test, you need to upload an EXCEL file
+          shiny::p("3. When it involves dimensional information of the test, you need to upload an XLSX file
                    in the interface of uploading dimensional information to illustrate the test structure.
                    Please edit your document following the examples provided in 'TestAnaAPP'. "),
           shiny::p("4. During the operation, please carefully read the textual prompts presented on each interface
@@ -92,7 +93,7 @@ app_server <- function(input, output, session) {
 
 #Functions-----------------------------------------------------
 cat_number <- function(vector){
-  number <- Freq(x = vector)%>%nrow()
+  number <- table(vector,useNA = "no")%>%length()
   return(number)
 }
 
@@ -197,6 +198,9 @@ EFA_rotation_method <- function(value){
   if(value == "Equamax"){
     return("equamax")
   }
+  if(value == "None (not suggested)"){
+    return("none")
+  }
 }
 model_selected <- function(value){
   if(value == "Rasch model (1PL)"){
@@ -280,20 +284,20 @@ itemfit_method <- function(value){
 
 #CTT item parameters
 item_ana<- function(data){#Difficult, discrimination and CV
-  if(length(which(is.na(data)))>=1){
-    data<- na.omit(data)
-    warning("The case with NA were deleted.")
-  }
+  # if(length(which(is.na(data)))>=1){
+  #   data<- na.omit(data)
+  #   warning("The case with NA were deleted.")
+  # }
   cat_all <- apply(data, MARGIN = 2, FUN = cat_number)#The number of categories.
   cat_2 =  which( cat_all == 2)#0 or 1
   cat_m = which(cat_all >2)#Multi-level scores
-  item_s = apply(data, 2, max)
+  item_s = apply(data, 2, max, na.rm = T)
 
   item_analysis<- matrix(NA, nrow = ncol(data), ncol = 4)
   rownames(item_analysis)<- colnames(data)
   colnames(item_analysis)<- c("Difficulty","Discrimination","Coefficient of variation", "Item-total correlation")
 
-  data1<- cbind(data,rowSums(data))
+  data1<- cbind(data,rowSums(data,na.rm = T))
   data1<- data1[order(data1[,ncol(data1)],decreasing = F),]
   zf <- data1[,ncol(data1)]
   low_N <- which(zf <= round(quantile(zf, 0.27), 2))
@@ -303,25 +307,31 @@ item_ana<- function(data){#Difficult, discrimination and CV
   high_data<- data1[hig_N,]
 
   for (i in cat_2) {
+    low_mean <- mean(low_data[,i],na.rm = T)
     #Difficult
-    item_analysis[i,1]<- ((mean(high_data[,i])+mean(low_data[,i]))/item_s[i])/2#
+    item_analysis[i,1]<- ((mean(high_data[,i],na.rm = T)+
+                             ifelse(is.na(low_mean),0,low_mean))/item_s[i])/2#
     #Discrimination
-    item_analysis[i,2]<- (mean(high_data[,i])-mean(low_data[,i]))/item_s[i]#
+    item_analysis[i,2]<- (mean(high_data[,i],na.rm = T)-
+                            ifelse(is.na(low_mean),0,low_mean))/item_s[i]#
 
     #CV
-    item_analysis[i,3]<- (sd(data[,i])/mean(data[,i]))*100
-    item_analysis[i,4] <- point_biserial(binary_item = data[,i], total_score = rowSums(data))
+    item_analysis[i,3]<- (sd(data[,i],na.rm = T)/mean(data[,i],na.rm = T))*100
+    item_analysis[i,4] <- point_biserial(binary_item = data[,i],
+                                         total_score = rowSums(data,na.rm = T))
   }
 
   for (j in cat_m) {
+    low_mean <- mean(low_data[,j],na.rm = T)
     #Difficult
-    item_analysis[j,1]<- mean(data1[,j])/item_s[j]
+    item_analysis[j,1]<- mean(data1[,j],na.rm = T)/item_s[j]
     #Discrimination
-    item_analysis[j,2]<- ((mean(high_data[,j])-mean(low_data[,j]))/item_s[j])
+    item_analysis[j,2]<- ((mean(high_data[,j],na.rm = T)-
+                             ifelse(is.na(low_mean),0,low_mean))/item_s[j])
 
     #CV
-    item_analysis[j,3]<- (sd(data[,j])/mean(data[,j]))*100
-    item_analysis[j,4] <- cor(x = data[,j], y = rowSums(data))
+    item_analysis[j,3]<- (sd(data[,j],na.rm = T)/mean(data[,j],na.rm = T))*100
+    item_analysis[j,4] <- cor(x = data[,j], y = rowSums(data,na.rm = T))
   }
 
   return(item_analysis)
@@ -332,15 +342,15 @@ point_biserial <- function(binary_item, total_score) {
   mean_total <- mean(total_score)
   sd_total <- sd(total_score)
   # Calculate the means of total scores for the two groups
-  if(max(binary_item) >= 1){#
-    binary_item[which(binary_item == max(binary_item))] <- 1
-    binary_item[which(binary_item == min(binary_item))] <- 0
+  if(max(binary_item,na.rm = T) >= 1){#
+    binary_item[which(binary_item == max(binary_item,na.rm = T))] <- 1
+    binary_item[which(binary_item == min(binary_item,na.rm = T))] <- 0
   }
-  mean_1 <- mean(total_score[binary_item == max(binary_item)])
-  mean_0 <- mean(total_score[binary_item == min(binary_item)])
+  mean_1 <- mean(total_score[binary_item == max(binary_item,na.rm = T)],na.rm = T)
+  mean_0 <- mean(total_score[binary_item == min(binary_item,na.rm = T)],na.rm = T)
 
   # Calculate the proportion of 1s (p) and 0s (q)
-  p <- mean(binary_item)
+  p <- mean(binary_item,na.rm = T)
   q <- 1 - p
 
   # Calculate the point-biserial correlation
@@ -572,4 +582,25 @@ DT_dataTable_Show <- function(x){
                 options = list(scrollX = TRUE))
 
 
+}
+
+read_file <- function(path){
+  inFile <- path
+  # Detecting file type
+  if(grepl(".xlsx", inFile$datapath)){
+    dataset <- openxlsx::read.xlsx(inFile$datapath,sheet = 1)
+  }else if(grepl(".xls", inFile$datapath)){
+    stop("XLS file is not supported.")
+  }else if(grepl(".csv", inFile$datapath)){
+    dataset <- utils::read.csv(inFile$datapath,header = T)
+  }else{
+    dataset <- bruceR::import(inFile$datapath)
+  }
+  data <- as.data.frame(dataset)
+
+  data <- dataset %>% unlist() %>% as.numeric() %>%
+    matrix(ncol = ncol(dataset)) %>% as.data.frame()
+  colnames(data) <- colnames(dataset)
+
+  data
 }

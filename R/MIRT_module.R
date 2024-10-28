@@ -4,23 +4,24 @@ MIRT_module <- function(input, output, session) {
 
     if(is.null(input$MIRT_res))
       return("Please upload the score data.")
-    inFile <- input$MIRT_res
-    dataset <- bruceR::import(inFile$datapath)
-    data <- as.data.frame(dataset)
-
-    data <- dataset %>% unlist() %>% as.numeric() %>%
-      matrix(ncol = ncol(dataset)) %>% as.data.frame()
-    colnames(data) <- colnames(dataset)
-
-    if(length(which(is.character(data %>% unlist()))) >=1){
-      return("Data can not contain any string data.")
-    }
-    data
+    data.f <- read_file(input$MIRT_res)
+    data.f
+  })
+  #variable selection
+  output$MIRT_var_select <- renderUI({
+    vars <- mydata() %>% as.data.frame() %>% colnames()
+    checkboxGroupInput(inputId = "MIRT_all_variable",inline = T,
+                       label = "Please select variables for MIRT analysis.",
+                       choices = vars,selected = vars)
   })
   output$MIRT_data_type <- renderText({
     if(is.null(input$MIRT_res))
       return(NULL)
-    cat_all <- apply(mydata()%>%as.data.frame(), MARGIN = 2, FUN = cat_number)
+    if(is.null(input$MIRT_all_variable))
+      return(NULL)
+    cat_all <- apply(mydata()%>%as.data.frame() %>%
+                       select(input$MIRT_all_variable),
+                     MARGIN = 2, FUN = cat_number)
     if(any(cat_all >= 10)){
       return(paste0(
         br(),
@@ -41,6 +42,8 @@ MIRT_module <- function(input, output, session) {
   dimension <- reactive({
 
     if(is.null(input$dimensionfile))
+      return(NULL)
+    if(is.null(input$MIRT_all_variable))
       return(NULL)
     inFile <- input$dimensionfile
     dataset <- bruceR::import(inFile$datapath)
@@ -78,11 +81,13 @@ MIRT_module <- function(input, output, session) {
     if(is.null(input$dimensionfile)){
       return(NULL)
     }else{
-      Response <- mydata()
+      if(is.null(input$MIRT_all_variable))
+        return(NULL)
+      Response <- mydata() %>% as.data.frame() %>% select(input$MIRT_all_variable)
       if(nrow(dim_data) != ncol(Response) ){#
-        stop("The data in the first column of the imported file is inconsistent with the data file column name!")
-      }else if( any(rownames(dim_data)%>% as.vector() == colnames(Response))==F){
-        stop("The data in the first column of the imported file is inconsistent with the data file column name!
+        stop("The data in the first column of the imported file is inconsistent with the column names of selected variables!")
+      }else if(sum(colnames(Response)!= rownames(dim_data))>=1){
+        stop("The data in the first column of the imported file is inconsistent with the column names of selected variables!
              Please note that the program does not support column names consisting of only numbers.")
       }
       return(dim_data%>% DT_dataTable_Show())
@@ -109,12 +114,14 @@ MIRT_module <- function(input, output, session) {
     if(is.null(model_selected(input$modelselect1)))
       return(NULL)
     dim_data <- dimension()
-    Response <- mydata()
+    if(is.null(input$MIRT_all_variable))
+      return(NULL)
+    Response <- mydata() %>% as.data.frame() %>% select(input$MIRT_all_variable)
 
     if(nrow(dim_data) != ncol(Response) ){#
-      stop("The data in the first column of the imported file is inconsistent with the data file column name!")
+      stop("The data in the first column of the imported file is inconsistent with the column names of selected variables!")
     }else if( any(rownames(dim_data)%>% as.vector() == colnames(Response))==F){
-      stop("The data in the first column of the imported file is inconsistent with the data file column name!
+      stop("The data in the first column of the imported file is inconsistent with the column names of selected variables!
              Please note that the program does not support column names consisting of only numbers.")
 
     }
@@ -153,7 +160,9 @@ MIRT_module <- function(input, output, session) {
 
   MIRT_modelfit_rea <- reactive({
     MIRT_fit <-  MIRT_fit_rea()
-    Response <- mydata()%>%as.data.frame()
+    if(is.null(input$MIRT_all_variable))
+      return(NULL)
+    Response <- mydata() %>% as.data.frame() %>% select(input$MIRT_all_variable)
     cat_all <- apply(Response, MARGIN = 2, FUN = cat_number)
     if(length(which(cat_all > 2)) >=1 ){
       fit_index <- M2(obj = MIRT_fit, type = "C2",na.rm = T)%>%round(digits = 3)#M2*
@@ -317,7 +326,9 @@ MIRT_module <- function(input, output, session) {
   ##9.6 Person parameters--------------------
   MIRT_person_rea <- reactive({
     MIRT_fit <- MIRT_fit_rea()
-    Response <- mydata()
+    if(is.null(input$MIRT_all_variable))
+      return(NULL)
+    Response <- mydata() %>% as.data.frame() %>% select(input$MIRT_all_variable)
     dim_data <- dimension() %>% as.data.frame()
     mode <- dimension_recode(Qmatrix = dim_data )
 
@@ -356,10 +367,11 @@ MIRT_module <- function(input, output, session) {
       return(NULL)
     dim_data <- dimension() %>% as.data.frame()
     mode <- dimension_recode(Qmatrix = dim_data )
-    if(mode$is.within_item==TRUE){
+    if(mode$is.within_item==TRUE)
       return(NULL)
-    }
-    Response <- mydata()%>%as.data.frame()
+    if(is.null(input$MIRT_all_variable))
+      return(NULL)
+    Response <- mydata() %>% as.data.frame() %>% select(input$MIRT_all_variable)
     cat_all <- apply(Response, MARGIN = 2, FUN = cat_number)
     if(is.null(input$wright_dim_select)){
       wright_dim <- as.vector(mode$F_names)[1]
@@ -374,10 +386,10 @@ MIRT_module <- function(input, output, session) {
     if(length(dim_items)==1){
       item_par_dim <- item_par[dim_items,] %>% matrix(nrow = 1)
       colnames(item_par_dim) <- colnames(item_par)
-      rownames(item_par_dim) <- rownames(item_par)[dim_items]
     }else{
       item_par_dim <- item_par[dim_items,]
     }
+    rownames(item_par_dim) <- rownames(item_par)[dim_items]
     #Person parameters
     MIRT_person <- MIRT_person_rea()[,-1]
 
@@ -387,10 +399,10 @@ MIRT_module <- function(input, output, session) {
 
     if(is.null(dim(thresholds))){
       thresholds <- matrix(thresholds , ncol = 1)
-      rownames(thresholds ) <- rownames(item_par_dim)
+
       colnames(thresholds) <- "difficulty"
     }
-
+    rownames(thresholds) <- rownames(item_par_dim)
     wrightMap_new(person = MIRT_person[,wright_dim] %>% as.numeric(),
                   thresholds = thresholds %>% as.matrix(),
                   point_label = input$MIRT_point_label,
@@ -401,7 +413,8 @@ MIRT_module <- function(input, output, session) {
   output$MIRT_wright <- renderPlot({
     if(is.null(input$dimensionfile))
       return(NULL)
-
+    if(is.null(model_selected(input$modelselect1)))
+      return(NULL)
     if(model_selected(input$modelselect1) != "Rasch")
       return(NULL)
     MIRT_wright_rea()
@@ -413,7 +426,9 @@ MIRT_module <- function(input, output, session) {
       return(NULL)
     if(is.null(model_selected(input$modelselect1)))
       return(NULL)
-    Response <- mydata()%>%as.data.frame()
+    if(is.null(input$MIRT_all_variable))
+      return(NULL)
+    Response <- mydata()%>%as.data.frame() %>% select(input$MIRT_all_variable)
 
     checkboxGroupInput(inputId = "MIRT_ICC_item_sele",label = "Item selection",
                        choices = colnames(Response),inline = T,
@@ -427,8 +442,10 @@ MIRT_module <- function(input, output, session) {
     if(mode$is.within_item==TRUE){
       return(NULL)
     }
+    if(is.null(input$MIRT_all_variable))
+      return(NULL)
     sim_theta <- seq(-4,4,0.01)
-    Response <- mydata()%>%as.data.frame()
+    Response <- mydata()%>%as.data.frame() %>% select(input$MIRT_all_variable)
 
     cat_all <- apply(Response, MARGIN = 2, FUN = cat_number)
     #Model fit
@@ -493,10 +510,12 @@ MIRT_module <- function(input, output, session) {
   }
 
   MIRT_iteminfo_rea <- reactive({
+    if(is.null(input$MIRT_all_variable))
+      return(NULL)
     sim_theta <- seq(-4,4,0.01)
     MIRT_fit  <- MIRT_fit_rea()
     dim_data <- dimension()
-    Response <- mydata()
+    Response <- mydata() %>% as.data.frame() %>% select(input$MIRT_all_variable)
     mode <- dimension_recode(Qmatrix = dim_data)
     item_info1 <- Item_infor(object = MIRT_fit,theta = matrix(rep(sim_theta,mode$F_n),
                                                               ncol = mode$F_n,
@@ -510,7 +529,9 @@ MIRT_module <- function(input, output, session) {
       return(NULL)
     if(is.null(model_selected(input$modelselect1)))
       return(NULL)
-    Response <- mydata()%>%as.data.frame()
+    if(is.null(input$MIRT_all_variable))
+      return(NULL)
+    Response <- mydata()%>%as.data.frame() %>% select(input$MIRT_all_variable)
 
     checkboxGroupInput(inputId = "MIRT_IIC_item_sele",label = "Item selection",
                        choices = colnames(Response),inline = T,
@@ -524,8 +545,10 @@ MIRT_module <- function(input, output, session) {
     if(mode$is.within_item==TRUE){
       return(NULL)
     }
+    if(is.null(input$MIRT_all_variable))
+      return(NULL)
     sim_theta <- seq(-4,4,0.01)
-    Response <- mydata()%>%as.data.frame()
+    Response <- mydata()%>%as.data.frame() %>% select(input$MIRT_all_variable)
     item_info <- MIRT_iteminfo_rea()
     ncol <- as.numeric(input$MIRT_wrap_ncol_iic)
     # custom items
@@ -580,10 +603,12 @@ MIRT_module <- function(input, output, session) {
     }
     if(is.null(input$MIRT_dim_select))
       return(NULL)
+    if(is.null(input$MIRT_all_variable))
+      return(NULL)
     sim_theta <- seq(-4,4,0.01)
     MIRT_fit  <- MIRT_fit_rea()
     dim_data <- dimension()
-    Response <- mydata()
+    Response <- mydata() %>% as.data.frame() %>% select(input$MIRT_all_variable)
     mode <- dimension_recode(Qmatrix = dim_data)
     item_info1 <- Item_infor(object = MIRT_fit,theta = matrix(rep(sim_theta,mode$F_n),
                                                               ncol = mode$F_n,
@@ -672,10 +697,12 @@ MIRT_module <- function(input, output, session) {
       paste0("MIRT_results.xlsx")
     },
     content = function(file){
+      if(is.null(input$MIRT_all_variable))
+        return(NULL)
 
       MIRT_fit  <- MIRT_fit_rea()
       dim_data <- dimension() %>% as.data.frame()
-      Response <- mydata() %>% as.data.frame()
+      Response <- mydata() %>% as.data.frame() %>% select(input$MIRT_all_variable)
       mode <- dimension_recode(Qmatrix = dim_data)
       est_theta <- MIRT_person_rea()[,2:(ncol(dim_data)+1)]
       item_info1 <- Item_infor(object = MIRT_fit,
@@ -738,7 +765,9 @@ MIRT_module <- function(input, output, session) {
       paste0("MIRT_Analysis_Report.docx")
     },
     content = function(file){
-      Response <- mydata() %>% as.data.frame()
+      if(is.null(input$MIRT_all_variable))
+        return(NULL)
+      Response <- mydata() %>% as.data.frame() %>% select(input$MIRT_all_variable)
       #Selections
 
       model <- input$modelselect1
@@ -767,7 +796,7 @@ MIRT_module <- function(input, output, session) {
       MIRT_IIC <- MIRT_IIC_rea()
       #Test information
       sim_theta <- seq(-4,4,0.01)
-      Response <- mydata() %>% as.data.frame()
+
       item_info1 <- Item_infor(object = MIRT_fit,theta = matrix(rep(sim_theta,mode$F_n),
                                                                 ncol = mode$F_n,
                                                                 nrow = length(sim_theta)),

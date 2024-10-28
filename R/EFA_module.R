@@ -1,24 +1,20 @@
 EFA_module <- function(input, output, session) {
   #Import the response data---------------------------------------------------
   mydata <- reactive({
-
     if(is.null(input$EFA_res))
       return("Please upload the score data.")
-    inFile <- input$EFA_res
-    dataset <- bruceR::import(inFile$datapath)
-    data <- as.data.frame(dataset)
-
-    data <- dataset %>% unlist() %>% as.numeric() %>%
-      matrix(ncol = ncol(dataset)) %>% as.data.frame()
-    colnames(data) <- colnames(dataset)
-
-    if(length(which(is.character(data %>% unlist()))) >=1){
-      return("Data can not contain any string data.")
-    }
-    data
+    data.f <- read_file(input$EFA_res)
+    data.f
   })
 
   #Export the response data-------------------------------------------------
+  output$EFA_var_select <- renderUI({
+    vars <- mydata() %>% as.data.frame() %>% colnames()
+    checkboxGroupInput(inputId = "EFA_all_variable",inline = T,
+                       label = "Please select variables for EFA section.",
+                       choices = vars,selected = vars)
+  })
+
   output$EFA_Response <- DT::renderDataTable({
     Response <- mydata()%>%as.data.frame()
     # Response
@@ -30,7 +26,10 @@ EFA_module <- function(input, output, session) {
   EFA_bartlett <- reactive({
     if(is.null(input$EFA_res))
       return(NULL)
+    if(is.null(input$EFA_all_variable))
+      return(NULL)
     Response <- mydata()%>%as.matrix()
+    Response <- Response[,input$EFA_all_variable]
     n <- nrow(Response)
     p <- ncol(Response)
     R <- cor(Response)
@@ -48,14 +47,23 @@ EFA_module <- function(input, output, session) {
   output$EFA_bartlett <- DT::renderDataTable({
     if(is.null(input$EFA_res))
       return(NULL)
+    if(is.null(input$EFA_all_variable))
+      return(NULL)
     EFA_bartlett() %>%round(digits = 3) %>% DT_dataTable_Show()
   })
   EFA_fit <- reactive({
     if(is.null(input$EFA_res))
       return(NULL)
+    if(is.null(input$EFA_all_variable))
+      return(NULL)
+
     Response <- mydata()%>%as.data.frame()
-    colnames(Response) <- paste0("Item",1:ncol(Response))
-    fit <- bruceR::EFA(data = Response , var = "Item", items = 1:ncol(Response),
+    Response <- Response[,input$EFA_all_variable]
+
+
+    fit <- bruceR::EFA(data = Response, vars = colnames(Response),
+                       # nfactors = ifelse(is.null(input$Number_factor),"eigen",
+                       #                   as.numeric(input$Number_factor)),
                        method = EFA_method(input$EFA_method),
                        rotation = EFA_rotation_method(input$rotation_method))
     fit
@@ -91,7 +99,8 @@ EFA_module <- function(input, output, session) {
     content = function(file){
       fit <- EFA_fit()
       datalist <- list("Eigenvalues"= as.data.frame(fit$eigenvalues)%>%round(digits = 3),
-                       "Factor loadings" = as.data.frame(fit$loadings)%>%round(digits = 3))
+                       "Factor loadings" = as.data.frame(fit$loadings)%>%round(digits = 3),
+                       "Bartlett" = EFA_bartlett())
       openxlsx::write.xlsx(x = datalist, file = file, rowNames =TRUE)
     }
   )

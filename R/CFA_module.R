@@ -4,18 +4,15 @@ CFA_module <- function(input, output, session) {
 
     if(is.null(input$CFA_res))
       return("Please upload the score data.")
-    inFile <- input$CFA_res
-    dataset <- bruceR::import(inFile$datapath)
-    data <- as.data.frame(dataset)
-
-    data <- dataset %>% unlist() %>% as.numeric() %>%
-      matrix(ncol = ncol(dataset)) %>% as.data.frame()
-    colnames(data) <- colnames(dataset)
-
-    if(length(which(is.character(data %>% unlist()))) >=1){
-      return("Data can not contain any string data.")
-    }
-    data
+    data.f <- read_file(input$CFA_res)
+    data.f
+  })
+  #variable selection
+  output$CFA_var_select <- renderUI({
+    vars <- mydata() %>% as.data.frame() %>% colnames()
+    checkboxGroupInput(inputId = "CFA_all_variable",inline = T,
+                       label = "Please select variables for CFA section.",
+                       choices = vars,selected = vars)
   })
 
   #Export the response data-------------------------------------------------
@@ -27,14 +24,21 @@ CFA_module <- function(input, output, session) {
 
   #3. CFA--------------------------------------------------------------
   dimension_cfa <- reactive({#Import dimension
-
     if(is.null(input$dimensionfile_cfa))
       return(NULL)
     inFile <- input$dimensionfile_cfa
     dataset <- bruceR::import(inFile$datapath)
     data <- as.data.frame(dataset)
     if(sum(is.na(dataset)) >=1){
-      return(data.frame("x" = "Missing values are not allowed."))
+      stop("Missing values are not allowed in the dimension file.")
+    }
+    if(is.null(input$CFA_all_variable))
+      return(NULL)
+    items <- input$CFA_all_variable
+    if(nrow(data)!= length(items)){
+      stop("The number of items in the dimension file does not match the number of selected variables.")
+    }else if(sum(items != data[,1]) >= 1){
+      stop("The item names in the dimension file do not match the item names in the selected variables.")
     }
     data
   })
@@ -59,8 +63,18 @@ CFA_module <- function(input, output, session) {
   }
 
   CFA_reactive <- reactive({
+    if(is.null(input$CFA_res))
+      return(NULL)
+    if(is.null(input$dimensionfile_cfa))
+      return(NULL)
+    if(is.null(input$CFA_estimator))
+      return(NULL)
+    if(is.null(input$CFA_all_variable))
+      return(NULL)
+
     dimension <- dimension_cfa()
-    Response <- mydata()%>%as.data.frame()
+
+    Response <- mydata()%>%as.data.frame() %>% select(input$CFA_all_variable)
     estimator <- input$CFA_estimator %>% str_extract_all("[A-Z]+",simplify = T) %>%
       paste0(collapse = "")
     fit <- CFA(data = Response, model = CFA_mode(dimension),

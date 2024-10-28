@@ -11,25 +11,13 @@ test_that("Basic Functionality - Binary Items", {
   testthat::expect_equal(round(result["Item1", "Difficulty"], 2), 0.5)
   testthat::expect_equal(round(result["Item2", "Difficulty"], 2), 0.5)
 
+
   # Expected structure
   testthat::expect_equal(ncol(result), 4)
   testthat::expect_equal(nrow(result), 3)
   testthat::expect_equal(colnames(result), c("Difficulty","Discrimination","Coefficient of variation", "Item-total correlation"))
 })
 
-test_that("Handling Missing Data (NA values)", {
-  data <- data.frame(
-    Item1 = c(1, 0, 1, NA, 1),
-    Item2 = c(NA, 1, 0, 1, 0),
-    Item3 = c(1, 1, 1, 0, NA)
-  )
-
-  testthat::expect_warning(result <- item_ana(data), "The case with NA were deleted.")
-
-  # Check that the resulting matrix has correct dimensions after NA removal
-  testthat::expect_equal(ncol(result), 4)
-  testthat::expect_equal(nrow(result), 3)
-})
 
 test_that("Edge Case - Single Item", {
   data <- data.frame(

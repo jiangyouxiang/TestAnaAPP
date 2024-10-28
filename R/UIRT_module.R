@@ -1,26 +1,27 @@
 UIRT_module <- function(input, output, session) {
   #Import the response data---------------------------------------------------
   mydata <- reactive({
-
     if(is.null(input$IRT_res))
       return("Please upload the score data.")
-    inFile <- input$IRT_res
-    dataset <- bruceR::import(inFile$datapath)
-    data <- as.data.frame(dataset)
-
-    data <- dataset %>% unlist() %>% as.numeric() %>%
-      matrix(ncol = ncol(dataset)) %>% as.data.frame()
-    colnames(data) <- colnames(dataset)
-
-    if(length(which(is.character(data %>% unlist()))) >=1){
-      return("Data can not contain any string data.")
-    }
-    data
+    data.f <- read_file(input$IRT_res)
+    data.f
   })
+  # variables selection
+  output$UIRT_var_select <- renderUI({
+    vars <- mydata() %>% as.data.frame() %>% colnames()
+    checkboxGroupInput(inputId = "UIRT_all_variable",inline = T,
+                       label = "Please select variables for UIRT analysis.",
+                       choices = vars,selected = vars)
+  })
+
   output$IRT_data_type <- renderText({
     if(is.null(input$IRT_res))
       return(NULL)
-    cat_all <- apply(mydata()%>%as.data.frame(), MARGIN = 2, FUN = cat_number)
+    if(is.null(input$UIRT_all_variable))
+      return(NULL)
+    cat_all <- apply(mydata()%>%as.data.frame() %>%
+                       select(input$UIRT_all_variable),
+                     MARGIN = 2, FUN = cat_number)
     if(any(cat_all >= 10)){
       return(paste0(
         br(),
@@ -39,11 +40,14 @@ UIRT_module <- function(input, output, session) {
   IRT_fit_reactive <- reactive( {
     if(is.null(input$IRT_res))
       return(NULL)
+    if(is.null(input$UIRT_all_variable))
+      return(NULL)
 
     if(is.null(model_selected(input$modelselect))){
       return(NULL)
     }else{
-      Response <- mydata()%>%as.data.frame()
+      Response <- mydata()%>%as.data.frame() %>%
+        select(input$UIRT_all_variable)
       model <- model_selected(input$modelselect)
 
       IRT_fit <- mirt(data = Response, model = 1, itemtype = model,
@@ -70,7 +74,8 @@ UIRT_module <- function(input, output, session) {
 
   IRT_modelfit_rea <- reactive({
     IRT_fit <- IRT_fit_reactive()
-    Response <- mydata()%>%as.data.frame()
+    Response <- mydata()%>%as.data.frame() %>%
+      select(input$UIRT_all_variable)
     cat_all <- apply(Response, MARGIN = 2, FUN = cat_number)
     if(length(which(cat_all > 2)) >=1 ){
       fit_index <- M2(obj = IRT_fit, type = "C2",na.rm = T)%>%round(digits = 3)#M2*
@@ -158,7 +163,8 @@ UIRT_module <- function(input, output, session) {
   ###8.5 Person parameters--------------------
   IRT_person_rea <- reactive({
     IRT_fit <- IRT_fit_reactive()
-    Response <- mydata()%>%as.data.frame()
+    Response <- mydata()%>%as.data.frame() %>%
+      select(input$UIRT_all_variable)
     IRT_person <- fscores(IRT_fit, method = est_person_method(input$IRT_person_est_method),
                           full.scores = T, response.pattern = Response)
     colnames(IRT_person) <- c("theta", "SE")
@@ -176,7 +182,10 @@ UIRT_module <- function(input, output, session) {
   IRT_wright_rea <- reactive({
     if(model_selected(input$modelselect) != "Rasch")
       return(NULL)
-    Response <- mydata()%>%as.data.frame()
+    if(is.null(input$UIRT_all_variable))
+      return(NULL)
+    Response <- mydata()%>%as.data.frame() %>%
+      select(input$UIRT_all_variable)
     cat_all <- apply(Response, MARGIN = 2, FUN = cat_number)
 
     item_par <- IRT_itempar_rea()
@@ -186,11 +195,13 @@ UIRT_module <- function(input, output, session) {
     thresholds <- item_par[,str_which(colnames(item_par) %>% str_to_lower(),
                                       pattern = "difficulty")] %>% as.data.frame()
 
+
     if(is.null(dim(thresholds))){
       thresholds <- matrix(thresholds , ncol = 1)
       rownames(thresholds ) <- rownames(item_par)
       colnames(thresholds) <- "difficulty"
     }
+    rownames(thresholds) <- rownames(item_par)
 
     wrightMap_new(person = as.numeric(IRT_person[,2]),
                   thresholds = thresholds,
@@ -203,7 +214,8 @@ UIRT_module <- function(input, output, session) {
   output$IRT_wright <- renderPlot({
     if(is.null(input$IRT_res))
       return(NULL)
-
+    if(is.null(input$UIRT_all_variable))
+      return(NULL)
     if(model_selected(input$modelselect) != "Rasch")
       return(NULL)
     IRT_wright_rea()
@@ -213,9 +225,12 @@ UIRT_module <- function(input, output, session) {
   output$IRT_ICC_item_selection <- renderUI({
     if(is.null(input$IRT_res))
       return(NULL)
+    if(is.null(input$UIRT_all_variable))
+      return(NULL)
     if(is.null(model_selected(input$modelselect)))
       return(NULL)
-    Response <- mydata()%>%as.data.frame()
+    Response <- mydata()%>%as.data.frame() %>%
+      select(input$UIRT_all_variable)
 
     checkboxGroupInput(inputId = "IRT_ICC_item_sele",label = "Item selection",
                        choices = colnames(Response),inline = T,
@@ -225,7 +240,11 @@ UIRT_module <- function(input, output, session) {
                                 input$IRT_ICC_label_size,input$wrap_ncol,
                                 input$IRT_ICC_item_sele),{
     sim_theta <- seq(-4,4,0.01)
-    Response <- mydata()%>%as.data.frame()
+    if(is.null(input$UIRT_all_variable)){
+      return(NULL)
+    }
+    Response <- mydata()%>%as.data.frame() %>%
+      select(input$UIRT_all_variable)
     cat_all <- apply(Response, MARGIN = 2, FUN = cat_number)
     #Model fit
     IRT_fit  <- IRT_fit_reactive()
@@ -266,7 +285,10 @@ UIRT_module <- function(input, output, session) {
   ##8.8 IIC---------------------------------------------------------------------
   IRT_iteminfo_rea <- reactive({
     sim_theta <- seq(-4,4,0.01)
-    Response <- mydata()%>%as.data.frame()
+    if(is.null(input$UIRT_all_variable))
+      return(NULL)
+    Response <- mydata()%>%as.data.frame() %>%
+      select(input$UIRT_all_variable)
     IRT_fit  <- IRT_fit_reactive()
     item_info <- testinfo(x = IRT_fit, Theta = sim_theta, individual = T)
     colnames(item_info) <- colnames(Response)
@@ -278,7 +300,10 @@ UIRT_module <- function(input, output, session) {
       return(NULL)
     if(is.null(model_selected(input$modelselect)))
       return(NULL)
-    Response <- mydata()%>%as.data.frame()
+    if(is.null(input$UIRT_all_variable))
+      return(NULL)
+    Response <- mydata()%>%as.data.frame() %>%
+      select(input$UIRT_all_variable)
     checkboxGroupInput(inputId = "IRT_IIC_item_sele",label = "Item selection",
                        choices = colnames(Response),inline = T,
                        selected = colnames(Response))
@@ -287,7 +312,10 @@ UIRT_module <- function(input, output, session) {
                                  input$IRT_IIC_title_size,input$wrap_ncol_iic,input$IRTiic_scale,
                                  input$IRT_IIC_item_sele),{
     sim_theta <- seq(-4,4,0.01)
-    Response <- mydata()%>%as.data.frame()
+    if(is.null(input$UIRT_all_variable))
+      return(NULL)
+    Response <- mydata()%>%as.data.frame() %>%
+      select(input$UIRT_all_variable)
 
     item_info <- IRT_iteminfo_rea()
     ncol <- as.numeric(input$wrap_ncol_iic)
@@ -404,7 +432,10 @@ UIRT_module <- function(input, output, session) {
     content = function(file){
       est_theta <-  IRT_person_rea()[,2]%>%as.numeric()#True theta
       IRT_fit  <- IRT_fit_reactive()
-      Response <- mydata()%>%as.data.frame()
+      if(is.null(input$UIRT_all_variable))
+        return(NULL)
+      Response <- mydata()%>%as.data.frame() %>%
+        select(input$UIRT_all_variable)
       item_info <- testinfo(x = IRT_fit, Theta = est_theta, individual = T)
       colnames(item_info) <- colnames(Response)
 
@@ -431,9 +462,12 @@ UIRT_module <- function(input, output, session) {
   Unidi_test <- reactive({
     if(is.null(input$IRT_res))
       return(NULL)
-    Response <- mydata()%>%as.data.frame()
-    colnames(Response) <- paste0("Item",1:ncol(Response))
-    fit <- bruceR::EFA(data = Response , var = "Item", items = 1:ncol(Response),
+    if(is.null(input$UIRT_all_variable))
+      return(NULL)
+    Response <- mydata()%>%as.data.frame() %>%
+      select(input$UIRT_all_variable)
+
+    fit <- bruceR::EFA(data = Response , vars = colnames(Response),
                        method = EFA_method(input$EFA_method),
                        rotation = EFA_rotation_method(input$rotation_method))
     fit
@@ -445,7 +479,10 @@ UIRT_module <- function(input, output, session) {
       paste0("IRT_Analysis_Report.docx")
     },
     content = function(file){
-      Response <- mydata()%>%as.data.frame()
+      if(is.null(input$UIRT_all_variable))
+        return(NULL)
+      Response <- mydata()%>%as.data.frame() %>%
+        select(input$UIRT_all_variable)
       #Selections
       model <- input$modelselect
       IRT_est_method <- input$IRT_est_method
