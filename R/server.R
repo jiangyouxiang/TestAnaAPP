@@ -25,7 +25,7 @@ app_server <- function(input, output, session) {
   output$info <- renderText({
     paste(shiny::h3(strong("Package Information")),
           shiny::p(strong('Package: '), "TestAnaAPP"),
-          shiny::p(strong('Version: '), "1.1.1"),
+          shiny::p(strong('Version: '), "1.1.2"),
           shiny::p(strong('Dependence: '), "config, ggplot2, mirt, shinydashboard, EstCRM, etc."),
           shiny::p(strong('Description: '), "This application provides exploratory and confirmatory factor analysis,
                    classical test theory, unidimensional and multidimensional item response theory,
@@ -39,6 +39,9 @@ app_server <- function(input, output, session) {
                                               "https://github.com/jiangyouxiang/TestAnaAPP")),
           shiny::p(strong("Feedback: "), tags$a(href="https://github.com/jiangyouxiang/TestAnaAPP/issues",
                                                    "https://github.com/jiangyouxiang/TestAnaAPP/issues")),
+          shiny::p(strong("Citation: "), "Jiang, Y., Zeng, Q., & Wen, H. (2024). TestAnaAPP: An interactive R-shiny application for various test analysis methods. SoftwareX, 28, 101967.",
+                   tags$a(href="https://doi.org/10.1016/j.softx.2024.101967",
+                          "https://doi.org/10.1016/j.softx.2024.101967")),
 
           shiny::h3(strong("Software Feature Overview")),
           shiny::p(strong("1. Factor Analysis (EFA & CFA)")),
@@ -79,6 +82,7 @@ app_server <- function(input, output, session) {
 
           shiny::h3(strong("If you have any questions or suggestions, please contact us.")),
           br(),br()
+
     )
   })
 

@@ -1,0 +1,19 @@
+citHeader("To cite package 'TestAnaAPP' in publications use:")
+
+citEntry(entry = "Article",
+  title        = "TestAnaAPP: An interactive R-shiny application for various test analysis methods",
+  author       = personList(as.person("Y. Jiang"),
+                   as.person("Q. Zeng"), as.person("H. Wen")),
+  journal      = "SoftwareX",
+  year         = "2024",
+  volume       = "28",
+  pages        = "101967",
+  issn = "2352-7110",
+  doi = "10.1016/j.softx.2024.101967",
+
+  textVersion  = paste("Jiang, Y., Zeng, Q., & Wen, H. (2024).",
+        "TestAnaAPP: An interactive R-shiny application for various test analysis methods.",
+        "SoftwareX, 28, 101967. https://doi.org/10.1016/j.softx.2024.101967")
+)
+
+

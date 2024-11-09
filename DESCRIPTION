@@ -13,6 +13,7 @@ Authors@R:
     email ="whb@bnu.edu.cn", 
     role = c("aut","ths"),
     comment = "0000-0001-8620-9734"))
+Maintainer: Youxiang Jiang <jiangyouxiang34@163.com>
 Description: This application provides exploratory and confirmatory factor analysis, classical test theory, unidimensional and multidimensional item response theory, and continuous item response model analysis, through the 'shiny' interactive interface. In addition,  it offers rich functionalities for visualizing and downloading results. Users can download figures, tables, and analysis reports via the interactive interface. 
 Depends: ggplot2 (>= 3.4.3), 
          mirt (>= 1.42), 

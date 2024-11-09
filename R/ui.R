@@ -104,6 +104,7 @@ app_ui <- function() {
                                                  accept = c("xlsx","xls","csv","sav","txt")
                                        ),width = 12,
                                        uiOutput(outputId = "EFA_var_select"),
+                                       tags$b("Please click the button below before conduct EFA analysis.",style = "color: red;"),
                                        submitButton( "Confirm")),
                                    box(title = "Method",status = "warning", solidHeader = TRUE,width = 12,
                                        selectInput(inputId = "EFA_method",label = "Extraction method",selectize = TRUE,
@@ -270,6 +271,7 @@ app_ui <- function() {
                                                           accept = c("xlsx","xls","csv","sav","txt")
                                                 ),br(),width = 12,
                                                 uiOutput(outputId = "CTT_var_select"),
+                                                tags$b("Please click the button below before conduct CTT analysis.",style = "color: red;"),
                                                 submitButton( "Confirm"),br(),
                                                 htmlOutput("item_type")),
                                             box(title = "Download Results",status = "success",solidHeader = TRUE,  width = 12,
@@ -377,6 +379,7 @@ app_ui <- function() {
                                                  accept = c("xlsx","xls","csv","sav","txt")
                                        ),width = 12,
                                        uiOutput(outputId = "UIRT_var_select"),
+                                       tags$b("Please click the button below before conduct IRT analysis.",style = "color: red;"),
                                        submitButton( "Confirm")),
                                    box(title="Basic Settings",
                                        solidHeader = TRUE,status = "warning",width = 12,
@@ -1050,6 +1053,7 @@ app_ui <- function() {
                                                  accept = c("xlsx","xls","csv","sav","txt")
                                        ),width = 12,
                                        uiOutput(outputId = "CRM_var_select"),
+                                       tags$b("Please click the button below before conduct CRM analysis.",style = "color: red;"),
                                        submitButton( "Confirm"))
                                    )
                             )
@@ -1137,6 +1141,7 @@ app_ui <- function() {
                                                        ),width = 12),
                                                    box(title = "Variable Selection", solidHeader = TRUE, status = "warning",width = 12,
                                                        uiOutput(outputId = "DIF_group_var_select"),
+                                                       tags$b("Please click the button below before conduct DIF analysis.",style = "color: red;"),
                                                        submitButton( "Confirm"),
                                                        br(),br(),
 
