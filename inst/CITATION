@@ -1,9 +1,12 @@
 citHeader("To cite package 'TestAnaAPP' in publications use:")
 
-citEntry(entry = "Article",
+entry <- bibentry(
+  bibtype = "Article",
   title        = "TestAnaAPP: An interactive R-shiny application for various test analysis methods",
-  author       = personList(as.person("Y. Jiang"),
-                   as.person("Q. Zeng"), as.person("H. Wen")),
+  author       = c(
+  person("Youxiang", "Jiang"),
+  person("Qing", "Zeng"),
+  person("Hongbo", "Wen")),
   journal      = "SoftwareX",
   year         = "2024",
   volume       = "28",
@@ -16,4 +19,4 @@ citEntry(entry = "Article",
         "SoftwareX, 28, 101967. https://doi.org/10.1016/j.softx.2024.101967")
 )
 
-
+entry
